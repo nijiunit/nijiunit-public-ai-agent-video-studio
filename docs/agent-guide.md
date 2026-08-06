@@ -71,15 +71,34 @@ Begin with this short overview:
 1. Prepare Python and the local environment.
 2. Review Google API pricing and billing, then store the API key safely.
 3. Write the story in `input/story.md`.
-4. Create the three-second structure and starting images.
-5. Generate three-second clips and inspect nine frames from every clip.
-6. Finish voices, subtitles, and sound, then inspect the final video.
+4. Create the official Excel storyboard from the three-second structure and starting images.
+5. Have the user review, correct, and explicitly approve the Excel workbook.
+6. After approval, generate three-second clips and inspect nine frames from every clip.
+7. Finish voices, subtitles, and sound, then inspect the final video.
 
 Then focus only on the user's goal: creating a new video, reviewing the public demo, or registering a character.
 
 ### Video-production requests
 
-Read `WORKFLOW.md` and start from `input`. Treat the active, versioned character registry as authoritative. Continue compatible scenes from the previous clip's final frame. Inspect every generated clip in nine frames and move rejected assets to `rejected` with a recorded reason.
+Read `WORKFLOW.md` and start from `input`. After all starting images exist, create the official Excel storyboard and stop before video generation until explicit approval. JSON and Markdown do not replace the workbook. Build a new workbook revision after corrections and run `approve-workbook` only after approval. Treat the active, versioned character registry as authoritative. Continue compatible scenes from the previous clip's final frame. Inspect every generated clip in nine frames and move rejected assets to `rejected` with a recorded reason.
+
+#### Required beginner artifact handoff
+
+- Do not stop after printing a path or chat link. Open the containing folder and select the actual artifact.
+- Use `run_storyboard.py reveal-artifact` for a production run and `scripts/reveal_artifact.py --path ...` for another exact file.
+- Detect Excel, LibreOffice Calc, or Numbers. If none is installed, select the generated English local HTML review page. Do not require an Excel purchase solely for review.
+- After the folder opens, give exactly one action: “Double-click the selected file. When it opens, reply: Opened.” Wait before explaining sheet tabs, correction fields, saving, or the next stage.
+- In a remote or headless session, do not claim the folder opened. Give the exact folder, filename, and one manual action.
+- Never overwrite a reviewed workbook. Use `_r002`, `_r003`, and later revisions. If the workbook is locked, ask the user to save and close it, then wait for their reply.
+- After the workbook opens, guide the first sheet, tabs, status, yellow correction field, and saving one action at a time. With HTML, have the user review each card and paste the generated summary into chat.
+- Repeat this handoff for the generated-video review, final MP4, and AI model-use record. Lead completion reports with the artifact the user can now inspect, not implementation details or test counts.
+
+For example, this command selects the workbook, or the local HTML page when no spreadsheet application is available:
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
+  --run-dir output\storyboard\v001 --artifact storyboard --language en
+```
 
 Before calling an API, confirm that `.env` contains a key without displaying its value. Do not call an API for diagnosis or explanation when the user did not request generation.
 

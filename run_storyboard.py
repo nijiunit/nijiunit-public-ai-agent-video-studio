@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -10,6 +11,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from video_storyboard.pipeline import (  # noqa: E402
+    approve_workbook_command,
     build_video_workbook_command,
     build_workbook_command,
     create_command,
@@ -19,6 +21,7 @@ from video_storyboard.pipeline import (  # noqa: E402
     prepare_motion_keyframes_command,
     render_images_command,
     render_videos_command,
+    reveal_artifact_command,
     validate_character_registry_command,
 )
 
@@ -71,9 +74,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     workbook = subparsers.add_parser(
-        "build-workbook", help="構成JSONと画像からExcelを作成"
+        "build-workbook",
+        help="全メイン画像を入れた正式レビュー用Excelコンテを作成",
     )
     workbook.add_argument("--run-dir", type=Path, required=True)
+
+    approve = subparsers.add_parser(
+        "approve-workbook",
+        help="利用者が確認済みのExcelコンテを承認状態にする",
+    )
+    approve.add_argument("--run-dir", type=Path, required=True)
 
     videos = subparsers.add_parser(
         "render-videos",
@@ -128,11 +138,29 @@ def build_parser() -> argparse.ArgumentParser:
     corrections.add_argument("--workbook", type=Path, required=True)
     corrections.add_argument("--output", type=Path, default=None)
 
+    reveal = subparsers.add_parser(
+        "reveal-artifact",
+        help="成果物のフォルダを開き、対象ファイルを選択",
+    )
+    reveal.add_argument("--run-dir", type=Path, required=True)
+    reveal.add_argument(
+        "--artifact",
+        choices=(
+            "storyboard",
+            "review-html",
+            "final-video",
+            "video-review",
+            "ai-record",
+        ),
+        required=True,
+    )
+    reveal.add_argument("--language", choices=("ja", "en"), default="ja")
+    reveal.add_argument("--dry-run", action="store_true")
+
     return parser
 
 
-def main() -> int:
-    args = build_parser().parse_args()
+def _dispatch(args: argparse.Namespace) -> str:
     if args.command == "create":
         result = create_command(
             input_dir=args.input_dir,
@@ -156,6 +184,8 @@ def main() -> int:
         )
     elif args.command == "build-workbook":
         result = build_workbook_command(run_dir=args.run_dir)
+    elif args.command == "approve-workbook":
+        result = approve_workbook_command(run_dir=args.run_dir)
     elif args.command == "render-videos":
         result = render_videos_command(
             run_dir=args.run_dir,
@@ -179,8 +209,30 @@ def main() -> int:
             workbook_path=args.workbook,
             output_path=args.output,
         )
+    elif args.command == "reveal-artifact":
+        result = reveal_artifact_command(
+            run_dir=args.run_dir,
+            artifact=args.artifact,
+            language=args.language,
+            dry_run=args.dry_run,
+        )
     else:
         raise AssertionError(args.command)
+    return result
+
+
+def main() -> int:
+    if os.name == "nt":
+        for stream in (sys.stdout, sys.stderr):
+            reconfigure = getattr(stream, "reconfigure", None)
+            if reconfigure:
+                reconfigure(encoding="utf-8", errors="replace")
+    args = build_parser().parse_args()
+    try:
+        result = _dispatch(args)
+    except (FileNotFoundError, PermissionError, RuntimeError, ValueError) as error:
+        print(f"ACTION_REQUIRED: {error}")
+        return 2
 
     print(result)
     return 0

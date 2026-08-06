@@ -25,7 +25,8 @@ AIエージェントは`AGENTS.md`に従い、Python、仮想環境、依存パ�
 ```text
 inputに入れた物語と画像を確認して、3秒単位の絵コンテを作ってください。
 最初の開始画像を1枚だけ生成し、確認できるところで止めてください。
-承認したショットから3秒動画を生成し、9コマで検査してください。
+全開始画像を入れたExcelコンテを作り、私が承認するところで止めてください。
+承認後、3秒動画を生成し、9コマで検査してください。
 ```
 
 ## 1. ローカル環境を準備する
@@ -54,6 +55,8 @@ bash scripts/setup.sh
 - `LOCAL READY (online verification required)`: APIキーは保存済み。オンライン確認が必要
 - `READY FOR GENERATION (paid generation not tested)`: 認証と設定モデル一覧は確認済み。有料生成は未実行
 - `NOT READY`: 解決が必要な問題あり
+
+`spreadsheet viewer`が`WARN`でも、ローカルHTML確認画面を使えるためセットアップ失敗ではありません。Excel、LibreOffice Calc、Numbersを後から導入せず、そのままHTMLで進められます。
 
 ## 2. Google生成AI APIを準備する
 
@@ -127,10 +130,21 @@ macOSまたはLinuxでは次です。
 
 - 完成動画: `examples/space-friends/demo.mp4`
 - 物語: `examples/space-friends/input/story.md`
-- 3秒構成: `examples/space-friends/storyboard.json`
+- 承認済みExcelコンテ: `examples/space-friends/storyboard_approved.xlsx`
+- Excelなし用の日本語・英語コンテ: `storyboard_approved_review.ja.html`、`storyboard_approved_review.en.html`
+- 生成処理用3秒構成: `examples/space-friends/storyboard.json`
 - キャラクター台帳: `examples/space-friends/characters`
 - AIモデル使用記録: `examples/space-friends/AIモデル使用記録.md`
 - 全90コマ確認表: `examples/space-friends/docs/story-video-contact-sheet.jpg`
+
+初心者へは上のパスをクリックさせるだけにせず、AIエージェントが確認したいファイルのあるフォルダを開きます。Excelコンテなら次を実行します。
+
+```powershell
+.\.venv\Scripts\python.exe scripts\reveal_artifact.py `
+  --path examples\space-friends\storyboard_approved.xlsx --language ja
+```
+
+フォルダで青く選択されたファイルをダブルクリックしてもらい、「開いた」という返答を待ってから次の説明へ進みます。
 
 APIを使わず、公開台帳と専用動作動画を検査できます。
 
@@ -178,7 +192,7 @@ Copy-Item examples\space-friends\input\story.md input\story.md
   --character-registry-dir examples\space-friends\characters
 ```
 
-## 6. 開始画像を1枚だけ生成して確認する
+## 6. 開始画像を確認し、Excelコンテを作る
 
 最初から全画像を生成せず、まず1枚だけ確認します。
 
@@ -189,7 +203,40 @@ Copy-Item examples\space-friends\input\story.md input\story.md
 
 人物の外見、人数、左右位置、背景、文字やロゴの混入、16:9を確認します。合格したら`--limit`を外して残りを生成します。
 
-## 7. 3秒動画を生成・確認する
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py render-images `
+  --run-dir output\storyboard\v001
+```
+
+全ショットの開始画像が揃うと、`output/storyboard/v001/review/storyboard_v001.xlsx`と日本語・英語のローカルHTML確認画面が自動作成されます。Excelが正式なコンテです。JSONとMarkdownは内部処理・補足用であり、Excelの代わりではありません。修正版は元のExcelを上書きせず、`_r002`、`_r003`と増えます。
+
+## 7. Excelコンテを確認・承認する
+
+まずAIエージェントが次を実行します。
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
+  --run-dir output\storyboard\v001 --artifact storyboard --language ja
+```
+
+macOSまたはLinuxでは、同じコマンドの先頭を`./.venv/bin/python run_storyboard.py`にします。Finderでは対象ファイルを選択します。Linuxのファイル管理アプリが選択に対応しない場合は、開いたフォルダ内で表示されたファイル名を探します。
+
+Excel、LibreOffice Calc、Numbersが見つかればExcelを選択し、見つからなければ日本語HTMLを選択します。どちらも同じ`review`フォルダです。AIエージェントは「青く選択されたファイルをダブルクリックしてください。開いたら『開いた』と返してください」とだけ案内し、返答を待ちます。
+
+Excelが開いた後は、全シートのメイン画像、説明、台詞、音、動き、9コマ計画を確認します。修正がある場合は`レビュー状態`を`修正必要`にし、黄色い訂正指示欄へ書いて保存します。HTMLが開いた場合は、上からカードを確認し、最後に作った確認結果をチャットへ貼り付けます。AIエージェントへ修正を依頼すると、反映後のExcelが新版として作成されます。
+
+問題がなく、利用者が明示的に承認した後だけ、AIエージェントは次を実行します。
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py approve-workbook `
+  --run-dir output\storyboard\v001
+```
+
+利用者の承認前は、アプリ側も動画生成を拒否します。
+
+Excelが開いたままで保存処理ができない場合、AIエージェントは保存して閉じる一操作だけを案内し、「閉じた」の返答後に再実行します。画面を開けない環境では、開いたと報告せず、正確なフォルダとファイル名を案内します。
+
+## 8. 3秒動画を生成・確認する
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py render-videos `
@@ -203,7 +250,14 @@ Copy-Item examples\space-friends\input\story.md input\story.md
   --run-dir output\storyboard\v001
 ```
 
-## 8. 連結と仕上げ
+9コマ確認表も同じ方法でフォルダを開けます。表計算アプリがなければ、実動画から取り出した9コマ入りのローカルHTMLが選択されます。
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
+  --run-dir output\storyboard\v001 --artifact video-review --language ja
+```
+
+## 9. 連結と仕上げ
 
 映像を連結します。
 
@@ -214,7 +268,9 @@ Copy-Item examples\space-friends\input\story.md input\story.md
 
 完成映像はランの`final`へ保存されます。台詞、字幕、環境音、音楽、音量調整は映像生成とは分けて行い、動画APIが偶然生成した音声や文字をそのまま完成版へ使わないでください。詳しい制作・検査方法は[作業手順](../作業手順.md)を参照してください。
 
-## 9. キャラクターを追加する
+完成後はAIエージェントが`--artifact final-video`で`final`フォルダを開き、MP4を選択します。利用者には、まずダブルクリックして最初から最後まで再生する一操作だけを案内します。
+
+## 10. キャラクターを追加する
 
 `templates/character-profile.json`と`templates/character-registry.json`を参考に、`characters/<id>/<version>`へ版管理された台帳を作ります。
 
@@ -229,7 +285,7 @@ Copy-Item examples\space-friends\input\story.md input\story.md
 
 詳細は[キャラクター台帳](character-registry.md)と[作業手順](../作業手順.md)を参照してください。
 
-## 10. 困ったとき
+## 11. 困ったとき
 
 まず診断を実行します。
 

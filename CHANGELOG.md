@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Restored the Excel storyboard as the mandatory human-review artifact for
+  every production, with automatic workbook creation after all starting images
+  exist and an explicit approval command.
+- Blocked video generation until the current workbook has been approved and
+  contains no unapplied correction.
+- Updated Japanese and English agent instructions, user guides, workflows, and
+  the public sample to make the Excel review gate visible and reproducible.
+- Added beginner artifact handoff: separate `review` and `final` folders,
+  non-overwriting workbook revisions, spreadsheet-app detection, offline
+  Japanese and English HTML review pages, cross-platform folder reveal, clear
+  headless and workbook-lock recovery, and one-action agent guidance.
+
 ## 0.6.0 - 2026-08-06
 
 - Added matched English and Japanese entry points, setup guides, agent

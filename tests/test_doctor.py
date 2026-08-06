@@ -8,6 +8,7 @@ from scripts.doctor import (
     api_key_online_checks,
     configured_models,
     readiness,
+    spreadsheet_viewer_check,
 )
 
 
@@ -139,3 +140,17 @@ def test_online_api_key_failure_never_displays_secret() -> None:
 
     assert results[0].status == "FAIL"
     assert secret not in results[0].detail
+
+
+def test_missing_spreadsheet_application_is_nonblocking(
+    monkeypatch,
+) -> None:
+    from video_storyboard import artifacts
+
+    monkeypatch.setattr(artifacts, "detect_spreadsheet_viewers", lambda: [])
+
+    result = spreadsheet_viewer_check()
+
+    assert result.status == "WARN"
+    assert "HTML" in result.detail
+    assert readiness([result]) == "LOCAL READY (online verification required)"

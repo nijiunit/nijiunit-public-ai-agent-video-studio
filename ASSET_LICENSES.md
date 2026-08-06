@@ -6,7 +6,8 @@ third-party or generated media.
 ## Space friends public demo
 
 The Mio and Lux v002 character registry, space-flight motion references, scene
-anchors, review contact sheets, and final video in `examples/space-friends`
+anchors, approved Excel storyboard, offline HTML review images, review contact
+sheets, and final video in `examples/space-friends`
 were created specifically for this repository from the already publishable
 fictional Mio and Lux identities. No private production assets, real-person
 likenesses, known characters, third-party music, or completed-work excerpts

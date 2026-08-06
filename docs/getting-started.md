@@ -25,7 +25,8 @@ For a new production, requests can be as specific as:
 ```text
 Review the story and images in input and create a three-second storyboard.
 Generate only the first starting image, then stop for my review.
-Generate approved three-second shots and inspect each one as nine frames.
+Build the Excel storyboard with every starting image and stop for my approval.
+After approval, generate three-second shots and inspect each one as nine frames.
 ```
 
 ## 1. Prepare the local environment
@@ -56,6 +57,8 @@ Diagnostic states have precise meanings:
 - `LOCAL READY (online verification required)`: an API key is stored; online verification is still required
 - `READY FOR GENERATION (paid generation not tested)`: authentication and configured model identifiers were verified; no paid generation was attempted
 - `NOT READY`: at least one problem must be resolved
+
+A `WARN` for `spreadsheet viewer` is not a setup failure because offline local HTML review is available. The user can continue without installing Excel, LibreOffice Calc, or Numbers.
 
 ## 2. Prepare the Google Generative AI API
 
@@ -119,10 +122,21 @@ The completed example is under `examples/space-friends`.
 
 - Final video: `examples/space-friends/demo.mp4`
 - Story: `examples/space-friends/input/story.md`
-- Three-second storyboard: `examples/space-friends/storyboard.json`
+- Approved Excel storyboard: `examples/space-friends/storyboard_approved.xlsx`
+- Offline Japanese and English storyboard pages: `storyboard_approved_review.ja.html`, `storyboard_approved_review.en.html`
+- Machine-readable three-second plan: `examples/space-friends/storyboard.json`
 - Character registry: `examples/space-friends/characters`
 - AI model-use record: `examples/space-friends/AIモデル使用記録.md`
 - 90-frame review sheet: `examples/space-friends/docs/story-video-contact-sheet.jpg`
+
+For a beginner, do not stop at these path labels. Have the AI agent reveal the exact file in its folder. For the Excel storyboard:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\reveal_artifact.py `
+  --path examples\space-friends\storyboard_approved.xlsx --language en
+```
+
+Ask the user to double-click the selected file and wait for “Opened” before giving the next instruction.
 
 Validate the registry and motion videos without an API call:
 
@@ -170,7 +184,7 @@ To explicitly use the public sample registry as a reference:
   --character-registry-dir examples\space-friends\characters
 ```
 
-## 6. Generate and review one starting image
+## 6. Review starting images and build the Excel storyboard
 
 Do not generate every image immediately. Review the first one:
 
@@ -181,7 +195,40 @@ Do not generate every image immediately. Review the first one:
 
 Check identity, character count, left-right placement, background, unintended text or logos, 16:9 framing, and subtitle space. Remove `--limit` only after approval.
 
-## 7. Generate and inspect three-second clips
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py render-images `
+  --run-dir output\storyboard\v001
+```
+
+When every shot's starting image exists, the application automatically creates `output/storyboard/v001/review/storyboard_v001.xlsx` plus Japanese and English local HTML review pages. The workbook is the official storyboard. JSON and Markdown are machine input and supplementary documentation; they do not replace the workbook. A corrected build keeps the old workbook and creates `_r002`, `_r003`, and later revisions.
+
+## 7. Review and approve the Excel storyboard
+
+First, the AI agent runs:
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
+  --run-dir output\storyboard\v001 --artifact storyboard --language en
+```
+
+On macOS or Linux, start the same command with `./.venv/bin/python run_storyboard.py`. Finder selects the target file. If the Linux file manager cannot select it, use the exact filename printed for the already-open folder.
+
+This selects the workbook when Excel, LibreOffice Calc, or Numbers is available; otherwise it selects the English local HTML page in the same `review` folder. The agent gives only one action: “Double-click the selected file. When it opens, reply: Opened.”
+
+After the workbook opens, review every sheet's main image, description, dialogue, sound, action, and nine-frame plan. For a correction, set `レビュー状態` to `修正必要`, write the exact request in the yellow correction field, and save. In HTML, review each card and paste the generated summary into chat. The AI agent applies corrections and creates a new workbook revision for another review.
+
+Only after the user explicitly approves the workbook may the agent run:
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py approve-workbook `
+  --run-dir output\storyboard\v001
+```
+
+The application blocks video generation before user approval.
+
+If the workbook is locked because it is still open, the agent asks for one action—save and close it—and waits for the reply. In a headless or remote environment, the agent reports the exact folder and filename instead of claiming that a desktop folder opened.
+
+## 8. Generate and inspect three-second clips
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py render-videos `
@@ -195,7 +242,14 @@ Review the first clip before generating the rest. Each clip is extracted into ni
   --run-dir output\storyboard\v001
 ```
 
-## 8. Assemble and finish
+Reveal the generated-video review in the same way. Without a spreadsheet app, the command selects local HTML containing the nine real frames from every clip.
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
+  --run-dir output\storyboard\v001 --artifact video-review --language en
+```
+
+## 9. Assemble and finish
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py finalize-video `
@@ -204,7 +258,9 @@ Review the first clip before generating the rest. Each clip is extracted into ni
 
 The final video is written below the run's `final` directory. Keep dialogue, subtitles, ambience, music, and level control separate from video generation. Do not accept accidental generated speech or on-screen text as a final asset. See the detailed [production workflow](../WORKFLOW.md).
 
-## 9. Add a reusable character
+At completion, the agent uses `--artifact final-video` to open the `final` folder and select the MP4, then gives one action: double-click it and watch from beginning to end.
+
+## 10. Add a reusable character
 
 Use `templates/character-profile.json` and `templates/character-registry.json` to build a versioned registry under `characters/<id>/<version>`.
 
@@ -219,7 +275,7 @@ Each reusable character needs:
 
 See `character-registry.md` and the [production workflow](../WORKFLOW.md).
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 Run the local diagnostic first:
 

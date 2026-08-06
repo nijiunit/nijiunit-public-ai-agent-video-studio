@@ -79,7 +79,9 @@ Limit one shot to one meaning and one primary action. Do not compress walking, e
 
 Use `continuity_start_mode: previous_final_frame` when the same scene continues. Use `storyboard_image` when location, time, or composition changes.
 
-## 6. Review starting images
+At this point, `storyboard.json` is machine input, not the official user-review storyboard. Do not proceed to video generation from JSON or Markdown alone.
+
+## 6. Review starting images and build the Excel storyboard
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py render-images `
@@ -88,7 +90,46 @@ Use `continuity_start_mode: previous_final_frame` when the same scene continues.
 
 Review the first image for 16:9 framing, every character's appearance, left-right placement, props, background, unintended text or logos, and subtitle space. Do not generate video from an incorrect starting image.
 
-## 7. Generate three-second clips
+After the first image passes, remove `--limit` and generate the remaining shots. When every main image exists, the application automatically creates the official `review/storyboard_v001.xlsx` workbook plus Japanese and English local HTML review pages. An explicit rebuild creates `_r002`, `_r003`, and later revisions instead of overwriting a reviewed file:
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py render-images `
+  --run-dir output\storyboard\v001
+.\.venv\Scripts\python.exe run_storyboard.py build-workbook `
+  --run-dir output\storyboard\v001
+```
+
+Every shot sheet contains the main image, visible action, emotion, camera, lighting, dialogue, sound, continuity, nine-frame plan, review status, and a yellow correction field. The application refuses to build the official workbook until all main images exist.
+A rebuilt revision starts at `未確認`. Even when an older approved file remains, the newest changed image or plan must always be reviewed again.
+
+## 7. Review, correct, and approve the Excel storyboard
+
+The Excel workbook is the official human-review artifact. A path or chat link alone is not a handoff. The AI agent opens the containing folder, selects the artifact, gives one opening action, and stops here:
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
+  --run-dir output\storyboard\v001 --artifact storyboard --language en
+```
+
+When Excel, LibreOffice Calc, or Numbers is available, this selects the workbook. Otherwise it selects the generated English local HTML review page. The HTML page stays offline and stores review entries in the browser; the workbook beside it remains the official record. The first instruction is only: “Double-click the selected file. When it opens, reply: Opened.” After that reply, guide the workbook tabs, status, yellow correction field, and saving one action at a time. In HTML, the user reviews each card and pastes the generated summary into chat.
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py extract-corrections `
+  --workbook output\storyboard\v001\review\storyboard_v001.xlsx
+```
+
+The agent applies corrections to the JSON and starting images, rebuilds the workbook, and requests another review. Only after the user explicitly approves the workbook may the agent run:
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py approve-workbook `
+  --run-dir output\storyboard\v001
+```
+
+`approve-workbook` lets an agent mark unreviewed sheets approved only after the user explicitly approves the workbook. It fails if any sheet is marked for revision or contains an unapplied correction. `render-videos` refuses to run until every sheet in the Excel storyboard is approved. An agent must not infer approval from silence, file existence, or approval of an older version.
+
+If an open spreadsheet application locks the workbook, ask the user to save and close it, then wait for their reply before retrying. In a remote or headless environment, never claim a folder opened; report the exact folder and filename and give one manual action.
+
+## 8. Generate three-second clips
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py render-videos `
@@ -99,7 +140,7 @@ Each shot fixes the approved identity image, neutral presence, activated signatu
 
 Within the same scene, extract the previous clip's final frame and use it as the next starting frame. Extract nine frames from every generated shot and check duplication, part count, color, pose, framing, and the three-second boundary.
 
-## 8. Finish voices, music, sound, and subtitles
+## 9. Finish voices, music, sound, and subtitles
 
 Do not use audio generated incidentally by the video API. Keep only the video stream.
 
@@ -133,7 +174,7 @@ For a production-specific cinematic mix, synthesize it locally with a tool such 
 
 Transcribe TTS with a different speech-recognition model and compare it with the script after normalizing punctuation and orthographic variants. Transcribe the finished mix again to verify that dialogue remains intelligible after ambience and music are added. Also inspect an audio-only transcript for missing lines, cross-talk, or unintended generated speech.
 
-## 9. Assemble and perform final review
+## 10. Assemble and perform final review
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py finalize-video `
@@ -142,9 +183,20 @@ Transcribe TTS with a different speech-recognition model and compare it with the
   --run-dir output\storyboard\v001
 ```
 
+Use the same folder-and-one-action handoff for the generated-video review, final MP4, and AI model-use record:
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
+  --run-dir output\storyboard\v001 --artifact video-review --language en
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
+  --run-dir output\storyboard\v001 --artifact final-video --language en
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
+  --run-dir output\storyboard\v001 --artifact ai-record --language en
+```
+
 A human watches the entire video and reviews picture, speech, captions, payoff, duration, and rights notices. In particular, check that a silent character's mouth or service seams do not move, a flying character's head, neck, and torso point consistently, and environmental audio matches on-screen distance and position. Never overwrite an approved version; create `v002` or another new version. Move rejected material into the run's `rejected` directory with a name that records the reason.
 
-## 10. Always keep an AI model-use record
+## 11. Always keep an AI model-use record
 
 For every episode, copy `templates/AIモデル使用記録.md` to `final/AIモデル使用記録.md` under the completed run. Mark unused stages as `Not used` rather than omitting them.
 
@@ -164,7 +216,7 @@ At minimum, record these stages separately:
 
 Record provider, model name, function, input, output, accepted range, regeneration reason, local processing, and date. If the video model changes between shots, split the ranges.
 
-## 11. Pre-publication inspection
+## 12. Pre-publication inspection
 
 - No `.env`, key, email address, personal path, or client identifier
 - No production content from local `input` or `output` in Git

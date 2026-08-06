@@ -22,6 +22,7 @@ RED = "F4CCCC"
 WHITE = "FFFFFF"
 GRAY = "E7E6E6"
 THIN = Side(style="thin", color="A6A6A6")
+DEFAULT_CORRECTION_INSTRUCTION = "ここへ具体的な訂正指示を記入してください。"
 
 
 def _timecode(seconds: int) -> str:
@@ -175,7 +176,7 @@ def create_workbook(
         _value(
             ws,
             "C5",
-            "ここへ具体的な訂正指示を記入してください。",
+            DEFAULT_CORRECTION_INSTRUCTION,
             YELLOW,
         )
         ws.conditional_formatting.add(
@@ -272,7 +273,7 @@ def extract_corrections(workbook_path: Path, destination: Path) -> Path:
         if not ws.title.startswith("S"):
             continue
         instruction = str(ws["C5"].value or "").strip()
-        if instruction == "ここへ具体的な訂正指示を記入してください。":
+        if instruction == DEFAULT_CORRECTION_INSTRUCTION:
             instruction = ""
         corrections.append(
             {
@@ -287,6 +288,78 @@ def extract_corrections(workbook_path: Path, destination: Path) -> Path:
         encoding="utf-8",
     )
     return destination
+
+
+def workbook_review_issues(
+    storyboard: Storyboard,
+    workbook_path: Path,
+) -> list[str]:
+    """Return reasons why an Excel storyboard is not ready for video generation."""
+    if not workbook_path.exists():
+        return [f"Excelコンテがありません: {workbook_path}"]
+
+    workbook = load_workbook(workbook_path, data_only=False)
+    issues: list[str] = []
+    for shot in storyboard.shots:
+        sheet_title = _safe_sheet_title(shot)
+        if sheet_title not in workbook.sheetnames:
+            issues.append(f"S{shot.shot_number:03d}: シートがありません")
+            continue
+        worksheet = workbook[sheet_title]
+        status = str(worksheet["C4"].value or "未確認").strip()
+        instruction = str(worksheet["C5"].value or "").strip()
+        if status != "承認":
+            issues.append(
+                f"S{shot.shot_number:03d}: レビュー状態が「{status}」です"
+            )
+        if instruction and instruction != DEFAULT_CORRECTION_INSTRUCTION:
+            issues.append(
+                f"S{shot.shot_number:03d}: 未反映の訂正指示があります"
+            )
+    return issues
+
+
+def approve_workbook(
+    storyboard: Storyboard,
+    workbook_path: Path,
+) -> Path:
+    """Mark every shot approved after the user explicitly approves the workbook."""
+    if not workbook_path.exists():
+        raise FileNotFoundError(f"Excelコンテがありません: {workbook_path}")
+
+    workbook = load_workbook(workbook_path, data_only=False)
+    blocking: list[str] = []
+    for shot in storyboard.shots:
+        sheet_title = _safe_sheet_title(shot)
+        if sheet_title not in workbook.sheetnames:
+            blocking.append(f"S{shot.shot_number:03d}: シートがありません")
+            continue
+        worksheet = workbook[sheet_title]
+        instruction = str(worksheet["C5"].value or "").strip()
+        if instruction and instruction != DEFAULT_CORRECTION_INSTRUCTION:
+            blocking.append(
+                f"S{shot.shot_number:03d}: 訂正指示が残っています"
+            )
+        if str(worksheet["C4"].value or "").strip() == "修正必要":
+            blocking.append(
+                f"S{shot.shot_number:03d}: レビュー状態が「修正必要」です"
+            )
+    if blocking:
+        raise RuntimeError(
+            "Excelコンテを承認できません。先に修正を反映してください。\n"
+            + "\n".join(blocking)
+        )
+
+    summary = workbook[workbook.sheetnames[0]]
+    for row, shot in enumerate(storyboard.shots, start=8):
+        sheet_title = _safe_sheet_title(shot)
+        worksheet = workbook[sheet_title]
+        worksheet["C4"] = "承認"
+        worksheet["H4"] = "なし"
+        summary.cell(row=row, column=3, value="承認")
+        summary.cell(row=row, column=5, value="なし")
+    workbook.save(workbook_path)
+    return workbook_path
 
 
 def create_video_workbook(

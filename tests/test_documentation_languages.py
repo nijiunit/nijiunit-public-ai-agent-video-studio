@@ -39,3 +39,5 @@ def test_agent_router_preserves_the_selected_language() -> None:
     assert "docs/agent-guide.ja.md" in instructions
     assert "Preserve the user's language" in instructions
     assert "日本語とEnglishのどちらで進めますか？" in instructions
+    assert "Mandatory Excel storyboard gate" in instructions
+    assert "approve-workbook" in instructions

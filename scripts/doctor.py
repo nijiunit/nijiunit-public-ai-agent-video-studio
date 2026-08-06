@@ -244,6 +244,27 @@ def registry_check() -> Check:
         )
 
 
+def spreadsheet_viewer_check() -> Check:
+    try:
+        from video_storyboard.artifacts import detect_spreadsheet_viewers
+
+        viewers = detect_spreadsheet_viewers()
+    except Exception as error:  # noqa: BLE001
+        return Check(
+            "spreadsheet viewer",
+            "WARN",
+            f"detection failed ({type(error).__name__}); local HTML review is available",
+        )
+    if not viewers:
+        return Check(
+            "spreadsheet viewer",
+            "WARN",
+            "Excel/LibreOffice/Numbers not found; local HTML review will be used",
+        )
+    names = ", ".join(dict.fromkeys(viewer.name for viewer in viewers))
+    return Check("spreadsheet viewer", "PASS", names)
+
+
 def demo_check() -> Check:
     demo = ROOT / "examples" / "space-friends" / "demo.mp4"
     if not demo.is_file():
@@ -281,7 +302,9 @@ def collect_checks(
         dependency_check(module, distribution)
         for module, distribution in DEPENDENCIES.items()
     )
-    checks.extend([ffmpeg_check(), registry_check(), demo_check()])
+    checks.extend(
+        [ffmpeg_check(), registry_check(), spreadsheet_viewer_check(), demo_check()]
+    )
 
     api_key = read_api_key(ROOT / ".env")
     key_set = bool(api_key)

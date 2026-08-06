@@ -44,6 +44,15 @@ presence/action videos         |
 3 timed keyframes              |
     +------------+------------+
                  v
+       review/storyboard_vNNN.xlsx
+       + offline ja/en HTML review
+                 |
+       app detection + folder reveal
+       + one user action at a time
+                 |
+       human correction + approval
+                 |
+                 v
       3-second video generation
                  |
        previous final frame
@@ -68,3 +77,22 @@ selected for each shot.
 `storyboard_image` starts a new visual setup. `previous_final_frame` is only for
 continuing the same setup; it extracts the prior normalized clip's last frame at
 1280×720 and uses that as the next generation's first frame.
+
+The Excel workbook is the authoritative human-review artifact for the episode
+storyboard. JSON remains the machine-readable execution format. The runtime
+blocks video generation until every workbook shot has been explicitly approved
+and contains no unapplied correction.
+
+User-facing artifacts are separated from processing files. Storyboard review
+workbooks and their local HTML companions live in `review/`; finished MP4s,
+video-frame reviews, and model-use records live in `final/`; rejected material
+lives in `rejected/`. Existing review files are immutable: later builds use
+`_r002`, `_r003`, and later suffixes. Legacy workbooks in a run root remain
+readable.
+
+The artifact handoff layer detects Excel, LibreOffice Calc, and Numbers. It
+selects Excel when a spreadsheet application exists and otherwise selects the
+language-matched offline HTML page. Explorer, Finder, or the Linux desktop file
+manager opens the containing folder. Headless sessions return a truthful path
+fallback. The application never treats a successful folder launch as user
+approval.

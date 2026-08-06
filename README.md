@@ -10,6 +10,7 @@ The central problem addressed by this repository is continuity across shots, not
 - Newly generated three-second character-design videos for neutral presence and signature motions
 - Timestamped keyframes and motion instructions extracted from those design videos
 - Continuous generation that passes the final frame of one clip into the next compatible shot
+- A mandatory Excel storyboard containing every main image, shot plan, audio plan, nine-frame plan, and correction field; offline local HTML review for users without a spreadsheet app; and a hard approval gate before video generation
 - Nine-frame visual review of every generated clip, followed by local audio and subtitle finishing
 - An episode-level record of every AI model used
 
@@ -17,7 +18,7 @@ The central problem addressed by this repository is continuity across shots, not
 
 [▶ Open the completed 30-second demo, "The Rainbow Beyond the Stars"](examples/space-friends/demo.mp4)
 
-The public demo includes shot-specific starting images; dedicated motions for space flight, a cinematic descent, a waterfall pass, low-altitude flight, and landing; shot-specific TTS; and a continuous local soundtrack that moves from space ambience to wind, river, waterfall, and grassland. Its storyboard, character registry, AI model-use record, and 90-frame review sheet are all under [examples/space-friends](examples/space-friends).
+The public demo includes shot-specific starting images; dedicated motions for space flight, a cinematic descent, a waterfall pass, low-altitude flight, and landing; shot-specific TTS; and a continuous local soundtrack that moves from space ambience to wind, river, waterfall, and grassland. Its official [approved Excel storyboard](examples/space-friends/storyboard_approved.xlsx), [English offline review page](examples/space-friends/storyboard_approved_review.en.html), machine-readable JSON, character registry, AI model-use record, and 90-frame review sheet are all under [examples/space-friends](examples/space-friends).
 
 ## What the public repository excludes
 
@@ -107,14 +108,19 @@ The complete public sample is in [examples/space-friends](examples/space-friends
 1. Put `story.md` and rights-cleared source material in `input`.
 2. Use `templates` to create a versioned character registry under `characters`.
 3. Validate the registry, design videos, and keyframes.
-4. Generate the three-second storyboard, starting images, and video clips in that order.
-5. Inspect nine real frames from every clip, discard generated audio, and add controlled voices and subtitles locally.
-6. Save the final MP4 and the episode's AI model-use record.
+4. Create the three-second plan and starting images, then build the official Excel storyboard.
+5. The agent opens the review folder and selects either the workbook or local HTML page. Review every shot and apply corrections. Video generation is blocked until the user explicitly approves it.
+6. Generate three-second clips from the approved workbook and inspect nine real frames from every clip.
+7. Discard generated audio, add controlled voices and subtitles locally, and save the final MP4 and AI model-use record.
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py create
+.\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001 --limit 1
 .\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001
-.\.venv\Scripts\python.exe run_storyboard.py build-workbook --run-dir output\storyboard\v001
+# Open the folder and select Excel, or English local HTML if no spreadsheet app exists.
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact --run-dir output\storyboard\v001 --artifact storyboard --language en
+# Run this only after the user explicitly approves the storyboard.
+.\.venv\Scripts\python.exe run_storyboard.py approve-workbook --run-dir output\storyboard\v001
 .\.venv\Scripts\python.exe run_storyboard.py render-videos --run-dir output\storyboard\v001
 .\.venv\Scripts\python.exe run_storyboard.py finalize-video --run-dir output\storyboard\v001
 .\.venv\Scripts\python.exe run_storyboard.py build-video-workbook --run-dir output\storyboard\v001
@@ -140,11 +146,15 @@ The root `AGENTS.md` tells AI agents how to route setup, usage, production, and 
 
 There is no permanent `temp` directory. Use the Git-ignored `tmp/` for temporary data. Public `input` and `output` contain only documentation or placeholders; user content remains local.
 
+Within a production run, user review workbooks and HTML pages live in `review/`, finished MP4s and final records in `final/`, and rejected material in `rejected/`. After processing, the agent opens the relevant folder, selects the artifact, and gives only one user action at a time.
+
 ## Important limitations
 
 - Character-design MP4s are retained, but if a video model cannot reliably accept multiple video references, the workflow sends three keyframes and timed motion instructions instead of the MP4 itself.
 - `previous_final_frame` is used only between shots in the same scene. A new starting image is used when location, time, or composition changes.
 - Generative output remains nondeterministic. Registries, continuity frames, and review gates reduce drift but cannot guarantee exact identity.
+- The Excel storyboard is the official human-review artifact. `storyboard.json` and Markdown files cannot replace its approval gate.
+- Users without Excel, LibreOffice Calc, or Numbers can inspect the same content in an offline local HTML page. HTML review does not bypass explicit approval or the official Excel gate.
 - Generated speech and text inside video are not trusted as final assets. Required dialogue and subtitles are produced and checked separately.
 - This code does not grant rights to publish someone else's face, character, music, or logo.
 

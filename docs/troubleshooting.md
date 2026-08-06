@@ -55,6 +55,37 @@ For `previous_final_frame`, no per-shot storyboard image is required. Ensure the
 immediately preceding normalized clip exists. For `storyboard_image`, create the
 matching image under the run's `images` directory.
 
+## The workbook link in chat does nothing
+
+A local path displayed as a chat link may not launch a desktop application. The
+agent should run `run_storyboard.py reveal-artifact --artifact storyboard` or
+`scripts/reveal_artifact.py --path ...`. This opens the containing folder and
+selects the real file. Double-click the selected file only after the agent has
+shown the correct folder and filename.
+
+## No Excel or spreadsheet application is installed
+
+Do not buy or install Excel solely to inspect the storyboard. Each workbook has
+Japanese and English offline HTML companions. `reveal-artifact` selects the
+language-matched HTML page automatically when Excel, LibreOffice Calc, or
+Numbers is not found. Review every card and paste the generated summary into
+chat. The workbook beside it remains the official production record, and the
+agent still waits for explicit approval.
+
+## The agent cannot open a desktop folder
+
+This is normal in some remote, container, SSH, or headless sessions. The agent
+must not claim that the folder opened. It should provide the exact folder and
+filename and give one manual action. On a local Windows or macOS desktop, rerun
+the reveal command from the local agent session.
+
+## The workbook cannot be saved because it is open
+
+Save the workbook in the spreadsheet application, close its window, and tell
+the agent that it is closed. The agent then retries. Do not delete a lock file
+or overwrite the reviewed workbook. Corrected builds create `_r002`, `_r003`,
+and later revisions.
+
 ## Character color or face drifts
 
 Reject the shot. Strengthen the positive immutable description, explicitly

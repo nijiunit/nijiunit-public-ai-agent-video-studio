@@ -10,6 +10,7 @@ AIエージェントと生成AIを使い、3秒単位の短い動画を、キャ
 - 通常時と固有動作を新規生成した3秒のキャラクターデザイン動画
 - デザイン動画から抽出した時刻付きキーフレームと動作指示
 - 直前クリップの最終フレームを次の開始フレームへ渡す連続生成
+- 全ショットの開始画像・説明・音・9コマ計画・訂正欄をまとめた正式なExcelコンテ、Excelがない人向けのローカルHTML確認画面、承認前の動画生成を止めるゲート
 - 生成動画を9コマで確認し、音声・字幕をローカルで仕上げる工程
 - エピソードごとに残すAIモデル使用記録
 
@@ -17,7 +18,7 @@ AIエージェントと生成AIを使い、3秒単位の短い動画を、キャ
 
 [▶ 完成デモ「星のむこうの虹」を開く（30秒MP4）](examples/space-friends/demo.mp4)
 
-この公開デモでは、場面ごとの開始画像、宇宙飛行・映画的な急降下・滝横断・低空飛行・着地の専用動作、ショット別TTS、宇宙から風・川・滝・草原へ連続的に変化するローカル音響まで確認できます。構成、キャラクター台帳、AIモデル使用記録、全90コマの確認表も[examples/space-friends](examples/space-friends)にまとめています。
+この公開デモでは、場面ごとの開始画像、宇宙飛行・映画的な急降下・滝横断・低空飛行・着地の専用動作、ショット別TTS、宇宙から風・川・滝・草原へ連続的に変化するローカル音響まで確認できます。正式な[承認済みExcelコンテ](examples/space-friends/storyboard_approved.xlsx)、[Excelなし用の日本語確認画面](examples/space-friends/storyboard_approved_review.ja.html)、生成処理用JSON、キャラクター台帳、AIモデル使用記録、全90コマの確認表も[examples/space-friends](examples/space-friends)にまとめています。
 
 ## 公開版に含めていないもの
 
@@ -105,14 +106,19 @@ macOS / Linux:
 1. `input`へ`story.md`と権利確認済みの素材を置きます。
 2. `templates`を参考に`characters`へ台帳を作ります。
 3. 台帳・デザイン動画・キーフレームを検証します。
-4. 3秒単位の構成、開始画像、動画の順に生成します。
-5. 実動画9コマで確認後、生成動画の音声を捨て、専用音声・字幕を合成します。
-6. 最終MP4とAIモデル使用記録を残します。
+4. 3秒単位の構成と開始画像から、正式なExcelコンテを作ります。
+5. AIエージェントが確認用フォルダを開き、選択したExcelまたはローカルHTMLで全ショットを確認します。利用者が明示的に承認するまで動画は生成できません。
+6. 承認済みExcelを起点に3秒動画を生成し、実動画9コマで確認します。
+7. 生成動画の音声を捨て、専用音声・字幕を合成し、最終MP4とAIモデル使用記録を残します。
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py create
+.\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001 --limit 1
 .\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001
-.\.venv\Scripts\python.exe run_storyboard.py build-workbook --run-dir output\storyboard\v001
+# Excelがなければ日本語HTMLを選び、該当フォルダを開く
+.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact --run-dir output\storyboard\v001 --artifact storyboard --language ja
+# 利用者が明示的に承認した後だけ実行する
+.\.venv\Scripts\python.exe run_storyboard.py approve-workbook --run-dir output\storyboard\v001
 .\.venv\Scripts\python.exe run_storyboard.py render-videos --run-dir output\storyboard\v001
 .\.venv\Scripts\python.exe run_storyboard.py finalize-video --run-dir output\storyboard\v001
 .\.venv\Scripts\python.exe run_storyboard.py build-video-workbook --run-dir output\storyboard\v001
@@ -138,11 +144,15 @@ tests/       APIを使わない自動テスト
 
 `temp`は正式フォルダにしません。一時データが必要ならGit管理外の`tmp/`を使います。`input`と`output`は公開時には説明ファイルとプレースホルダーだけで、利用者自身の内容は空です。
 
+制作ランの中では、利用者が確認するExcelとHTMLを`review/`、完成MP4と最終記録を`final/`、不採用素材を`rejected/`へ分けます。AIエージェントは処理後に該当フォルダを開き、成果物を選択して、一度に一つだけ操作を案内します。
+
 ## 重要な制約
 
 - キャラクターデザイン動画そのものは保存しますが、動画モデルが複数動画参照を安定して扱えない場合は、MP4を直接渡さず3枚のキーフレームと動作タイミングを使います。
 - `previous_final_frame`は同じ場面をつなぐ場合にだけ使います。場所・時刻・構図が変わる場面では新しい開始画像を使います。
 - 生成結果は毎回変わり得ます。台帳、継続フレーム、確認工程はブレを減らす仕組みであり、完全一致を保証するものではありません。
+- Excelコンテが正式な人間確認用成果物です。`storyboard.json`やMarkdownだけで動画生成へ進むことはできません。
+- Excel、LibreOffice Calc、Numbersがなくても、オフラインのローカルHTMLで同じ内容を確認できます。HTMLを使っても、明示的な承認と正式Excelの承認ゲートは省略しません。
 - APIが生成した音声や画面内文字を完成版として信用せず、必要な台詞・字幕は別工程で検証します。
 - 他人の顔、キャラクター、音楽、ロゴを公開する権利は、このコードから得られません。
 
