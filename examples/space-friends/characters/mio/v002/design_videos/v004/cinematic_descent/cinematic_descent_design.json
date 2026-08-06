@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "status": "approved",
+  "source_policy": "new_generation_from_publishable_identity_only",
+  "character_id": "mio",
+  "character_name": "ミオ",
+  "profile_version": "v002",
+  "motion_id": "cinematic_descent",
+  "action_ja": "映画的な高速降下",
+  "start_frame": "start_frame.png",
+  "clip": "clip.mp4",
+  "prompt_en": "The exact same Mio performs a controlled cinematic descent through the air. The complete robot pitches forward only ten degrees as one rigid aligned unit while moving diagonally down and forward. The rounded triangular head, black neck connector, chest, pelvis, and both legs always point in the same correct forward direction; the neck never twists or reverses. Both warm amber eyes remain visible and unchanged. The tiny sealed service seam below the eyes remains a perfectly rigid closed line and never acts like a mouth. Arms stay low and slightly open for balance, legs trail naturally, and both teal feet remain attached. No head turn, backward neck, face reversal, mouth movement, swimming, superhero pose, wing, jetpack, flame, exhaust, speech, or redesign. Locked camera and neutral studio background.",
+  "inspection": {
+    "path": "clip.mp4",
+    "duration_seconds": 3.0,
+    "width": 1280,
+    "height": 720,
+    "fps": 24.0,
+    "has_audio": false,
+    "bytes": 585021
+  }
+}

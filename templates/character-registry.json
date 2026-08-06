@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "concepts": [
+    {
+      "id": "my_concept",
+      "name_ja": "作品名",
+      "description_ja": "作品共通の世界観"
+    }
+  ],
+  "characters": [
+    {
+      "id": "character_id",
+      "active_version": "v001",
+      "profile": "character_id/v001/profile.json"
+    }
+  ]
+}
+

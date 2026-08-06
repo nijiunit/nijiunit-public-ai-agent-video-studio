@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "id": "mio",
+  "version": "v002",
+  "name_ja": "ミオ",
+  "aliases": ["Mio", "repair robot"],
+  "concept_id": "space_friends",
+  "kind": "robot",
+  "description_ja": "白と濃い青緑の小型修理ロボット。丸みのある三角形の頭、琥珀色の二眼、珊瑚色の工具ベルトを持つ。",
+  "identity_prompt_en": "The exact same original small repair robot Mio in every shot: rounded triangular head, exactly two warm amber circular camera eyes, matte ivory and deep-teal enamel panels, slim graphite joints, coral-orange tool belt, simple mechanical hands, and sturdy teal feet. Mio has no mouth. The tiny short horizontal mark below the eyes is a sealed rigid service seam, not a mouth; it never opens, bends, changes shape, or moves during speech.",
+  "immutable_traits": [
+    "rounded triangular head",
+    "exactly two warm amber circular camera eyes",
+    "matte ivory and deep-teal enamel body panels",
+    "coral-orange tool belt",
+    "small friendly repair-robot proportions",
+    "no mouth",
+    "the tiny horizontal service seam below the eyes is permanently sealed and rigid",
+    "head, black neck connector, and torso always form one anatomically correct forward-facing axis"
+  ],
+  "forbidden_traits": [
+    "human skin or human face",
+    "mouth, nose, hair, or clothing",
+    "logos, letters, or brand marks",
+    "extra eyes, extra arms, or missing fingers",
+    "different body colors or body scale",
+    "wings, jetpack, visible flames, or exhaust",
+    "opening or moving the sealed facial service seam like a mouth",
+    "backward neck, reversed neck joint, twisted head, or head facing opposite the torso"
+  ],
+  "references": [
+    {
+      "path": "references/identity.png",
+      "role": "identity",
+      "label": "ミオの公開用正面全身資料",
+      "priority": 100
+    }
+  ],
+  "poses": [],
+  "design_video": {
+    "id": "design_presence",
+    "name_ja": "通常存在・小さな機械呼吸",
+    "clip_path": "design_videos/v002/design_presence.mp4",
+    "prompt_en": "The exact same Mio stays in the identical neutral stance. Show a subtle servo settle, one synchronized amber aperture blink, and a tiny two-degree head adjustment back to center. Arms remain low. Locked camera. No gesture, walking, speech, color change, or redesign.",
+    "timing": ["0.0-3.0s: restrained idle mechanical presence"],
+    "forbidden": ["walking", "large gesture", "speech", "identity drift"],
+    "keyframes": [
+      "design_videos/v002/design_presence_keyframes/start.jpg",
+      "design_videos/v002/design_presence_keyframes/mid.jpg",
+      "design_videos/v002/design_presence_keyframes/end.jpg"
+    ],
+    "keyframe_times_seconds": [0.25, 1.5, 2.75],
+    "priority": 85
+  },
+  "motions": [
+    {
+      "id": "zero_gravity_flight",
+      "name_ja": "無重力の友達飛行",
+      "clip_path": "design_videos/v003/zero_gravity_flight/clip.mp4",
+      "triggers": ["zero-gravity", "friend-flight"],
+      "prompt_en": "The exact same Mio performs calm zero-gravity forward flight while remaining upright: legs hang naturally below the torso, both arms stay low and slightly away from the body for balance, and the whole rigid body glides smoothly forward with a very small natural bob. The head and amber eyes look ahead. No walking cycle, swimming motion, superhero pose, wings, jetpack, flame, exhaust, speech, or redesign. Locked camera and neutral studio background.",
+      "timing": [
+        "0.0-0.8s: stable upright hover",
+        "0.8-2.3s: smooth forward zero-gravity glide with tiny body bob",
+        "2.3-3.0s: gently settle while still airborne"
+      ],
+      "forbidden": ["walking", "swimming", "superhero pose", "wings", "jetpack", "visible propulsion", "identity drift"],
+      "keyframes": [
+        "design_videos/v003/zero_gravity_flight/keyframes/start.jpg",
+        "design_videos/v003/zero_gravity_flight/keyframes/mid.jpg",
+        "design_videos/v003/zero_gravity_flight/keyframes/end.jpg"
+      ],
+      "keyframe_times_seconds": [0.25, 1.5, 2.75],
+      "priority": 90
+    },
+    {
+      "id": "cinematic_descent",
+      "name_ja": "映画的な高速降下",
+      "clip_path": "design_videos/v004/cinematic_descent/clip.mp4",
+      "triggers": ["cinematic-descent", "river-chase descent"],
+      "prompt_en": "The exact same Mio performs a controlled cinematic descent through the air. The complete robot pitches forward only ten degrees as one rigid aligned unit while moving diagonally down and forward. The rounded triangular head, black neck connector, chest, pelvis, and both legs always point in the same correct forward direction; the neck never twists or reverses. Both warm amber eyes remain visible and unchanged. The tiny sealed service seam below the eyes remains a perfectly rigid closed line and never acts like a mouth. Arms stay low and slightly open for balance, legs trail naturally, and both teal feet remain attached. No head turn, backward neck, face reversal, mouth movement, swimming, superhero pose, wing, jetpack, flame, exhaust, speech, or redesign. Locked camera and neutral studio background.",
+      "timing": [
+        "0.0-0.7s: stable aligned airborne posture",
+        "0.7-2.4s: smooth diagonal down-forward descent with the whole body aligned",
+        "2.4-3.0s: maintain direction and stable speed"
+      ],
+      "forbidden": ["backward neck", "twisted head", "mouth movement", "head turn", "swimming", "superhero pose", "visible propulsion", "identity drift"],
+      "keyframes": [
+        "design_videos/v004/cinematic_descent/keyframes/start.jpg",
+        "design_videos/v004/cinematic_descent/keyframes/mid.jpg",
+        "design_videos/v004/cinematic_descent/keyframes/end.jpg"
+      ],
+      "keyframe_times_seconds": [0.25, 1.5, 2.75],
+      "priority": 96
+    },
+    {
+      "id": "low_altitude_flight",
+      "name_ja": "草原すれすれの低空飛行",
+      "clip_path": "design_videos/v004/low_altitude_flight/clip.mp4",
+      "triggers": ["low-altitude-flight", "grass-level flight"],
+      "prompt_en": "The exact same Mio makes one smooth low-altitude forward flight and controlled deceleration while staying about one body-height above an unseen floor. The whole robot leans forward only five degrees, then gradually returns upright; the rounded triangular head, black neck connector, torso, pelvis, and legs remain correctly aligned in one forward direction at every moment. Both amber eyes stay unchanged. The tiny sealed service seam below the eyes remains rigid and closed and never moves like a mouth. Arms stay low for balance, legs move from slight trailing alignment toward a legs-down landing-ready posture. No head turn, reversed neck, twisted body, mouth movement, running, swimming, wing, jetpack, flame, exhaust, speech, or redesign. Locked camera and neutral studio background.",
+      "timing": [
+        "0.0-1.2s: smooth low forward flight with slight forward lean",
+        "1.2-2.3s: controlled deceleration and body returning upright",
+        "2.3-3.0s: legs lower into landing-ready posture while still airborne"
+      ],
+      "forbidden": ["backward neck", "twisted head", "mouth movement", "running", "swimming", "visible propulsion", "identity drift"],
+      "keyframes": [
+        "design_videos/v004/low_altitude_flight/keyframes/start.jpg",
+        "design_videos/v004/low_altitude_flight/keyframes/mid.jpg",
+        "design_videos/v004/low_altitude_flight/keyframes/end.jpg"
+      ],
+      "keyframe_times_seconds": [0.25, 1.5, 2.75],
+      "priority": 97
+    },
+    {
+      "id": "legs_down_descent",
+      "name_ja": "脚を下にした穏やかな降下",
+      "clip_path": "design_videos/v003/legs_down_descent/clip.mp4",
+      "triggers": ["legs-down", "controlled descent"],
+      "prompt_en": "The exact same Mio makes a slow controlled vertical descent while staying upright. Both legs remain directly below the torso with knees only slightly softened, arms remain low and open a little for balance, and the teal feet approach an unseen floor without touching it. Keep both circular eye lenses warm amber at exactly the same color and brightness for all three seconds; do not blink, dim, recolor, or close either eye. The rounded triangular head stays level and faces forward. Keep every ivory, deep-teal, graphite, and coral-orange part unchanged. No falling, tumbling, running, wing, jetpack, flame, exhaust, speech, or redesign. Locked camera and neutral studio background.",
+      "timing": [
+        "0.0-0.6s: stable hover",
+        "0.6-2.5s: slow straight legs-down descent",
+        "2.5-3.0s: pause just above the floor"
+      ],
+      "forbidden": ["eye color change", "eye closing", "falling", "tumbling", "walking", "wings", "visible propulsion", "identity drift"],
+      "keyframes": [
+        "design_videos/v003/legs_down_descent/keyframes/start.jpg",
+        "design_videos/v003/legs_down_descent/keyframes/mid.jpg",
+        "design_videos/v003/legs_down_descent/keyframes/end.jpg"
+      ],
+      "keyframe_times_seconds": [0.25, 1.5, 2.75],
+      "priority": 92
+    },
+    {
+      "id": "soft_landing",
+      "name_ja": "両足での柔らかな着地",
+      "clip_path": "design_videos/v003/soft_landing/clip.mp4",
+      "triggers": ["soft controlled landing", "soft landing"],
+      "prompt_en": "The exact same Mio completes one soft controlled two-foot landing: descend the final few centimeters, touch both teal feet down together, bend the knees slightly to absorb the motion, then stand upright and still. Keep both circular eye lenses warm amber at exactly the same color and brightness for all three seconds; do not blink, dim, recolor, or close either eye. Keep every ivory, deep-teal, graphite, and coral-orange part unchanged. Arms stay low and make only a small balancing adjustment. No jump, stumble, deep crouch, dust cloud, speech, wings, jetpack, flame, exhaust, or redesign. Locked camera and neutral studio background.",
+      "timing": [
+        "0.0-0.9s: final centimeters of descent",
+        "0.9-1.7s: both feet touch and knees soften",
+        "1.7-3.0s: return to calm upright stance"
+      ],
+      "forbidden": ["eye color change", "eye closing", "jump", "stumble", "deep crouch", "dust", "visible propulsion", "identity drift"],
+      "keyframes": [
+        "design_videos/v003/soft_landing/keyframes/start.jpg",
+        "design_videos/v003/soft_landing/keyframes/mid.jpg",
+        "design_videos/v003/soft_landing/keyframes/end.jpg"
+      ],
+      "keyframe_times_seconds": [0.25, 1.5, 2.75],
+      "priority": 94
+    }
+  ],
+  "source_notes": [
+    "公開サンプル用に生成したミオの正規デザインを使用。",
+    "v002では宇宙飛行・脚を下にした降下・柔らかな着地の動作資料を追加。"
+  ],
+  "source_type": "generated",
+  "asset_license": "CC-BY-4.0",
+  "publishable": true
+}

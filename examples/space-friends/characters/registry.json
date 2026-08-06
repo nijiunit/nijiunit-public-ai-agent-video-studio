@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "concepts": [
+    {
+      "id": "space_friends",
+      "name_ja": "星のむこうの虹",
+      "description_ja": "友達のミオとルクスが宇宙を旅し、虹のある地球の大地へ降りる公開デモ。"
+    }
+  ],
+  "characters": [
+    {
+      "id": "mio",
+      "active_version": "v002",
+      "profile": "mio/v002/profile.json"
+    },
+    {
+      "id": "lux",
+      "active_version": "v002",
+      "profile": "lux/v002/profile.json"
+    }
+  ]
+}

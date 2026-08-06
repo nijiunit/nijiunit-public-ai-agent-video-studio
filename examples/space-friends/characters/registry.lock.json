@@ -1,0 +1,226 @@
+{
+  "schema_version": "1.0",
+  "characters": [
+    {
+      "id": "mio",
+      "name_ja": "ミオ",
+      "version": "v002",
+      "concept_id": "space_friends",
+      "references": [
+        {
+          "path": "mio/v002/references/identity.png",
+          "role": "identity",
+          "use_for_generation": true,
+          "sha256": "a79751c075b21ef2afda972e37c59e35521fcd9ad9a7eeb0e853599f49ed37f7"
+        }
+      ],
+      "design_video": {
+        "id": "design_presence",
+        "clip": {
+          "path": "mio/v002/design_videos/v002/design_presence.mp4",
+          "sha256": "f8f79758cb11fb5a850d695c032657b802177d377296c262d3978bfee6720659"
+        },
+        "keyframes": [
+          {
+            "path": "mio/v002/design_videos/v002/design_presence_keyframes/start.jpg",
+            "sha256": "22d05f3883d8a8944bfa76a6e3b2eedeb7dcacf65f532be325df37f356e51bf6"
+          },
+          {
+            "path": "mio/v002/design_videos/v002/design_presence_keyframes/mid.jpg",
+            "sha256": "dbcc47b77548bfcf3bc8162b40194b509126c563e7d8ff92da2dabb39b8ea538"
+          },
+          {
+            "path": "mio/v002/design_videos/v002/design_presence_keyframes/end.jpg",
+            "sha256": "9c281503810d12b1378f1a5ec47529b0d239c5b23bafc6d8f8f3c3febf015c64"
+          }
+        ]
+      },
+      "motions": [
+        {
+          "id": "zero_gravity_flight",
+          "clip": {
+            "path": "mio/v002/design_videos/v003/zero_gravity_flight/clip.mp4",
+            "sha256": "1ea7b846cffdb5f1481ecfc5c0c33b96e5d98944a245b140895c1dd406a917f8"
+          },
+          "keyframes": [
+            {
+              "path": "mio/v002/design_videos/v003/zero_gravity_flight/keyframes/start.jpg",
+              "sha256": "b38286add0e098d31c3217dc015f931b8ca0ed25d6c97f893c1674ca707791b1"
+            },
+            {
+              "path": "mio/v002/design_videos/v003/zero_gravity_flight/keyframes/mid.jpg",
+              "sha256": "5614ef7248ec15d2a323678baa0ed1a53c76d05aeec142dbf5711d764e438802"
+            },
+            {
+              "path": "mio/v002/design_videos/v003/zero_gravity_flight/keyframes/end.jpg",
+              "sha256": "c5fd303de8f862f59b58bf778f73f774727c57ee4eda85d903f5b5d36ade24f3"
+            }
+          ]
+        },
+        {
+          "id": "cinematic_descent",
+          "clip": {
+            "path": "mio/v002/design_videos/v004/cinematic_descent/clip.mp4",
+            "sha256": "94fd79e390a923b14fb26c465dfecdf203f46908af5431b1832feb5c94d03c18"
+          },
+          "keyframes": [
+            {
+              "path": "mio/v002/design_videos/v004/cinematic_descent/keyframes/start.jpg",
+              "sha256": "b26ef079b47f22fa1345a0e60664f30fc61f10ac87d5d82c76909ed8633f8f9a"
+            },
+            {
+              "path": "mio/v002/design_videos/v004/cinematic_descent/keyframes/mid.jpg",
+              "sha256": "3e4b5ca90985d72ad2d5c2fd5ef1082ef1441c38075b27fb58ba3dc73ff5c43b"
+            },
+            {
+              "path": "mio/v002/design_videos/v004/cinematic_descent/keyframes/end.jpg",
+              "sha256": "e03f89c3448677b4bf8a65092de3d96c1df1fa03bbc1263e5cdc6e52d3d14ff1"
+            }
+          ]
+        },
+        {
+          "id": "low_altitude_flight",
+          "clip": {
+            "path": "mio/v002/design_videos/v004/low_altitude_flight/clip.mp4",
+            "sha256": "e6bbecf1aa76d1e29e3b0a460521aaa10e1128292b5d5251d0b11d0301204504"
+          },
+          "keyframes": [
+            {
+              "path": "mio/v002/design_videos/v004/low_altitude_flight/keyframes/start.jpg",
+              "sha256": "7aa161e2761bf9120dbe3f99bdd74700dd172d2af20d8a8dbf92e6d5dd870974"
+            },
+            {
+              "path": "mio/v002/design_videos/v004/low_altitude_flight/keyframes/mid.jpg",
+              "sha256": "6b4bab8f62c561f0a473a3b25c64cdb43b4346a918b9e058158df1c1c5349e28"
+            },
+            {
+              "path": "mio/v002/design_videos/v004/low_altitude_flight/keyframes/end.jpg",
+              "sha256": "69fe17905e3b3107eb979746cbdc522f7581c392754fef60d66ad1566b098b4f"
+            }
+          ]
+        },
+        {
+          "id": "legs_down_descent",
+          "clip": {
+            "path": "mio/v002/design_videos/v003/legs_down_descent/clip.mp4",
+            "sha256": "8c7eeae95272656d2c4678ffc3a4dad102a94e60a71ef6351c12d2d5c3631d25"
+          },
+          "keyframes": [
+            {
+              "path": "mio/v002/design_videos/v003/legs_down_descent/keyframes/start.jpg",
+              "sha256": "9189d67cd9fa66a63941f34a99de3afa1711a840f6b23cb70077d93fd6d730c0"
+            },
+            {
+              "path": "mio/v002/design_videos/v003/legs_down_descent/keyframes/mid.jpg",
+              "sha256": "2df665062ba4b9dd569f4c5ced17b75ebf89c20a98a56370c89876925d309271"
+            },
+            {
+              "path": "mio/v002/design_videos/v003/legs_down_descent/keyframes/end.jpg",
+              "sha256": "a4bacf85db05f02690b5d7afa5640008e4d8e794b9d3711e195f1a18bab71973"
+            }
+          ]
+        },
+        {
+          "id": "soft_landing",
+          "clip": {
+            "path": "mio/v002/design_videos/v003/soft_landing/clip.mp4",
+            "sha256": "7b36a5d8d5e5820542b7fd58101d9602f0a455a56d78c31abaa55e24799ec435"
+          },
+          "keyframes": [
+            {
+              "path": "mio/v002/design_videos/v003/soft_landing/keyframes/start.jpg",
+              "sha256": "f3a0be665264d3abf7f6aa4ef97a1d016d900a4446b837e78b0bef854312f165"
+            },
+            {
+              "path": "mio/v002/design_videos/v003/soft_landing/keyframes/mid.jpg",
+              "sha256": "100efa1186aac2b4c610bc07a01bfcbee100f90bf5af4a0ece573e4446759720"
+            },
+            {
+              "path": "mio/v002/design_videos/v003/soft_landing/keyframes/end.jpg",
+              "sha256": "4acf0628d468244528cac792c81b2e0a3c5b3fb8bbeb174815b71855ae96b99c"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lux",
+      "name_ja": "ルクス",
+      "version": "v002",
+      "concept_id": "space_friends",
+      "references": [
+        {
+          "path": "lux/v002/references/identity.png",
+          "role": "identity",
+          "use_for_generation": true,
+          "sha256": "1d7ec40cd5e0197b14acb771a68c5b08cc2b39bc92b2ce3f3910bd55d6c21777"
+        }
+      ],
+      "design_video": {
+        "id": "design_presence",
+        "clip": {
+          "path": "lux/v002/design_videos/v002/design_presence.mp4",
+          "sha256": "28803910938d01ba6e16d499c91bb6f1b431887c623362f38c7ca266aad3a870"
+        },
+        "keyframes": [
+          {
+            "path": "lux/v002/design_videos/v002/design_presence_keyframes/start.jpg",
+            "sha256": "a216635bba57f78aaa0d54c560db474283732de95c429378ced45db3d318e226"
+          },
+          {
+            "path": "lux/v002/design_videos/v002/design_presence_keyframes/mid.jpg",
+            "sha256": "168ffff0eb9124086236e0bda20e2694b88578e483cccfd7bfb2ff647c555233"
+          },
+          {
+            "path": "lux/v002/design_videos/v002/design_presence_keyframes/end.jpg",
+            "sha256": "3fcf1311c6d45cfe5631d0ba5135b43b60efda04f83080896f49ef32809a0186"
+          }
+        ]
+      },
+      "motions": [
+        {
+          "id": "friend_flight",
+          "clip": {
+            "path": "lux/v002/design_videos/v003/friend_flight/clip.mp4",
+            "sha256": "a29cae9ef87a41b584ccd96a275ea791c72b050c6f34cf093882300e2f5857dd"
+          },
+          "keyframes": [
+            {
+              "path": "lux/v002/design_videos/v003/friend_flight/keyframes/start.jpg",
+              "sha256": "263079de337671de72c228573160e60bfb349059f12e1ab1a9764922d717cbfc"
+            },
+            {
+              "path": "lux/v002/design_videos/v003/friend_flight/keyframes/mid.jpg",
+              "sha256": "a475e6a7eb784e1c86fa5f8bd8d49516b05c2f7e8f16a0bd36764dcb3a4bdaa4"
+            },
+            {
+              "path": "lux/v002/design_videos/v003/friend_flight/keyframes/end.jpg",
+              "sha256": "9342cd851d2333896a67c3fd9bae06a7281d56cc8b23ea1fe8f78ce5867b1bcd"
+            }
+          ]
+        },
+        {
+          "id": "invitation_pulse",
+          "clip": {
+            "path": "lux/v002/design_videos/v003/invitation_pulse/clip.mp4",
+            "sha256": "d3b0a504528498cae9f418f442d09d9a3ef2776f9215d2d03b4899fb7cabd398"
+          },
+          "keyframes": [
+            {
+              "path": "lux/v002/design_videos/v003/invitation_pulse/keyframes/start.jpg",
+              "sha256": "5aa485a3fa622ee518da82366039b6bb96c99af8f49e85462da8c55586efcf1d"
+            },
+            {
+              "path": "lux/v002/design_videos/v003/invitation_pulse/keyframes/mid.jpg",
+              "sha256": "19d5e6ee8ce78fed410800f88a9baaba774f8aea1cd3b00dac6a693c8dda30f7"
+            },
+            {
+              "path": "lux/v002/design_videos/v003/invitation_pulse/keyframes/end.jpg",
+              "sha256": "9983e83734bef9a156594ed423a837946411d66bb1982d0fb4ddfb2c323fc847"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

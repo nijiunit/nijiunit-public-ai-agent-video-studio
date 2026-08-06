@@ -1,0 +1,32 @@
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# User workspaces stay local. Keep only the usage notes/placeholders.
+input/*
+!input/README.md
+output/*
+!output/.gitkeep
+tmp/
+logs/
+
+# Local maintainer notes. Never publish this operator-only file.
+/運営者用.md
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

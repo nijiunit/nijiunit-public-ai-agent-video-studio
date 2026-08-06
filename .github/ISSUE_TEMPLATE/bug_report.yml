@@ -1,0 +1,23 @@
+name: Bug report
+description: Report a reproducible defect without private media or credentials
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Do not paste API keys, private prompts, or likeness assets.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Python and operating system
+

@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "id": "lux",
+  "version": "v002",
+  "name_ja": "ルクス",
+  "aliases": ["Lux", "floating light"],
+  "concept_id": "space_friends",
+  "kind": "robot",
+  "description_ja": "金色の発光コア、黒鉛色の保護リング、三枚の半透明プリズム翼を持つ小型の浮遊する光。",
+  "identity_prompt_en": "The exact same original floating light companion Lux in every shot: grapefruit-sized warm golden spherical core, thin dark graphite protective ring, exactly three translucent prism fins placed evenly around the ring, and tiny teal hinge details. Lux has no face or limbs.",
+  "immutable_traits": [
+    "warm golden spherical light core",
+    "thin dark graphite protective ring",
+    "exactly three translucent prism fins",
+    "tiny teal hinge details",
+    "small hovering scale",
+    "no face or limbs"
+  ],
+  "forbidden_traits": [
+    "eyes, mouth, face, hands, or legs",
+    "propellers or conventional drone body",
+    "more or fewer than three prism fins",
+    "letters, logos, symbols, or UI",
+    "different core color or scale",
+    "flame, smoke, or exhaust trail"
+  ],
+  "references": [
+    {
+      "path": "references/identity.png",
+      "role": "identity",
+      "label": "ルクスの公開用正面資料",
+      "priority": 100
+    }
+  ],
+  "poses": [],
+  "design_video": {
+    "id": "design_presence",
+    "name_ja": "通常存在・小さな浮遊",
+    "clip_path": "design_videos/v002/design_presence.mp4",
+    "prompt_en": "The exact same Lux hovers in place with a very small slow vertical drift, one gentle core-light pulse, and a tiny synchronized prism settle. Exactly three fins remain attached and unchanged. Locked camera. No orbit, spin, speech, new parts, or identity drift.",
+    "timing": ["0.0-3.0s: quiet stable hover and one gentle light pulse"],
+    "forbidden": ["fast spin", "extra fins", "shape change", "identity drift"],
+    "keyframes": [
+      "design_videos/v002/design_presence_keyframes/start.jpg",
+      "design_videos/v002/design_presence_keyframes/mid.jpg",
+      "design_videos/v002/design_presence_keyframes/end.jpg"
+    ],
+    "keyframe_times_seconds": [0.25, 1.5, 2.75],
+    "priority": 85
+  },
+  "motions": [
+    {
+      "id": "friend_flight",
+      "name_ja": "友達と並ぶ宇宙飛行",
+      "clip_path": "design_videos/v003/friend_flight/clip.mp4",
+      "triggers": ["friend-flight", "side-by-side"],
+      "prompt_en": "The exact same Lux glides smoothly forward as a friendly travel companion. The whole rigid device makes only a tiny slow vertical bob while its warm core glows steadily. The dark ring and exactly three translucent prism fins keep their original geometry and orientation. No spinning, orbiting, duplication, face, limbs, extra fin, missing fin, flame, exhaust, speech, or redesign. Locked camera and neutral studio background.",
+      "timing": [
+        "0.0-0.7s: stable hover",
+        "0.7-2.4s: smooth forward companion glide with tiny bob",
+        "2.4-3.0s: gentle airborne settle"
+      ],
+      "forbidden": ["spin", "orbit", "extra fins", "missing fins", "visible propulsion", "identity drift"],
+      "keyframes": [
+        "design_videos/v003/friend_flight/keyframes/start.jpg",
+        "design_videos/v003/friend_flight/keyframes/mid.jpg",
+        "design_videos/v003/friend_flight/keyframes/end.jpg"
+      ],
+      "keyframe_times_seconds": [0.25, 1.5, 2.75],
+      "priority": 90
+    },
+    {
+      "id": "invitation_pulse",
+      "name_ja": "友達を誘う二回の光",
+      "clip_path": "design_videos/v003/invitation_pulse/clip.mp4",
+      "triggers": ["invites Mio", "invitation pulse"],
+      "prompt_en": "The exact same Lux warmly invites a friend using brightness only. Use the supplied first frame as the permanent baseline: the golden core and all three pale translucent prism fins must never become darker, gray, colorless, or less visible than that first frame. Exactly twice, only the light inside the existing golden spherical core rises about ten percent brighter and smoothly returns to the exact first-frame brightness. The single dark graphite protective ring stays exactly one ring at the same diameter, thickness, position, and shape for all three seconds. Exactly three translucent prism fins remain fixed to that one ring, keep the exact first-frame transparency and warm highlights, and never rotate or change. No fade-out, dimming below baseline, visible light-wave ring, halo ring, shockwave, ripple, duplicate circle, additional ring, geometry expansion, forward motion, spin, orbit, face, limbs, extra fin, missing fin, or redesign. Locked camera and neutral studio background.",
+      "timing": [
+        "0.0-0.6s: calm hover",
+        "0.6-1.1s: first gentle warm pulse",
+        "1.1-1.8s: return to the original steady brightness",
+        "1.8-2.3s: second gentle warm pulse inside the same core",
+        "2.3-3.0s: settle to steady glow"
+      ],
+      "forbidden": ["dimming below the first-frame brightness", "gray fins", "extra ring", "halo", "shockwave", "rapid flash", "spin", "orbit", "extra fins", "missing fins", "identity drift"],
+      "keyframes": [
+        "design_videos/v003/invitation_pulse/keyframes/start.jpg",
+        "design_videos/v003/invitation_pulse/keyframes/mid.jpg",
+        "design_videos/v003/invitation_pulse/keyframes/end.jpg"
+      ],
+      "keyframe_times_seconds": [0.25, 1.5, 2.75],
+      "priority": 94
+    }
+  ],
+  "source_notes": [
+    "公開サンプル用に生成したルクスの正規デザインを使用。",
+    "v002では友達と並ぶ飛行と、誘いを表す二回の光の動作資料を追加。"
+  ],
+  "source_type": "generated",
+  "asset_license": "CC-BY-4.0",
+  "publishable": true
+}

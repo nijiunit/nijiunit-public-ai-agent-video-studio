@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "id": "character_id",
+  "version": "v001",
+  "name_ja": "キャラクター名",
+  "aliases": ["English name"],
+  "concept_id": "my_concept",
+  "kind": "robot",
+  "description_ja": "短い説明",
+  "identity_prompt_en": "The exact same original character in every shot: ...",
+  "immutable_traits": ["must keep this trait"],
+  "forbidden_traits": ["must never show this trait"],
+  "references": [
+    {
+      "path": "references/identity.png",
+      "role": "identity",
+      "label": "authoritative identity reference",
+      "priority": 100
+    }
+  ],
+  "poses": [],
+  "design_video": {
+    "id": "design_presence",
+    "name_ja": "通常存在",
+    "clip_path": "design_videos/v001/design_presence.mp4",
+    "prompt_en": "Keep the same identity and show only subtle idle motion.",
+    "timing": ["0.0-3.0s: subtle stable presence"],
+    "forbidden": ["large gesture", "identity drift"],
+    "keyframes": [
+      "design_videos/v001/design_presence_keyframes/start.jpg",
+      "design_videos/v001/design_presence_keyframes/mid.jpg",
+      "design_videos/v001/design_presence_keyframes/end.jpg"
+    ],
+    "keyframe_times_seconds": [0.25, 1.5, 2.75],
+    "priority": 85
+  },
+  "motions": [],
+  "source_notes": ["Record creation date, method, references, and review."],
+  "source_type": "original",
+  "asset_license": "Replace with the actual license",
+  "publishable": false
+}
+

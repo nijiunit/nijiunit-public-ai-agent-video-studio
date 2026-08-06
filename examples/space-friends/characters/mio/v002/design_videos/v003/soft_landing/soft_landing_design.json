@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "status": "approved",
+  "source_policy": "new_generation_from_publishable_identity_only",
+  "character_id": "mio",
+  "character_name": "ミオ",
+  "profile_version": "v002",
+  "motion_id": "soft_landing",
+  "action_ja": "両足での柔らかな着地",
+  "start_frame": "start_frame.png",
+  "clip": "clip.mp4",
+  "prompt_en": "The exact same Mio completes one soft controlled two-foot landing: descend the final few centimeters, touch both teal feet down together, bend the knees slightly to absorb the motion, then stand upright and still. Keep both circular eye lenses warm amber at exactly the same color and brightness for all three seconds; do not blink, dim, recolor, or close either eye. Keep every ivory, deep-teal, graphite, and coral-orange part unchanged. Arms stay low and make only a small balancing adjustment. No jump, stumble, deep crouch, dust cloud, speech, wings, jetpack, flame, exhaust, or redesign. Locked camera and neutral studio background.",
+  "inspection": {
+    "path": "clip.mp4",
+    "duration_seconds": 3.0,
+    "width": 1280,
+    "height": 720,
+    "fps": 24.0,
+    "has_audio": false,
+    "bytes": 562067
+  }
+}

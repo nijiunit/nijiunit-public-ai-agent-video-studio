@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "status": "candidate",
+  "source_policy": "new_generation_from_publishable_identity_only",
+  "character_id": "mio",
+  "character_name": "ミオ",
+  "profile_version": "v001",
+  "motion_id": "design_presence",
+  "start_frame": "start_frame.png",
+  "clip": "design_presence.mp4",
+  "prompt_en": "The exact same Mio stays in the identical neutral stance. Show a subtle servo settle, one synchronized amber aperture blink, and a tiny two-degree head adjustment back to center. Arms remain low. Locked camera. No gesture, walking, speech, color change, or redesign.",
+  "inspection": {
+    "path": "design_presence.mp4",
+    "duration_seconds": 3.0,
+    "width": 1280,
+    "height": 720,
+    "fps": 24.0,
+    "has_audio": false
+  }
+}

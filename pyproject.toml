@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nijiunit-ai-agent-video-studio"
+version = "0.6.0"
+description = "Reference workflow for agent-assisted, identity-consistent three-second AI video production"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+authors = [{name = "nijiunit"}]
+dependencies = [
+  "google-genai>=2.14.0",
+  "openpyxl>=3.1.5",
+  "Pillow>=11.0.0",
+  "pydantic>=2.10.0",
+  "python-dotenv>=1.0.1",
+  "imageio-ffmpeg>=0.6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "ruff>=0.9"]
+asr = ["faster-whisper>=1.1.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

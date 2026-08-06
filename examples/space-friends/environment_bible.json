@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "story_id": "space_friends_rainbow_earth",
+  "aspect_ratio": "16:9",
+  "visual_style": "cinematic high-end 3D characters integrated into photoreal natural environments",
+  "environments": [
+    {
+      "id": "deep_space",
+      "fixed": [
+        "deep navy-black space",
+        "fine restrained star field",
+        "one small blue Earth ahead",
+        "no spacecraft, station, text, UI, or fantasy nebula"
+      ],
+      "motion": ["very slow star parallax", "calm weightless forward drift"]
+    },
+    {
+      "id": "earth_orbit",
+      "fixed": [
+        "one physically plausible blue Earth",
+        "thin blue atmospheric rim",
+        "white cloud systems",
+        "dark space background",
+        "no second planet, city labels, map text, or spacecraft"
+      ],
+      "motion": ["slow orbital approach", "subtle cloud drift"]
+    },
+    {
+      "id": "cloud_descent",
+      "fixed": [
+        "soft white cloud layer",
+        "green plateau and winding river below",
+        "one distant waterfall",
+        "one broad natural rainbow",
+        "same mountain silhouette and river path throughout"
+      ],
+      "motion": [
+        "cinematic controlled descent toward the river",
+        "clouds opening with strong depth parallax",
+        "natural river and waterfall flow"
+      ]
+    },
+    {
+      "id": "rainbow_waterfall_pass",
+      "fixed": [
+        "same winding river, cliff, waterfall, mountain silhouette, and broad rainbow as cloud_descent",
+        "white waterfall mist close to camera",
+        "natural translucent rainbow refraction caused by Lux's existing golden light",
+        "no solid rainbow tunnel, new terrain, building, road, text, or logo"
+      ],
+      "motion": [
+        "fast controlled flight beside the waterfall",
+        "water mist crosses the lens once",
+        "the waterfall sound and image pass from left to right"
+      ]
+    },
+    {
+      "id": "rainbow_plateau",
+      "fixed": [
+        "lush green high plateau",
+        "short wind-swept grass",
+        "winding clear river",
+        "distant waterfall and mountains",
+        "one broad rainbow in mist",
+        "soft post-rain daylight from camera left",
+        "no people, buildings, road, sign, text, or logo"
+      ],
+      "motion": [
+        "gentle grass movement",
+        "slow mist drift",
+        "continuous river and waterfall flow",
+        "rainbow remains geometrically stable"
+      ]
+    }
+  ]
+}

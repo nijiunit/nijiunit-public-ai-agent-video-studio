@@ -1,0 +1,117 @@
+[English](google-api-setup.md) | 日本語
+
+# Google生成AI APIの初回準備
+
+確認日: 2026-08-06
+
+この文書は、リポジトリをクローンした後、AIエージェントが初心者を案内するための内部手順です。Googleの画面や料金は変更されるため、実際の画面と最新の公式情報を正とします。
+
+## このアプリで必要なもの
+
+このアプリは、物語、画像、動画、音声で異なるGemini APIモデルを使用します。特に既定の動画モデル`gemini-omni-flash-preview`は有料枠のモデルです。そのため、APIキーを作るだけでなく、利用するGoogle Cloudプロジェクトの課金状態まで確認する必要があります。
+
+公式情報:
+
+- [Gemini APIキー](https://ai.google.dev/gemini-api/docs/api-key)
+- [Gemini APIの課金設定](https://ai.google.dev/gemini-api/docs/billing)
+- [Gemini APIの最新料金](https://ai.google.dev/gemini-api/docs/pricing)
+- [Google AI Studio API Keys](https://aistudio.google.com/app/apikey)
+- [Google AI Studioの問題解決](https://ai.google.dev/gemini-api/docs/troubleshoot-ai-studio)
+
+## AIエージェントの会話ルール
+
+- 次の全工程を一括表示しません。
+- 利用者が操作する場合、一回の応答で一操作だけ説明し、完了を待ちます。
+- 画面が想定と違う場合、現在見えている見出しやボタン名を確認してから進みます。
+- Googleアカウントのパスワード、認証コード、カード情報、APIキーをチャットへ入力させません。
+- 契約、国、支払方法、Prepay/Postpay、自動入金などをAIエージェントが勝手に選びません。
+- 料金を説明するときは確認日と公式料金ページを示し、実際の画面を最終判断にします。
+- 利用者が課金を希望しない場合は停止し、「公開デモとローカル機能は利用可能、動画生成APIは未設定」と報告します。
+
+## G1: Googleアカウントを確認する
+
+利用者へ、本人が継続して管理できるGoogleアカウントでGoogle AI Studioを利用できるかだけを確認します。会社・学校アカウントの場合は、管理者による制限がある可能性を説明します。
+
+アカウントがなければ、Google公式のアカウント作成画面を案内します。作成操作、本人確認、パスワード入力は利用者本人が行います。
+
+## G2: Google AI Studioを開く
+
+利用者へ[Google AI Studio API Keys](https://aistudio.google.com/app/apikey)を開く一操作だけを案内し、完了を待ちます。ログインや利用規約が表示された場合は、その画面の確認を先に行います。
+
+新規利用者では、規約への同意後に既定のGoogle CloudプロジェクトとAPIキーが自動作成される場合があります。既存のGoogle Cloud利用者では、使用するプロジェクトのインポートが必要な場合があります。
+
+## G3: 料金と有料利用を確認する
+
+課金設定を始める前に、次を一項目ずつ説明します。
+
+- Gemini APIには無料枠と有料枠があること
+- このアプリの既定動画モデルは有料枠であること
+- 動画、画像、文章、音声で料金単位が異なること
+- Prepayでは残高の事前購入、Postpayでは後払いになること
+- 自動入金を設定すると継続的に料金が発生し得ること
+- 最新料金、最低入金額、税、上限は実際のGoogle画面で確認すること
+
+2026-08-06確認時点では、公式料金表で`gemini-omni-flash-preview`の720p動画出力は概算約0.10米ドル/秒と説明されています。これは将来の料金を保証しません。契約前に必ず公式料金ページとGoogle画面の金額を確認します。
+
+説明後、利用者本人に「有料設定へ進む」か「ここで停止する」かを選んでもらいます。
+
+## G4: プロジェクトの課金を設定する
+
+利用者が有料設定へ進むことを選んだ場合だけ、対象プロジェクトの`Set up billing`を案内します。
+
+国、規約、連絡先、支払方法、Prepay/Postpay、入金額を一画面ずつ確認します。カード情報や本人確認は利用者本人がGoogleの画面へ直接入力します。AIエージェントとの会話には入力させません。
+
+完了後、API KeysまたはProjects画面で、利用するプロジェクトのPlanまたはBilling Tierが`Paid`になっていることを利用者と確認します。Prepayの場合は利用可能な残高も確認します。課金状態の反映に時間がかかる場合は、連続操作せず待ってから再確認します。
+
+## G5: APIキーを用意する
+
+対象プロジェクトのAPIキーが既にある場合は、新しいキーを重複作成しません。必要な場合だけ`Create API key`を案内します。
+
+新しくGoogle AI Studioで作成されるキーは、現在は認証キーとして作られます。利用者にキーをコピーしてもらいますが、チャットへは貼らせません。
+
+## G6: APIキーを安全に保存する
+
+AIエージェントはOSに応じた次のコマンドを提示します。この操作だけは、利用者本人が対話可能なローカル端末で行います。
+
+Windows:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\configure_api_key.py
+```
+
+macOS:
+
+```bash
+./.venv/bin/python scripts/configure_api_key.py
+```
+
+利用者へは「貼り付けても文字が表示されないのが正常」「貼り付けたらEnter」とだけ説明し、キーそのものを尋ねません。
+
+## G7: 接続とモデル構成を確認する
+
+利用者が保存完了を伝えた後、AIエージェントが次を実行します。
+
+Windows:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\doctor.py --require-api-key --verify-api-key-online
+```
+
+macOS:
+
+```bash
+./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
+```
+
+この診断はメディアを生成せず、APIキーの認証と、設定された物語・画像・動画・TTSモデルがモデル一覧に存在することを確認します。有料の生成処理は行いません。
+
+モデル一覧の確認だけでは、残高、地域、利用上限、プレビュー提供条件による実生成の成功までは保証できません。診断結果は「有料生成未テスト」と明示します。最初の画像・動画生成前に、利用者へ料金が発生することを伝え、生成依頼を確認します。
+
+## 完了状態
+
+- `LOCAL READY (Google API setup required)`: ローカル環境のみ完了
+- `LOCAL READY (online verification required)`: キーは保存済みだが、Google接続未確認
+- `READY FOR GENERATION (paid generation not tested)`: 認証と設定モデル一覧は確認済み。課金される実生成は未実行
+- `NOT READY`: 解決が必要な問題あり
+
+最後の状態でも、有料生成が成功したと断定してはいけません。最初のユーザー承認済み生成が成功した時点で、実生成まで確認済みになります。
