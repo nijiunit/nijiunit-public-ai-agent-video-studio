@@ -9,12 +9,12 @@
   "resources": {
     "agent_guide_ja": {
       "url": "agent_guide_ja.md",
-      "sha256": "b63d2e282d53e39d2eff3d75495eac500ac12bc7b356a2507e94711fb2f858ef",
+      "sha256": "dfad71f57ee8bd13949d246c750e7a68eb78ffa542f87cab5b6bbcc812b8fd7f",
       "media_type": "text/markdown"
     },
     "agent_guide_en": {
       "url": "agent_guide_en.md",
-      "sha256": "f37688bc1f3bbff34e9da2bebb84efc96c8dd1973abf2766b046866c8037bf88",
+      "sha256": "8eb0a20d7ee09358320beb283f33357bd6cdecb5fde8860a26ae98549f12f643",
       "media_type": "text/markdown"
     },
     "production_profile": {
@@ -24,12 +24,12 @@
     },
     "notices_ja": {
       "url": "notices_ja.json",
-      "sha256": "5260d2193d3b9ea9b18d941daf5e201de7e78145ccd9ce7efccdca78018ce423",
+      "sha256": "897a36ea3e0ce27e0995ba9407ce2a9a09529cb2553f09ccfae182730cb1bbff",
       "media_type": "application/json"
     },
     "notices_en": {
       "url": "notices_en.json",
-      "sha256": "5260d2193d3b9ea9b18d941daf5e201de7e78145ccd9ce7efccdca78018ce423",
+      "sha256": "897a36ea3e0ce27e0995ba9407ce2a9a09529cb2553f09ccfae182730cb1bbff",
       "media_type": "application/json"
     }
   }
