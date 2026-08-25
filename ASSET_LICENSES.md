@@ -3,19 +3,11 @@
 The MIT license applies to source code and documentation, not automatically to
 third-party or generated media.
 
-## Space friends public demo
+## Bundled media
 
-The Mio and Lux v002 character registry, space-flight motion references, scene
-anchors, approved Excel storyboard, offline HTML review images, review contact
-sheets, and final video in `examples/space-friends`
-were created specifically for this repository from the already publishable
-fictional Mio and Lux identities. No private production assets, real-person
-likenesses, known characters, third-party music, or completed-work excerpts
-were used.
-
-To the extent copyright or related rights exist, nijiunit makes these assets
-available under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-Attribution: `nijiunit-public-ai-agent-video-studio — 星のむこうの虹`.
+This reusable engine repository does not bundle a completed sample production.
+Public sample movies, HOWTO movies, and their asset licenses are maintained in
+the separate `nijiunit-public-ai-agent-video-studio-howto-movie` repository.
 
 AI-generated material may receive different treatment depending on the
 jurisdiction. Users are responsible for checking the terms of the generation

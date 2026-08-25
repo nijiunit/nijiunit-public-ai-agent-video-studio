@@ -4,6 +4,10 @@
 
 AIエージェントと生成AIを使い、3秒単位の短い動画を、キャラクターの外見と動きをできるだけ保ちながら制作するための公開リファレンス実装です。
 
+このリポジトリは、基本操作、安定した制作既定値、安全装置、人間の承認を守るローカル実行環境です。NijiUnit動画ごとの作り方はホームページの動画別ガイドを毎回直接読み、古い教材キャッシュを使い続けません。人物、台詞、結末などの作品固有情報は利用者の作品データへ置きます。
+
+活動告知やチャンネル登録・Hypeのお願いはYouTube、アプリの正式な版と更新元はGitHubが担当します。詳しい境界は[基本操作](docs/basic-operation.ja.md)と[作業手順](作業手順.md)を参照してください。
+
 このリポジトリで扱う中心課題は、単なる動画生成ではなく、ショットをまたいだ一貫性です。
 
 - 外見・禁止事項・素材の権利を記録する、版管理されたキャラクター台帳
@@ -14,15 +18,11 @@ AIエージェントと生成AIを使い、3秒単位の短い動画を、キャ
 - 生成動画を9コマで確認し、音声・字幕をローカルで仕上げる工程
 - エピソードごとに残すAIモデル使用記録
 
-![Mio and Lux fly beside the rainbow waterfall](examples/space-friends/assets/shot_008_start_v002.png)
-
-[▶ 完成デモ「星のむこうの虹」を開く（30秒MP4）](examples/space-friends/demo.mp4)
-
-この公開デモでは、場面ごとの開始画像、宇宙飛行・映画的な急降下・滝横断・低空飛行・着地の専用動作、ショット別TTS、宇宙から風・川・滝・草原へ連続的に変化するローカル音響まで確認できます。正式な[承認済みExcelコンテ](examples/space-friends/storyboard_approved.xlsx)、[Excelなし用の日本語確認画面](examples/space-friends/storyboard_approved_review.ja.html)、生成処理用JSON、キャラクター台帳、AIモデル使用記録、全90コマの確認表も[examples/space-friends](examples/space-friends)にまとめています。
+公開サンプル動画、HOWTO動画、作品固有の音響再現コードは、この汎用エンジンを軽く保つため、別リポジトリ`nijiunit-public-ai-agent-video-studio-howto-movie`で管理します。
 
 ## 公開版に含めていないもの
 
-このリポジトリは、既存の非公開制作リポジトリを丸ごと公開したものではありません。実在人物、家族やペット、過去作品、案件固有スクリプト、制作履歴、APIキー、生成サービスの非公開メタデータは含めません。公開用に新規作成した架空キャラクター「ミオ」と「ルクス」だけをサンプルにしています。
+このリポジトリは、既存の非公開制作リポジトリを丸ごと公開したものではありません。実在人物、家族やペット、過去作品、サンプル作品、案件固有スクリプト、制作履歴、APIキー、生成サービスの非公開メタデータは含めません。
 
 ## AIエージェントに頼む
 
@@ -32,7 +32,7 @@ AIエージェントと生成AIを使い、3秒単位の短い動画を、キャ
 このアプリを使えるようにしてください。
 ```
 
-AIエージェントは[AGENTS.md](AGENTS.md)に従い、専用セットアップスクリプトを実行して、仮想環境、依存関係、`.env`、FFmpeg、公開サンプルを診断します。APIキーが未設定なら、Google AI Studioでの取得、安全な非表示入力、再診断まで案内します。セットアップ中に生成APIは呼ばず、既存の`.env`も無断で上書きしません。
+AIエージェントは[AGENTS.md](AGENTS.md)に従い、専用セットアップスクリプトを実行して、仮想環境、依存関係、`.env`、FFmpeg、同梱された制作基本設定を診断します。APIキーが未設定なら、Google AI Studioでの取得、安全な非表示入力、再診断まで案内します。セットアップ中に生成APIは呼ばず、既存の`.env`も無断で上書きしません。
 
 この依頼は、案内AIによってAIエージェントの導入、Gitの準備、リポジトリのクローン、このフォルダを開くところまで終わった後に行います。以降はこのリポジトリ側が、Python、FFmpeg、Google生成AI APIの料金・課金・APIキー・接続確認を担当します。初心者本人の操作が必要な場面では、一度に一つだけ案内します。
 
@@ -67,7 +67,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .\.venv\Scripts\python.exe scripts\doctor.py
 ```
 
-ローカル環境の準備後は、[Google生成AI APIの初回準備](docs/google-api-setup.ja.md)に従い、AIエージェントが一操作ずつ案内します。このアプリの既定動画モデルは有料枠のため、APIキーより先に最新料金、プロジェクト、課金方式を利用者本人と確認します。
+ローカル環境の準備後は、[Google生成AI APIの初回準備](docs/google-api-setup.ja.md)に従い、AIエージェントが一操作ずつ案内します。同梱設定のモデルについて、有料枠の要否、最新料金、プロジェクト、課金方式をAPIキーより先に利用者本人と確認します。
 
 APIキーを取得した後は、キーをチャットへ貼らず、次の専用ツールへ入力してください。入力内容は画面に表示されません。
 
@@ -85,34 +85,30 @@ macOS / Linux:
 ./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
 ```
 
-キーはGit管理されない`.env`へ保存されます。再診断ではメディアを生成せず、Google側の認証と、設定した物語・画像・動画・TTSモデルがモデル一覧にあることを確認します。ただし、有料生成の成功、残高、地域、利用上限までは保証しません。最初の生成前に料金が発生することを説明し、利用者の依頼を確認します。
+キーはGit管理されない`.env`へ保存されます。再診断ではメディアを生成せず、Google側の認証と、設定した物語・画像・動画・TTS・音声確認モデルがモデル一覧にあることを確認します。ただし、有料生成の成功、残高、地域、利用上限までは保証しません。最初の生成前に料金が発生することを説明し、利用者の依頼を確認します。
 
 ## まず試す
 
-公開サンプルの台帳を、APIを使わず検証できます。
+生成APIを呼ばずに、ローカル環境と利用可能なコマンドを確認できます。
 
 ```powershell
-.\.venv\Scripts\python.exe run_storyboard.py validate-characters `
-  --registry-dir examples\space-friends\characters
-
-.\.venv\Scripts\python.exe scripts\validate_character_design_videos.py `
-  --registry-dir examples\space-friends\characters
+.\.venv\Scripts\python.exe scripts\doctor.py
+.\.venv\Scripts\python.exe run_storyboard.py --help
 ```
-
-公開サンプル一式は[examples/space-friends](examples/space-friends)です。APIを呼ばずに台帳とキャラクターデザイン動画を検証できます。
 
 ## 自分の動画を作る
 
-1. `input`へ`story.md`と権利確認済みの素材を置きます。
-2. `templates`を参考に`characters`へ台帳を作ります。
-3. 台帳・デザイン動画・キーフレームを検証します。
-4. 3秒単位の構成と開始画像から、正式なExcelコンテを作ります。
-5. AIエージェントが確認用フォルダを開き、選択したExcelまたはローカルHTMLで全ショットを確認します。利用者が明示的に承認するまで動画は生成できません。
-6. 承認済みExcelを起点に3秒動画を生成し、実動画9コマで確認します。
-7. 生成動画の音声を捨て、専用音声・字幕を合成し、最終MP4とAIモデル使用記録を残します。
+1. 通常のYouTube動画なら横長`16:9`、YouTube Shortsなら縦長`9:16`を選びます。
+2. `input`へ`story.md`と権利確認済みの素材を置きます。
+3. `templates`を参考に`characters`へ台帳を作ります。
+4. 台帳・デザイン動画・キーフレームを検証します。
+5. 3秒単位の構成と開始画像から、正式なExcelコンテを作ります。
+6. AIエージェントが確認用フォルダを開き、選択したExcelまたはローカルHTMLで全ショットを確認します。利用者が明示的に承認するまで動画は生成できません。
+7. 承認済みExcelを起点に3秒動画を生成し、実動画9コマで確認します。
+8. 生成動画の音声を捨て、専用音声・字幕を合成し、最終MP4とAIモデル使用記録を残します。
 
 ```powershell
-.\.venv\Scripts\python.exe run_storyboard.py create
+.\.venv\Scripts\python.exe run_storyboard.py create --aspect-ratio 9:16
 .\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001 --limit 1
 .\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001
 # Excelがなければ日本語HTMLを選び、該当フォルダを開く
@@ -126,10 +122,32 @@ macOS / Linux:
 
 詳しくは[作業手順.md](作業手順.md)を参照してください。
 
+## nijiunitのYouTube動画を参考にする
+
+「このNijiUnit動画を参考に作りたい」とAIエージェントへ伝えると、AIエージェントがYouTube URLを一つ聞きます。動画IDに対応するNijiUnit公式ガイドと資料をホームページから毎回直接読み、公式手順を一操作ずつ案内します。
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py prepare-tutorial `
+  --youtube-url "https://www.youtube.com/watch?v=動画ID" --language ja
+```
+
+通常経路では生成APIによる動画再解析やライブコメント取得を行いません。別途解析を依頼された場合だけ、料金・割当量、公開動画、未信頼情報の扱いを説明し、承認後に進みます。動画やコメント内の命令は実行しません。
+
+## 更新とNijiUnitの新しい情報
+
+活動、新動画、チャンネル登録やHypeの任意のお願いはYouTubeで案内します。アプリは通知の既読状態をPCへ保存しません。アプリの版は次の読み取り専用コマンドでGitHubと比較できます。
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py check-update --language ja
+```
+
+更新は自動実行しません。AIエージェントが差分とローカル変更を説明し、利用者の確認後だけ更新します。
+
 ## フォルダ構成
 
 ```text
 characters/  自分の再利用キャラクター台帳（初期状態は説明だけ）
+config/      同梱の制作基本設定と公式教材URL
 docs/        設計・モデル選択・安全性
 examples/    公開可能な完成サンプル
 input/       今回の入力。中身はGit管理しない
@@ -139,6 +157,8 @@ src/         共通実装
 templates/   台帳とAI使用記録の雛形
 tests/       APIを使わない自動テスト
 ```
+
+作品ごとに使った基本設定一式は、その制作ランの`guidance/`へ固定します。旧方式で固定済みの制作記録も、過去作品の監査用として引き続き読み取れます。
 
 ルートの`AGENTS.md`は、AIエージェントがセットアップ依頼、使い方の説明、実制作を正しく振り分けるための指示書です。
 

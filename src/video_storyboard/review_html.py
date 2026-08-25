@@ -274,6 +274,7 @@ def create_review_html(
         )
 
     page_title = labels["video_title"] if video_frames else labels["page_title"]
+    css_aspect_ratio = storyboard.aspect_ratio.replace(":", "/")
     html = f"""<!doctype html>
 <html lang="{language}">
 <head>
@@ -292,7 +293,7 @@ main {{ max-width: 1180px; margin: 28px auto; padding: 0 20px 60px; }}
 .shot {{ background: white; border-radius: 14px; margin: 0 0 30px; padding: 22px; box-shadow: 0 4px 18px #18324a22; }}
 .shot header {{ display: flex; justify-content: space-between; gap: 20px; align-items: baseline; border-bottom: 3px solid #2c6e9f; margin-bottom: 18px; }}
 .shot h2 {{ margin: 0 0 10px; font-size: 1.45rem; }}
-.main-image {{ display: block; width: min(100%, 960px); aspect-ratio: 16/9; object-fit: contain; background: #101820; margin: 0 auto 22px; border-radius: 8px; }}
+.main-image {{ display: block; width: min(100%, 960px); aspect-ratio: {css_aspect_ratio}; object-fit: contain; background: #101820; margin: 0 auto 22px; border-radius: 8px; }}
 dl {{ display: grid; grid-template-columns: minmax(9rem, 15rem) 1fr; gap: 0; border: 1px solid #c8d4df; }}
 dt, dd {{ margin: 0; padding: 11px 13px; border-bottom: 1px solid #dce4eb; }}
 dt {{ background: #e8f2f8; font-weight: 700; }}
@@ -301,7 +302,7 @@ dt {{ background: #e8f2f8; font-weight: 700; }}
 .frames b, .frames span {{ display: block; }}
 .video-frames {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }}
 .video-frames figure {{ margin: 0; padding: 8px; border: 1px solid #bac8d4; border-radius: 8px; background: #f7fafc; }}
-.video-frames img {{ width: 100%; aspect-ratio: 16/9; object-fit: contain; background: #101820; }}
+.video-frames img {{ width: 100%; aspect-ratio: {css_aspect_ratio}; object-fit: contain; background: #101820; }}
 .video-frames b, .video-frames span {{ display: block; }}
 .review-box {{ margin-top: 20px; padding: 18px; background: #fff7cf; border: 3px solid #e6b800; border-radius: 10px; }}
 .review-box label {{ display: block; font-weight: 700; margin-bottom: 14px; }}

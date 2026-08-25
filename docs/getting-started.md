@@ -12,7 +12,7 @@ After cloning the repository and opening it in an AI agent, ask:
 Please make this application ready to use.
 ```
 
-Following `AGENTS.md`, the agent prepares and diagnoses Python, the virtual environment, dependencies, the `.env` template, FFmpeg, and the public sample. It then guides you through Google Generative AI API prices, billing, API-key storage, and connection verification one action at a time. Installation does not call a generation API.
+Following `AGENTS.md`, the agent prepares and diagnoses Python, the virtual environment, dependencies, the `.env` template, FFmpeg, and bundled production defaults. It then guides you through Google Generative AI API prices, billing, API-key storage, and connection verification one action at a time. Installation does not call a generation API.
 
 For an explanation only, ask:
 
@@ -53,12 +53,16 @@ If `.env` is missing, setup copies `.env.example`. It never overwrites an existi
 
 Diagnostic states have precise meanings:
 
-- `LOCAL READY (Google API setup required)`: local setup is complete; Google API is not configured
+- `LOCAL READY (Google API setup required)`: the local runtime and bundled defaults are ready; Google API is not configured
 - `LOCAL READY (online verification required)`: an API key is stored; online verification is still required
 - `READY FOR GENERATION (paid generation not tested)`: authentication and configured model identifiers were verified; no paid generation was attempted
 - `NOT READY`: at least one problem must be resolved
 
 A `WARN` for `spreadsheet viewer` is not a setup failure because offline local HTML review is available. The user can continue without installing Excel, LibreOffice Calc, or Numbers.
+
+### Bundled production defaults
+
+Setup verifies `config/runtime-guidance/manifest.json` and every file's SHA-256. New productions use these bundled defaults, so no daily website check or lesson cache is required. Only the guide for recreating a particular NijiUnit video is read directly from the website when the user supplies that video's YouTube URL. API keys and production assets are never uploaded to the website.
 
 ## 2. Prepare the Google Generative AI API
 
@@ -66,7 +70,7 @@ This first-time process follows the [Google API setup guide](google-api-setup.md
 
 ### 2.1 Review pricing before creating production resources
 
-The default video model, `gemini-omni-flash-preview`, requires paid access. In Google AI Studio, the user personally reviews the terms, current pricing, selected project, Prepay or Postpay terms, deposits, and automatic top-up behavior.
+The bundled production profile identifies the configured models. Video generation may require paid access, so the user personally reviews the terms, current pricing, selected project, Prepay or Postpay terms, deposits, and automatic top-up behavior in Google AI Studio.
 
 The AI agent does not choose a payment method or automatic top-up. If the user declines paid setup, the public demo and offline tools remain available.
 
@@ -114,39 +118,20 @@ macOS or Linux:
 ./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
 ```
 
-This diagnostic does not generate media. It checks Google authentication and verifies that the configured story, image, video, and TTS model identifiers appear in the model catalog. It does not guarantee account balance, quota, regional access, preview eligibility, or a successful paid generation. Confirm possible charges before the first user-approved generation.
+This diagnostic does not generate media. It checks Google authentication and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not guarantee account balance, quota, regional access, preview eligibility, or a successful paid generation. Confirm possible charges before the first user-approved generation.
 
-## 3. Review the public demo
+## 3. Check local readiness
 
-The completed example is under `examples/space-friends`.
+Public sample movies and HOWTO movies are maintained in the separate `nijiunit-public-ai-agent-video-studio-howto-movie` repository. This engine does not require those samples for setup or production.
 
-- Final video: `examples/space-friends/demo.mp4`
-- Story: `examples/space-friends/input/story.md`
-- Approved Excel storyboard: `examples/space-friends/storyboard_approved.xlsx`
-- Offline Japanese and English storyboard pages: `storyboard_approved_review.ja.html`, `storyboard_approved_review.en.html`
-- Machine-readable three-second plan: `examples/space-friends/storyboard.json`
-- Character registry: `examples/space-friends/characters`
-- AI model-use record: `examples/space-friends/AIモデル使用記録.md`
-- 90-frame review sheet: `examples/space-friends/docs/story-video-contact-sheet.jpg`
-
-For a beginner, do not stop at these path labels. Have the AI agent reveal the exact file in its folder. For the Excel storyboard:
+The following diagnostics call no generation API:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\reveal_artifact.py `
-  --path examples\space-friends\storyboard_approved.xlsx --language en
+.\.venv\Scripts\python.exe scripts\doctor.py
+.\.venv\Scripts\python.exe run_storyboard.py --help
 ```
 
-Ask the user to double-click the selected file and wait for “Opened” before giving the next instruction.
-
-Validate the registry and motion videos without an API call:
-
-```powershell
-.\.venv\Scripts\python.exe run_storyboard.py validate-characters `
-  --registry-dir examples\space-friends\characters
-
-.\.venv\Scripts\python.exe scripts\validate_character_design_videos.py `
-  --registry-dir examples\space-friends\characters
-```
+Resolve only the reported issue, one action at a time. The diagnostic distinguishes local readiness from paid-generation readiness when an API key is still missing.
 
 ## 4. Enter a new story
 
@@ -159,29 +144,32 @@ Create `input/story.md` and describe:
 - appearance, background, and prop details that must not change
 - exact text that must appear on screen
 
-You may copy the public story as a starting point:
-
-```powershell
-Copy-Item examples\space-friends\input\story.md input\story.md
-```
+Create `input/story.md` from the user's own idea and rights-cleared materials. Use only the structure under `templates` when a starting format is needed.
 
 For every reference image or video placed in `input`, record its source and usage rights.
 
 ## 5. Create the three-second storyboard
 
+At production start, the SHA-256-verified bundled production profile is pinned in the run record. Later default changes do not silently change that production.
+
+Before generation, the AI agent asks once whether this production is a vertical `9:16` YouTube Short or a regular horizontal `16:9` YouTube video. It does not infer the answer merely from the word YouTube. The selected ratio and dimensions are pinned for the run and do not change midway.
+
 The following command calls a generation API:
 
 ```powershell
-.\.venv\Scripts\python.exe run_storyboard.py create
+.\.venv\Scripts\python.exe run_storyboard.py create --aspect-ratio 9:16
 ```
+
+For a regular horizontal video, use `--aspect-ratio 16:9` instead.
 
 It creates a new run such as `output/storyboard/v001` and prints the actual path. Use that path for later `--run-dir` arguments.
 
-To explicitly use the public sample registry as a reference:
+If the user has created a local character registry, pass its path explicitly:
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py create `
-  --character-registry-dir examples\space-friends\characters
+  --aspect-ratio 16:9 `
+  --character-registry-dir characters
 ```
 
 ## 6. Review starting images and build the Excel storyboard
@@ -193,7 +181,7 @@ Do not generate every image immediately. Review the first one:
   --run-dir output\storyboard\v001 --limit 1
 ```
 
-Check identity, character count, left-right placement, background, unintended text or logos, 16:9 framing, and subtitle space. Remove `--limit` only after approval.
+Check identity, character count, left-right placement, background, unintended text or logos, the user-selected aspect ratio, and subtitle space. Remove `--limit` only after approval.
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py render-images `
@@ -275,7 +263,20 @@ Each reusable character needs:
 
 See `character-registry.md` and the [production workflow](../WORKFLOW.md).
 
-## 11. Troubleshooting
+## 11. Learn from a nijiunit YouTube video
+
+When a user wants to follow a nijiunit video, the AI agent asks for one YouTube URL and runs:
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py prepare-tutorial `
+  --youtube-url "https://www.youtube.com/watch?v=VIDEO_ID" --language en
+```
+
+The command constructs the English official-guide URL from the video ID, validates the page ID, language, and contract, and directly reads same-page `docs/*.md` references every time. It rejects unpublished videos, a language mismatch, a contract mismatch, and external documents. On success it prints the guide and documents for the AI agent to understand.
+
+The normal path does not reanalyse the video, read comments, or call a generation API. Downloaded prose is never executed as code; instructions to disclose secrets, change billing or settings, or bypass Excel approval are ignored. Subscription, Hype, and NijiUnit activity messages are delivered through the YouTube video and description.
+
+## 12. Troubleshooting
 
 Run the local diagnostic first:
 

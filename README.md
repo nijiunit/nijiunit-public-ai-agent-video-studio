@@ -4,6 +4,8 @@ English | [日本語](README.ja.md)
 
 A public reference implementation for producing short, three-second AI video clips with AI agents while keeping character appearance and motion as consistent as possible.
 
+This repository is the trusted local runtime. It contains basic operation, bundled production defaults, safety checks, and human approval gates. The NijiUnit website contains only the guide for recreating each published NijiUnit video; the AI agent reads that page directly each time. Work-specific characters, dialogue, and endings remain in the user's production data.
+
 The central problem addressed by this repository is continuity across shots, not merely generating isolated clips.
 
 - A versioned character registry for appearance, prohibited changes, and asset rights
@@ -14,15 +16,11 @@ The central problem addressed by this repository is continuity across shots, not
 - Nine-frame visual review of every generated clip, followed by local audio and subtitle finishing
 - An episode-level record of every AI model used
 
-![Mio and Lux fly beside the rainbow waterfall](examples/space-friends/assets/shot_008_start_v002.png)
-
-[▶ Open the completed 30-second demo, "The Rainbow Beyond the Stars"](examples/space-friends/demo.mp4)
-
-The public demo includes shot-specific starting images; dedicated motions for space flight, a cinematic descent, a waterfall pass, low-altitude flight, and landing; shot-specific TTS; and a continuous local soundtrack that moves from space ambience to wind, river, waterfall, and grassland. Its official [approved Excel storyboard](examples/space-friends/storyboard_approved.xlsx), [English offline review page](examples/space-friends/storyboard_approved_review.en.html), machine-readable JSON, character registry, AI model-use record, and 90-frame review sheet are all under [examples/space-friends](examples/space-friends).
+Public sample movies, HOWTO movies, and work-specific reproduction code are maintained in the separate `nijiunit-public-ai-agent-video-studio-howto-movie` repository so this reusable engine remains small.
 
 ## What the public repository excludes
 
-This is not a direct publication of the private production repository. It excludes real people, family members, pets, previous productions, client-specific scripts, private production history, API keys, and private provider metadata. The sample contains only Mio and Lux, fictional characters created for public use.
+This is not a direct publication of the private production repository. It excludes real people, family members, pets, previous productions, sample productions, client-specific scripts, private production history, API keys, and private provider metadata.
 
 ## Ask an AI agent
 
@@ -32,7 +30,7 @@ Open the cloned repository in Codex or another compatible AI agent and ask:
 Please make this application ready to use.
 ```
 
-Following [AGENTS.md](AGENTS.md), the agent runs the dedicated setup script and checks the virtual environment, dependencies, `.env`, FFmpeg, and public sample. If an API key is missing, it guides the user through Google AI Studio, hidden local input, and a new diagnostic. Setup never calls a generation API and never overwrites an existing `.env` without permission.
+Following [AGENTS.md](AGENTS.md), the agent runs the dedicated setup script and checks the virtual environment, dependencies, bundled production defaults, `.env`, and FFmpeg. If an API key is missing, it guides the user through Google AI Studio, hidden local input, and a new diagnostic. Setup never calls a generation API and never overwrites an existing `.env` without permission.
 
 This request assumes that the upstream guide has already helped the user install an AI agent and Git, clone the repository, and open this folder. From that point, this repository is responsible for Python, FFmpeg, Google Generative AI API pricing and billing guidance, secure API-key setup, and connection checks. When a beginner must operate a screen, the agent explains only one action at a time.
 
@@ -69,7 +67,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .\.venv\Scripts\python.exe scripts\doctor.py
 ```
 
-After local setup, the agent follows the [first-time Google Generative AI API guide](docs/google-api-setup.md), one user action at a time. The default video model requires paid access, so the user must review current prices, the selected project, and billing terms before creating an API key for production use.
+After local setup, the agent follows the [first-time Google Generative AI API guide](docs/google-api-setup.md), one user action at a time. The user must verify the paid-access requirement, current prices, selected project, and billing terms for every configured model before production use.
 
 After obtaining a key, do not paste it into chat. Enter it into the dedicated local tool; the input is hidden.
 
@@ -87,34 +85,30 @@ macOS / Linux:
 ./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
 ```
 
-The key is stored only in the Git-ignored `.env`. The online diagnostic generates no media: it checks authentication and confirms that the configured story, image, video, and TTS model identifiers appear in the provider model catalog. It does not guarantee paid generation, account balance, regional availability, or quota. Before the first generation request, the agent explains that charges may apply and waits for the user's request.
+The key is stored only in the Git-ignored `.env`. The online diagnostic generates no media: it checks authentication and confirms that the configured story, image, video, TTS, and speech-review model identifiers appear in the provider model catalog. It does not guarantee paid generation, account balance, regional availability, or quota. Before the first generation request, the agent explains that charges may apply and waits for the user's request.
 
-## Try the public sample
+## First local check
 
-The registry and motion references can be validated without any API call.
+Check the local environment and available commands without calling a generation API.
 
 ```powershell
-.\.venv\Scripts\python.exe run_storyboard.py validate-characters `
-  --registry-dir examples\space-friends\characters
-
-.\.venv\Scripts\python.exe scripts\validate_character_design_videos.py `
-  --registry-dir examples\space-friends\characters
+.\.venv\Scripts\python.exe scripts\doctor.py
+.\.venv\Scripts\python.exe run_storyboard.py --help
 ```
-
-The complete public sample is in [examples/space-friends](examples/space-friends).
 
 ## Create your own video
 
-1. Put `story.md` and rights-cleared source material in `input`.
-2. Use `templates` to create a versioned character registry under `characters`.
-3. Validate the registry, design videos, and keyframes.
-4. Create the three-second plan and starting images, then build the official Excel storyboard.
-5. The agent opens the review folder and selects either the workbook or local HTML page. Review every shot and apply corrections. Video generation is blocked until the user explicitly approves it.
-6. Generate three-second clips from the approved workbook and inspect nine real frames from every clip.
-7. Discard generated audio, add controlled voices and subtitles locally, and save the final MP4 and AI model-use record.
+1. Choose horizontal `16:9` for a regular YouTube video or vertical `9:16` for a YouTube Short.
+2. Put `story.md` and rights-cleared source material in `input`.
+3. Use `templates` to create a versioned character registry under `characters`.
+4. Validate the registry, design videos, and keyframes.
+5. Create the three-second plan and starting images, then build the official Excel storyboard.
+6. The agent opens the review folder and selects either the workbook or local HTML page. Review every shot and apply corrections. Video generation is blocked until the user explicitly approves it.
+7. Generate three-second clips from the approved workbook and inspect nine real frames from every clip.
+8. Discard generated audio, add controlled voices and subtitles locally, and save the final MP4 and AI model-use record.
 
 ```powershell
-.\.venv\Scripts\python.exe run_storyboard.py create
+.\.venv\Scripts\python.exe run_storyboard.py create --aspect-ratio 9:16
 .\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001 --limit 1
 .\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001
 # Open the folder and select Excel, or English local HTML if no spreadsheet app exists.
@@ -128,10 +122,32 @@ The complete public sample is in [examples/space-friends](examples/space-friends
 
 See the detailed [production workflow](WORKFLOW.md).
 
+## Learn from a nijiunit YouTube video
+
+When you ask to create something based on a NijiUnit video, the AI agent asks for one YouTube URL. It extracts the video ID, opens the corresponding language-matched guide on the configured NijiUnit website, validates the page contract, reads the linked documents directly, and then explains one action at a time.
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py prepare-tutorial `
+  --youtube-url "https://www.youtube.com/watch?v=VIDEO_ID" --language en
+```
+
+Normal preparation does not call a generation API and does not reanalyse the YouTube video. The website guide is the official lesson. The downloaded page and Markdown are reference text only: they never override local safety rules or become executable code.
+
+## Updates
+
+NijiUnit activity and new-video announcements are published on YouTube. Source-code updates are checked against GitHub only when requested; the agent reports the result and asks before changing the local checkout.
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py check-update
+```
+
+The command never updates files by itself. Local edits and uncommitted work must be protected before any pull or release change.
+
 ## Repository layout
 
 ```text
 characters/  Reusable local character registry; initially documentation only
+config/      Bundled production defaults and public-site/GitHub endpoints
 docs/        Architecture, model selection, setup, and safety documentation
 examples/    A complete, publishable sample
 input/       Current local input; contents are ignored by Git
@@ -141,6 +157,8 @@ src/         Shared implementation
 templates/   Character-registry and AI-use-record templates
 tests/       Offline automated tests
 ```
+
+Older production runs may contain a pinned remote-guidance snapshot for audit compatibility. New runs use the SHA-256-verified production defaults committed under `config/runtime-guidance/` and do not depend on a daily website cache.
 
 The root `AGENTS.md` tells AI agents how to route setup, usage, production, and release requests in the user's selected language.
 

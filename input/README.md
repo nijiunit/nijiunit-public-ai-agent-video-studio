@@ -10,5 +10,5 @@ Recommended files:
 - background, prop, and one-off character references with known rights
 - explicit notes about dialogue, ending, aspect ratio, and fixed details
 
-Use `examples/space-friends/input/story.md` as a safe example. Reusable characters
-belong in a versioned character registry, not in this working directory.
+Create the story from the user's own idea and rights-cleared materials. Reusable
+characters belong in a versioned character registry, not in this working directory.

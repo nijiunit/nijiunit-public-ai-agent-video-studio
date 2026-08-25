@@ -14,35 +14,34 @@ from google import genai
 from google.genai import types
 from imageio_ffmpeg import get_ffmpeg_exe
 
-from .character_registry import CharacterLock, CharacterRegistry
+from .character_registry import (
+    CharacterLock,
+    CharacterRegistry,
+    require_resolved_character_names,
+)
+from .knowledge import MediaContract, ProductionProfile
 from .schema import Shot, Storyboard
 from .settings import (
     CHARACTER_REGISTRY_DIR,
-    MAX_CHARACTER_REFERENCE_IMAGES,
-    VIDEO_MODEL,
+    model_override,
     require_api_key,
 )
 
 
 def _video_prompt(
     shot: Shot,
+    profile: ProductionProfile,
     character_lock: CharacterLock | None = None,
 ) -> str:
-    safety_detail = ""
-    combined = f"{shot.title} {shot.action} {shot.scene_description}".lower()
-    if any(word in combined for word in {"落ち", "墜落", "crash", "fall"}):
-        safety_detail = (
-            " The fall is harmless slapstick comedy. The pilot and cockpit remain "
-            "protected. No blood, injury, fire, explosion, destruction, or gore."
-        )
     if shot.dialogue:
         audio_instruction = (
-            f' The speaking character says exactly in natural Japanese: '
+            " The speaking character says exactly this line, following the "
+            f"language instruction '{profile.audio.tts_language_instruction}': "
             f'"{shot.dialogue}". No subtitles or on-screen text.'
         )
     else:
         audio_instruction = (
-            " No spoken dialogue. Use only appropriate cinematic ambience and "
+            " No spoken dialogue. Use only sound appropriate to the shot and "
             "sound effects, with no vocals."
         )
 
@@ -55,18 +54,28 @@ def _video_prompt(
             "and their backgrounds must not appear. "
         )
 
+    remote_requirements = " ".join(profile.video.requirements)
+
     return (
         "<FIRST_FRAME> Use the supplied image as the exact opening frame and animate "
         "it conservatively. In a single continuous unbroken shot with no scene cuts: "
-        f"{shot.video_prompt}{safety_detail}{identity_instruction} "
-        "Preserve the exact characters, identities, colors, anatomy, setting, "
-        "lighting, and composition from the opening image. Use subtle natural motion "
-        "and the camera motion specified by the shot. Do not add or remove any "
-        "character. No text, captions, logos, interface elements, morphing, duplicate "
-        "characters, or unexplained objects. Keep live-action realism and stable "
-        "character identity throughout."
-        f"{audio_instruction} Duration exactly 3 seconds."
+        f"{shot.video_prompt}{identity_instruction} "
+        f"Current nijiunit production requirements: {remote_requirements} "
+        "Do not add text, captions, logos, interface elements, blood, injury, or gore."
+        f"{audio_instruction} Duration exactly "
+        f"{profile.media.shot_duration_seconds} seconds. Output format stays "
+        f"{profile.media.aspect_ratio} at "
+        f"{profile.media.width}x{profile.media.height}."
     )
+
+
+def _video_response_format(profile: ProductionProfile) -> dict[str, str]:
+    return {
+        "type": "video",
+        "delivery": "inline",
+        "aspect_ratio": profile.media.aspect_ratio,
+        "duration": f"{profile.media.shot_duration_seconds}s",
+    }
 
 
 def _identity_metadata(character_lock: CharacterLock | None) -> dict[str, Any]:
@@ -131,6 +140,7 @@ def _omni_inputs(
     image_path: Path,
     prompt: str,
     character_lock: CharacterLock | None,
+    profile: ProductionProfile,
 ) -> list[dict[str, str]]:
     first_mime = mimetypes.guess_type(image_path.name)[0] or "image/png"
     inputs: list[dict[str, str]] = [
@@ -172,6 +182,9 @@ def _omni_inputs(
         if len(inputs) > 1
         else "Use Image1 as the exact starting frame."
     )
+    remote_reference_instructions = " ".join(
+        profile.video.reference_instructions
+    )
     inputs.append(
         {
             "type": "text",
@@ -181,16 +194,23 @@ def _omni_inputs(
             + "\n"
             + " ".join(reference_roles)
             + "\n"
-            + role_instruction,
+            + role_instruction
+            + "\n"
+            + remote_reference_instructions,
         }
     )
     return inputs
 
 
 class VideoService:
-    def __init__(self, model: str | None = None) -> None:
+    def __init__(
+        self,
+        profile: ProductionProfile,
+        model: str | None = None,
+    ) -> None:
         self.client = genai.Client(api_key=require_api_key())
-        self.model = model or VIDEO_MODEL
+        self.profile = profile
+        self.model = model or model_override("video") or profile.models.video
 
     def create_clip(
         self,
@@ -200,7 +220,7 @@ class VideoService:
         metadata_path: Path | None = None,
         character_lock: CharacterLock | None = None,
     ) -> Path:
-        if self.model.startswith("veo-"):
+        if self.profile.video.api_family == "veo":
             for attempt in range(1, 4):
                 try:
                     return self._create_veo_clip(
@@ -214,19 +234,14 @@ class VideoService:
                     if attempt == 3:
                         raise
                     time.sleep(5 * attempt)
-        prompt = _video_prompt(shot, character_lock)
+        prompt = _video_prompt(shot, self.profile, character_lock)
         has_identity_references = bool(
             character_lock and character_lock.references
         )
         interaction = self.client.interactions.create(
             model=self.model,
-            input=_omni_inputs(image_path, prompt, character_lock),
-            response_format={
-                "type": "video",
-                "delivery": "inline",
-                "aspect_ratio": "16:9",
-                "duration": "3s",
-            },
+            input=_omni_inputs(image_path, prompt, character_lock, self.profile),
+            response_format=_video_response_format(self.profile),
             generation_config={
                 "video_config": {
                     "task": (
@@ -255,8 +270,10 @@ class VideoService:
                         "model": self.model,
                         "interaction_id": interaction.id,
                         "status": str(interaction.status),
-                        "requested_duration": "3s",
-                        "aspect_ratio": "16:9",
+                        "requested_duration": (
+                            f"{self.profile.media.shot_duration_seconds}s"
+                        ),
+                        "aspect_ratio": self.profile.media.aspect_ratio,
                         "identity_reference_mode": (
                             "first_frame_plus_character_registry_images"
                             if has_identity_references
@@ -281,28 +298,31 @@ class VideoService:
     ) -> Path:
         mime_type = mimetypes.guess_type(image_path.name)[0] or "image/png"
         selected_references = list(
-            character_lock.references[:3]
+            character_lock.references[
+                : self.profile.video.maximum_character_reference_images
+            ]
             if character_lock
             else ()
         )
-        veo_supports_asset_references = (
-            "3.1" in self.model and "lite" not in self.model
-        )
         attached_references = (
-            selected_references if veo_supports_asset_references else []
+            selected_references
+            if self.profile.video.supports_asset_reference_images
+            else []
         )
-        source_duration = 8 if attached_references else 4
+        source_duration = (
+            self.profile.video.provider_duration_seconds_with_references
+            if attached_references
+            else self.profile.video.provider_duration_seconds
+        )
         config_kwargs: dict[str, Any] = {
             "number_of_videos": 1,
             "duration_seconds": source_duration,
-            "aspect_ratio": "16:9",
-            "resolution": "720p",
+            "aspect_ratio": self.profile.media.aspect_ratio,
+            "resolution": self.profile.video.provider_resolution,
         }
-        if "lite" not in self.model:
-            config_kwargs["negative_prompt"] = (
-                "text, captions, subtitles, logos, watermarks, duplicate "
-                "characters, extra people, extra animals, morphing, changed "
-                "costume colors, changed robot colors"
+        if self.profile.video.supports_negative_prompt:
+            config_kwargs["negative_prompt"] = ", ".join(
+                self.profile.video.negative_prompt_terms
             )
         if attached_references:
             config_kwargs["reference_images"] = [
@@ -321,7 +341,7 @@ class VideoService:
 
         operation = self.client.models.generate_videos(
             model=self.model,
-            prompt=_video_prompt(shot, character_lock),
+            prompt=_video_prompt(shot, self.profile, character_lock),
             image=types.Image(
                 image_bytes=image_path.read_bytes(),
                 mime_type=mime_type,
@@ -354,8 +374,10 @@ class VideoService:
                         "operation_name": operation.name,
                         "status": "completed",
                         "requested_source_duration": f"{source_duration}s",
-                        "normalized_duration": "3s",
-                        "aspect_ratio": "16:9",
+                        "normalized_duration": (
+                            f"{self.profile.media.shot_duration_seconds}s"
+                        ),
+                        "aspect_ratio": self.profile.media.aspect_ratio,
                         "seed": None,
                         "seed_note": (
                             "Gemini Developer API does not accept Veo seed; "
@@ -438,14 +460,20 @@ def inspect_video(path: Path) -> dict[str, Any]:
     }
 
 
-def standardize_clip(source: Path, destination: Path) -> Path:
+def standardize_clip(
+    source: Path,
+    destination: Path,
+    media: MediaContract,
+) -> Path:
     metadata = inspect_video(source)
     destination.parent.mkdir(parents=True, exist_ok=True)
+    frame_count = media.shot_duration_seconds * media.frames_per_second
     video_filter = (
-        "scale=1280:720:force_original_aspect_ratio=decrease,"
-        "pad=1280:720:(ow-iw)/2:(oh-ih)/2,"
-        "tpad=stop_mode=clone:stop_duration=3,fps=24,"
-        "trim=end_frame=72,setpts=N/(24*TB),format=yuv420p"
+        f"scale={media.width}:{media.height}:force_original_aspect_ratio=decrease,"
+        f"pad={media.width}:{media.height}:(ow-iw)/2:(oh-ih)/2,"
+        f"tpad=stop_mode=clone:stop_duration={media.shot_duration_seconds},"
+        f"fps={media.frames_per_second},trim=end_frame={frame_count},"
+        f"setpts=N/({media.frames_per_second}*TB),format=yuv420p"
     )
     if metadata["has_audio"]:
         arguments = [
@@ -458,7 +486,9 @@ def standardize_clip(source: Path, destination: Path) -> Path:
             "-vf",
             video_filter,
             "-af",
-            "apad,atrim=duration=3,asetpts=PTS-STARTPTS,aresample=48000",
+            "apad,atrim=duration="
+            f"{media.shot_duration_seconds},"
+            "asetpts=PTS-STARTPTS,aresample=48000",
         ]
     else:
         arguments = [
@@ -475,12 +505,12 @@ def standardize_clip(source: Path, destination: Path) -> Path:
             "-vf",
             video_filter,
             "-af",
-            "atrim=duration=3,asetpts=PTS-STARTPTS",
+            f"atrim=duration={media.shot_duration_seconds},asetpts=PTS-STARTPTS",
         ]
     arguments.extend(
         [
             "-t",
-            "3",
+            str(media.shot_duration_seconds),
             "-c:v",
             "libx264",
             "-preset",
@@ -500,7 +530,11 @@ def standardize_clip(source: Path, destination: Path) -> Path:
     return destination
 
 
-def extract_nine_frames(clip: Path, destination_dir: Path) -> list[Path]:
+def extract_nine_frames(
+    clip: Path,
+    destination_dir: Path,
+    media: MediaContract,
+) -> list[Path]:
     destination_dir.mkdir(parents=True, exist_ok=True)
     pattern = destination_dir / "frame_%02d.jpg"
     _run_ffmpeg(
@@ -508,23 +542,29 @@ def extract_nine_frames(clip: Path, destination_dir: Path) -> list[Path]:
             "-i",
             str(clip),
             "-vf",
-            "fps=3,scale=640:360",
+            f"fps={media.review_frames_per_second},"
+            f"scale={media.width // 2}:{media.height // 2}",
             "-frames:v",
-            "9",
+            str(media.review_frame_count),
             "-q:v",
             "2",
             str(pattern),
         ]
     )
     frames = sorted(destination_dir.glob("frame_*.jpg"))
-    if len(frames) != 9:
+    if len(frames) != media.review_frame_count:
         raise RuntimeError(
-            f"Expected 9 frames from {clip.name}, but extracted {len(frames)}."
+            f"Expected {media.review_frame_count} frames from {clip.name}, "
+            f"but extracted {len(frames)}."
         )
     return frames
 
 
-def extract_final_frame(clip: Path, destination: Path) -> Path:
+def extract_final_frame(
+    clip: Path,
+    destination: Path,
+    media: MediaContract,
+) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
     _run_ffmpeg(
         [
@@ -535,7 +575,7 @@ def extract_final_frame(clip: Path, destination: Path) -> Path:
             "-frames:v",
             "1",
             "-vf",
-            "scale=1280:720",
+            f"scale={media.width}:{media.height}",
             str(destination),
         ]
     )
@@ -547,22 +587,24 @@ def extract_final_frame(clip: Path, destination: Path) -> Path:
 def render_video_shots(
     storyboard: Storyboard,
     run_dir: Path,
+    profile: ProductionProfile,
     model: str | None = None,
     limit: int | None = None,
     character_registry_dir: Path | None = CHARACTER_REGISTRY_DIR,
 ) -> list[Path]:
-    service = VideoService(model=model)
     registry = CharacterRegistry.load_optional(character_registry_dir)
-    locks_by_shot: dict[int, CharacterLock] = {}
     if registry:
         issues = registry.validate()
         if issues:
             raise RuntimeError("Invalid character registry:\n" + "\n".join(issues))
-        reference_limit = (
-            3
-            if service.model.startswith("veo-")
-            else MAX_CHARACTER_REFERENCE_IMAGES
-        )
+    require_resolved_character_names(
+        registry,
+        [name for shot in storyboard.shots for name in shot.characters],
+    )
+    service = VideoService(profile=profile, model=model)
+    locks_by_shot: dict[int, CharacterLock] = {}
+    if registry:
+        reference_limit = profile.video.maximum_character_reference_images
         lock_manifest: list[dict[str, Any]] = []
         for shot in storyboard.shots:
             shot_text = " ".join(
@@ -677,6 +719,7 @@ def render_video_shots(
                 / "video"
                 / "continuity"
                 / f"shot_{shot.shot_number:03d}_first_frame.png",
+                profile.media,
             )
             print(
                 f"[continuity] S{shot.shot_number:03d}: "
@@ -691,12 +734,10 @@ def render_video_shots(
                 for record in character_lock.records
             )
             print(f"[identity-lock] S{shot.shot_number:03d}: {locked}")
-        if character_lock and character_lock.unresolved_names:
-            print(
-                f"[identity-warning] S{shot.shot_number:03d}: unresolved="
-                + ", ".join(character_lock.unresolved_names)
-            )
-        print(f"[video] S{shot.shot_number:03d}: generating 3-second clip")
+        print(
+            f"[video] S{shot.shot_number:03d}: generating "
+            f"{profile.media.shot_duration_seconds}-second clip"
+        )
         service.create_clip(
             shot,
             starting_frame_path,
@@ -704,10 +745,11 @@ def render_video_shots(
             metadata_path,
             character_lock,
         )
-        standardize_clip(raw_path, clip_path)
+        standardize_clip(raw_path, clip_path, profile.media)
         extract_nine_frames(
             clip_path,
             run_dir / "frames" / f"shot_{shot.shot_number:03d}",
+            profile.media,
         )
         metadata = inspect_video(clip_path)
         metadata_path.write_text(
@@ -740,6 +782,7 @@ def concatenate_clips(
     storyboard: Storyboard,
     run_dir: Path,
     destination: Path,
+    media: MediaContract,
 ) -> Path:
     clips = [
         run_dir / "video" / "clips" / f"shot_{shot.shot_number:03d}.mp4"
@@ -760,6 +803,8 @@ def concatenate_clips(
         encoding="utf-8",
     )
     destination.parent.mkdir(parents=True, exist_ok=True)
+    total_frames = len(clips) * media.shot_duration_seconds * media.frames_per_second
+    total_duration = len(clips) * media.shot_duration_seconds
     _run_ffmpeg(
         [
             "-f",
@@ -769,13 +814,16 @@ def concatenate_clips(
             "-i",
             str(list_path),
             "-vf",
-            f"fps=24,trim=end_frame={len(clips) * 72},"
-            "setpts=N/(24*TB),format=yuv420p",
+            f"scale={media.width}:{media.height}:"
+            "force_original_aspect_ratio=decrease,"
+            f"pad={media.width}:{media.height}:(ow-iw)/2:(oh-ih)/2,"
+            f"fps={media.frames_per_second},trim=end_frame={total_frames},"
+            f"setpts=N/({media.frames_per_second}*TB),format=yuv420p",
             "-af",
-            f"atrim=duration={len(clips) * 3},"
+            f"atrim=duration={total_duration},"
             "asetpts=PTS-STARTPTS,aresample=48000",
             "-t",
-            str(len(clips) * 3),
+            str(total_duration),
             "-c:v",
             "libx264",
             "-preset",

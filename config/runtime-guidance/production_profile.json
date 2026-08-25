@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "knowledge_version": "0.6.0-local.1",
+  "profile_id": "standard-social-video",
+  "models": {
+    "story": "gemini-3.6-flash",
+    "image": "gemini-3.1-flash-image",
+    "video": "gemini-omni-flash-preview",
+    "tts": "gemini-3.1-flash-tts-preview",
+    "asr": "gemini-3.6-flash"
+  },
+  "media": {
+    "shot_duration_seconds": 3,
+    "aspect_ratio": "9:16",
+    "width": 720,
+    "height": 1280,
+    "frames_per_second": 24,
+    "review_frames_per_second": 3
+  },
+  "story": {
+    "system_instruction": "Create a concise social-video storyboard from only the user's approved story and assets. Divide the story into three-second shots with one clear meaning and one principal action per shot. Preserve the user's source language for story text, dialogue, and narration. Keep all work-specific characters, dialogue, ending, locations, and sound-effect timing in the work data, never in the shared production profile. Plan the first frame, continuity source, camera, lighting, emotion, dialogue, audio, and nine-frame review points for every shot. Do not proceed from storyboard planning to video generation before the user reviews and explicitly approves the official Excel storyboard.",
+    "requirements": [
+      "Lead with a visually clear hook suitable for a short social video, without inventing claims that are absent from the user's story.",
+      "Use 10 to 14 three-second shots for a target duration of 30 to 42 seconds.",
+      "Give each shot one principal action, one camera intention, and one continuity decision.",
+      "Keep dialogue and narration short enough to fit within the configured maximum speech duration.",
+      "State whether each shot starts from its storyboard image or the previous shot's verified final frame.",
+      "Describe all visible subjects, composition, action, expression, camera, lighting, and continuity explicitly.",
+      "Plan nine observable review moments per shot at three frames per second.",
+      "Do not add work-specific people, dialogue, endings, logos, or sound-effect timestamps unless they are present in the user's work data.",
+      "Build the official Excel storyboard and wait for explicit human approval before any video-generation request."
+    ],
+    "target_duration_seconds_min": 30,
+    "target_duration_seconds_max": 42,
+    "shot_count_min": 10,
+    "shot_count_max": 14,
+    "audience": "People who want to create a memorable social-media video with step-by-step AI-agent assistance",
+    "prompt_language_instruction": "Write main image prompts and video prompts in clear English while preserving exact proper nouns supplied by the user.",
+    "output_language_instruction": "Write storyboard explanations, dialogue, and narration in the same language as the user's source story unless the user explicitly requests another language.",
+    "max_output_tokens": 32768
+  },
+  "image": {
+    "requirements": [
+      "Generate one cinematic keyframe that matches the selected aspect ratio; do not create a collage or split screen.",
+      "Treat approved character references as identity constraints for face, body proportions, materials, colors, costume, and silhouette.",
+      "Show only the characters required by the current shot, even when a reference image contains additional subjects.",
+      "Preserve the shot's specified camera, subject positions, lighting, environment, and space for later subtitles.",
+      "Do not reproduce text, captions, interfaces, logos, watermarks, or unrelated franchise elements found in references.",
+      "Review the first generated keyframe with the user before generating the remaining storyboard images."
+    ],
+    "reference_limit": 4,
+    "image_size": "1K"
+  },
+  "video": {
+    "api_family": "interactions",
+    "requirements": [
+      "Generate exactly one three-second 720p, 24fps shot from the approved starting image and prompt.",
+      "Preserve character identity, component count, costume, color, proportions, environment, and camera direction throughout the shot.",
+      "Use one principal action with physically readable motion and avoid unrequested cuts, morphs, new subjects, text, logos, or camera jumps.",
+      "When continuity is required, use the verified final frame of the preceding shot as the next starting frame.",
+      "Treat inline negative terms as prohibitions inside the main prompt because this API family has no separate negative-prompt field.",
+      "Ignore generated audio from the video model in the final production and create approved dialogue, narration, ambience, music, and effects separately.",
+      "Extract and inspect nine real frames before accepting a generated shot."
+    ],
+    "reference_instructions": [
+      "Use storyboard_image for a new scene, time, location, composition, or deliberate reset.",
+      "Use previous_final_frame only when the same scene and motion should continue across the three-second boundary.",
+      "Use the starting image as the authoritative composition and character references only for identity and approved design traits.",
+      "Limit character identity references to the declared maximum and prefer the fewest authoritative references needed.",
+      "Do not use private or unlicensed references, and never upload a secret or personal identifier as a reference."
+    ],
+    "negative_prompt_terms": [
+      "text",
+      "caption",
+      "subtitle",
+      "logo",
+      "watermark",
+      "interface",
+      "duplicate character",
+      "extra limb",
+      "missing limb",
+      "identity drift",
+      "costume change",
+      "unrequested cut",
+      "camera jump",
+      "flicker",
+      "morphing"
+    ],
+    "maximum_character_reference_images": 6,
+    "supports_asset_reference_images": false,
+    "supports_negative_prompt": false,
+    "provider_duration_seconds": 3,
+    "provider_duration_seconds_with_references": 3,
+    "provider_resolution": "720p"
+  },
+  "audio": {
+    "default_voice": "Kore",
+    "default_speaker": "A clear, composed general-purpose narrator; work-specific characters may override the voice in work data after user review.",
+    "default_style": "Speak naturally and clearly at a calm social-video pace. Preserve the intended emotion without shouting, rushing, adding words, or altering the approved dialogue.",
+    "tts_language_instruction": "Read dialogue and narration in the same language as the approved source text, preserving names and intended pronunciation.",
+    "transcription_instruction": "Transcribe only the speech that is actually audible, in its original language, without translating, summarizing, correcting, or inventing missing words.",
+    "maximum_speech_seconds": 2.55,
+    "maximum_tempo_factor": 1.15,
+    "default_ambience": {
+      "highpass_hz": 55,
+      "lowpass_hz": 700,
+      "volume": 0.038
+    },
+    "subtitle": {
+      "font_name": "Noto Sans JP",
+      "font_size": 40,
+      "primary_colour": "&H00FFFFFF",
+      "outline_colour": "&H00101720",
+      "back_colour": "&H88070B12",
+      "bold": true,
+      "border_style": 3,
+      "outline": 7,
+      "shadow": 0,
+      "alignment": 2,
+      "margin_horizontal": 70,
+      "margin_vertical": 48,
+      "start_seconds": 0.12,
+      "end_padding_seconds": 0.08,
+      "fade_in_milliseconds": 100,
+      "fade_out_milliseconds": 120
+    }
+  }
+}

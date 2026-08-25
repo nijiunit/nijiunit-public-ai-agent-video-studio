@@ -15,6 +15,11 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from video_storyboard.knowledge import (  # noqa: E402
+    MediaContract,
+    SubtitleInstructions,
+    load_run_guidance,
+)
 from video_storyboard.video import extract_nine_frames  # noqa: E402
 
 FFMPEG = get_ffmpeg_exe()
@@ -37,21 +42,29 @@ def ass_escape(text: str) -> str:
     return text.replace("\\", r"\\").replace("{", r"\{").replace("}", r"\}")
 
 
-def ass_document(line: str) -> str:
+def ass_document(
+    line: str,
+    media: MediaContract,
+    subtitle: SubtitleInstructions,
+) -> str:
+    end_time = media.shot_duration_seconds - subtitle.end_padding_seconds
+    if end_time <= subtitle.start_seconds:
+        raise ValueError("subtitle display interval must be positive")
+    bold = -1 if subtitle.bold else 0
     return f"""[Script Info]
 ScriptType: v4.00+
-PlayResX: 1280
-PlayResY: 720
+PlayResX: {media.width}
+PlayResY: {media.height}
 ScaledBorderAndShadow: yes
 WrapStyle: 2
 
 [V4+ Styles]
 Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
-Style: Dialogue,Noto Sans JP,40,&H00FFFFFF,&H000000FF,&H00101720,&H88070B12,-1,0,0,0,100,100,0,0,3,7,0,2,70,70,48,1
+Style: Dialogue,{subtitle.font_name},{subtitle.font_size},{subtitle.primary_colour},{subtitle.primary_colour},{subtitle.outline_colour},{subtitle.back_colour},{bold},0,0,0,100,100,0,0,{subtitle.border_style},{subtitle.outline},{subtitle.shadow},{subtitle.alignment},{subtitle.margin_horizontal},{subtitle.margin_horizontal},{subtitle.margin_vertical},1
 
 [Events]
 Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
-Dialogue: 0,0:00:00.12,0:00:02.92,Dialogue,,0,0,0,,{{\fad(100,120)}}{ass_escape(line)}
+Dialogue: 0,0:00:{subtitle.start_seconds:05.2f},0:00:{end_time:05.2f},Dialogue,,0,0,0,,{{\fad({subtitle.fade_in_milliseconds},{subtitle.fade_out_milliseconds})}}{ass_escape(line)}
 """
 
 
@@ -68,6 +81,9 @@ def main() -> None:
     args = parser.parse_args()
 
     run_dir = args.run_dir.resolve()
+    guidance = load_run_guidance(run_dir)
+    media = guidance.profile.media
+    subtitle_profile = guidance.profile.audio.subtitle
     storyboard = json.loads(
         (run_dir / "storyboard.json").read_text(encoding="utf-8")
     )
@@ -83,7 +99,10 @@ def main() -> None:
         number = int(shot["shot_number"])
         clip = run_dir / "video" / "clips" / f"shot_{number:03d}.mp4"
         subtitle = overlay_dir / f"shot_{number:03d}.ass"
-        subtitle.write_text(ass_document(line), encoding="utf-8")
+        subtitle.write_text(
+            ass_document(line, media, subtitle_profile),
+            encoding="utf-8",
+        )
         backup = backup_dir / clip.name
         if not backup.exists():
             shutil.copy2(clip, backup)
@@ -99,9 +118,9 @@ def main() -> None:
                 "-map",
                 "0:a?",
                 "-t",
-                "3",
+                str(media.shot_duration_seconds),
                 "-r",
-                "24",
+                str(media.frames_per_second),
                 "-c:v",
                 "libx264",
                 "-preset",
@@ -118,7 +137,11 @@ def main() -> None:
             ]
         )
         os.replace(temporary, clip)
-        extract_nine_frames(clip, run_dir / "frames" / f"shot_{number:03d}")
+        extract_nine_frames(
+            clip,
+            run_dir / "frames" / f"shot_{number:03d}",
+            media,
+        )
         print(f"[subtitle] S{number:03d}: {line}")
 
 

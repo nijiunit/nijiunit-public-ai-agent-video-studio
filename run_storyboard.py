@@ -19,10 +19,15 @@ from video_storyboard.pipeline import (  # noqa: E402
     extract_corrections_command,
     finalize_video_command,
     prepare_motion_keyframes_command,
+    prepare_tutorial_command,
     render_images_command,
     render_videos_command,
     reveal_artifact_command,
     validate_character_registry_command,
+)
+from video_storyboard.updates import (  # noqa: E402
+    check_for_updates,
+    format_update_status,
 )
 
 
@@ -32,10 +37,29 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    tutorial = subparsers.add_parser(
+        "prepare-tutorial",
+        help="YouTube URLに対応するNijiUnit公式教材をホームページから直接読む",
+    )
+    tutorial.add_argument("--youtube-url", required=True)
+    tutorial.add_argument("--language", choices=("ja", "en"), default="ja")
+
+    update = subparsers.add_parser(
+        "check-update",
+        help="GitHubと現在版を比較する（更新は行わない）",
+    )
+    update.add_argument("--language", choices=("ja", "en"), default="ja")
+
     create = subparsers.add_parser("create", help="素材を解析して3秒構成JSONを作成")
     create.add_argument("--input-dir", type=Path, default=ROOT / "input")
     create.add_argument("--output-root", type=Path, default=ROOT / "output" / "storyboard")
     create.add_argument("--story-model", default=None)
+    create.add_argument(
+        "--aspect-ratio",
+        choices=("9:16", "16:9"),
+        required=True,
+        help="利用者が選んだYouTube Shorts向け9:16、または通常動画向け16:9",
+    )
     create.add_argument(
         "--character-registry-dir",
         type=Path,
@@ -161,12 +185,20 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _dispatch(args: argparse.Namespace) -> str:
-    if args.command == "create":
+    if args.command == "prepare-tutorial":
+        result = prepare_tutorial_command(
+            youtube_url=args.youtube_url,
+            language=args.language,
+        )
+    elif args.command == "check-update":
+        result = format_update_status(check_for_updates(ROOT), args.language)
+    elif args.command == "create":
         result = create_command(
             input_dir=args.input_dir,
             output_root=args.output_root,
             story_model=args.story_model,
             character_registry_dir=args.character_registry_dir,
+            aspect_ratio=args.aspect_ratio,
         )
     elif args.command == "create-storyboard":
         result = create_storyboard_in_run_command(

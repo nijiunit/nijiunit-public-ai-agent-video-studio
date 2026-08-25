@@ -109,7 +109,7 @@ if ($launcher.Count -eq 0 -or -not $launcher[0]) {
 
 Push-Location $repoRoot
 try {
-    Write-Host "[1/5] Checking Python 3.11+"
+    Write-Host "[1/6] Checking Python 3.11+"
     $launcherExe = $launcher[0]
     $launcherArgs = @()
     if ($launcher.Count -gt 1) {
@@ -117,7 +117,7 @@ try {
     }
     & $launcherExe @launcherArgs -c "import sys; print('      Python ' + sys.version.split()[0])"
 
-    Write-Host "[2/5] Preparing .venv"
+    Write-Host "[2/6] Preparing .venv"
     if (-not (Test-Path $venvPython)) {
         & $launcherExe @launcherArgs -m venv .venv
         if ($LASTEXITCODE -ne 0) {
@@ -127,7 +127,7 @@ try {
         Write-Host "      Existing .venv will be reused."
     }
 
-    Write-Host "[3/5] Installing the application"
+    Write-Host "[3/6] Installing the application"
     $extras = @()
     if ($WithDev) { $extras += "dev" }
     if ($WithAsr) { $extras += "asr" }
@@ -140,7 +140,7 @@ try {
         throw "Package installation failed."
     }
 
-    Write-Host "[4/5] Preparing .env"
+    Write-Host "[4/6] Preparing .env"
     if (-not (Test-Path ".env")) {
         Copy-Item ".env.example" ".env"
         Write-Host "      Created .env. The safe API-key guide follows."
@@ -148,13 +148,19 @@ try {
         Write-Host "      Existing .env was preserved."
     }
 
-    Write-Host "[5/5] Running local diagnostics (no generation API calls)"
+    Write-Host "[5/6] Checking the bundled production defaults"
+    & $venvPython -c "from video_storyboard.knowledge import load_builtin_guidance; print(load_builtin_guidance().profile.profile_id)"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Bundled production defaults are invalid."
+    }
+
+    Write-Host "[6/6] Running local diagnostics (no generation API calls)"
     & $venvPython scripts\doctor.py
     if ($LASTEXITCODE -ne 0) {
         throw "Diagnostics reported a blocking failure."
     }
 
-    Write-Host "Base installation finished. The AI agent must continue with docs/google-api-setup.md."
+    Write-Host "Base installation finished. Continue with docs/google-api-setup.ja.md. Video-specific guides are read directly from the NijiUnit website when needed."
 } finally {
     Pop-Location
 }

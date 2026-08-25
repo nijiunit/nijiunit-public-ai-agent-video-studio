@@ -8,7 +8,7 @@ This internal guide begins after the repository has been cloned. It tells an AI 
 
 ## What this application needs
 
-The application uses different Gemini API models for story planning, images, video, and speech. In particular, the default video model, `gemini-omni-flash-preview`, requires paid access. Creating an API key alone is therefore insufficient; the billing state of the selected Google Cloud project must also be reviewed.
+The application uses different Gemini API models for story planning, images, video, and speech. Default model identifiers are bundled in the SHA-256-verified `config/runtime-guidance/production_profile.json`. Video generation may require paid access, so creating an API key alone is insufficient; the current price and billing state of the selected Google Cloud project must also be reviewed.
 
 Official references:
 
@@ -45,13 +45,13 @@ For a new user, accepting the terms may create a default Google Cloud project an
 Before beginning billing setup, explain these points one at a time:
 
 - Gemini API has free and paid tiers.
-- The application's default video model requires paid access.
+- Verify the paid-access requirement and current pricing of the video model configured in the bundled profile against Google's official information.
 - Text, image, video, and audio use different pricing units.
 - Prepay purchases balance in advance; Postpay bills after usage.
 - Automatic top-up can create continuing charges.
 - Current prices, minimum deposits, taxes, and limits must be confirmed on the live Google screen.
 
-As reviewed on 2026-08-06, the official price table describes 720p output from `gemini-omni-flash-preview` at approximately USD 0.10 per second. This is not a promise of future pricing. Check the official pricing page and the amount shown in Google before agreeing.
+Prices change, so this repository does not treat a recorded price as authoritative. Check the model ID in the bundled profile, then verify its current unit price and billing unit on Google's official pricing page and the live Google screen before agreeing.
 
 After the explanation, ask the user to choose either "continue with paid setup" or "stop here."
 
@@ -103,13 +103,13 @@ macOS or Linux:
 ./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
 ```
 
-This check generates no media. It authenticates the key and verifies that the configured story, image, video, and TTS model identifiers appear in the model catalog. It does not perform paid generation.
+This check generates no media. It authenticates the key and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not perform paid generation.
 
 A model-catalog check cannot guarantee sufficient balance, regional support, quota, preview eligibility, or successful generation. Report the result as "paid generation not tested." Before the first image or video request, tell the user that charges may apply and confirm the generation request.
 
 ## Completion states
 
-- `LOCAL READY (Google API setup required)`: local environment only
+- `LOCAL READY (Google API setup required)`: the local runtime and bundled defaults are ready; Google API is not configured
 - `LOCAL READY (online verification required)`: key stored, Google connection not verified
 - `READY FOR GENERATION (paid generation not tested)`: authentication and configured model identifiers verified; paid generation not run
 - `NOT READY`: at least one issue remains

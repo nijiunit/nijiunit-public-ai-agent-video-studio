@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from openpyxl import load_workbook
@@ -59,6 +60,18 @@ def prepare_workbook(tmp_path: Path) -> tuple[Storyboard, Path]:
     return storyboard, workbook_path
 
 
+def use_pinned_guidance(
+    monkeypatch: pytest.MonkeyPatch,
+    storyboard: Storyboard,
+) -> None:
+    guidance = SimpleNamespace(
+        profile=SimpleNamespace(
+            media=SimpleNamespace(aspect_ratio=storyboard.aspect_ratio)
+        )
+    )
+    monkeypatch.setattr(pipeline, "load_run_guidance", lambda _run_dir: guidance)
+
+
 def test_excel_storyboard_requires_explicit_approval(tmp_path: Path) -> None:
     storyboard, workbook_path = prepare_workbook(tmp_path)
 
@@ -98,6 +111,7 @@ def test_video_generation_stops_before_excel_approval(
         storyboard.model_dump_json(indent=2),
         encoding="utf-8",
     )
+    use_pinned_guidance(monkeypatch, storyboard)
     called = False
 
     def fake_render_video_shots(**_kwargs):
@@ -114,12 +128,14 @@ def test_video_generation_stops_before_excel_approval(
 
 def test_workbook_build_stops_when_main_images_are_missing(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     storyboard = make_storyboard()
     (tmp_path / "storyboard.json").write_text(
         storyboard.model_dump_json(indent=2),
         encoding="utf-8",
     )
+    use_pinned_guidance(monkeypatch, storyboard)
 
     with pytest.raises(RuntimeError, match="全ショットのメイン画像"):
         pipeline.build_workbook_command(tmp_path)
@@ -127,6 +143,7 @@ def test_workbook_build_stops_when_main_images_are_missing(
 
 def test_pipeline_builds_review_folder_html_and_new_revision(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     run_dir = tmp_path / "v001"
     run_dir.mkdir()
@@ -135,6 +152,7 @@ def test_pipeline_builds_review_folder_html_and_new_revision(
         storyboard.model_dump_json(indent=2),
         encoding="utf-8",
     )
+    use_pinned_guidance(monkeypatch, storyboard)
     (run_dir / "manifest.json").write_text(
         json.dumps({"assets": []}),
         encoding="utf-8",
@@ -177,6 +195,7 @@ def test_open_excel_lock_gets_one_clear_recovery_action(
         "current_storyboard_workbook",
         lambda _run_dir: workbook_path,
     )
+    use_pinned_guidance(monkeypatch, storyboard)
 
     def locked(*_args, **_kwargs):
         raise PermissionError("locked")
@@ -185,3 +204,23 @@ def test_open_excel_lock_gets_one_clear_recovery_action(
 
     with pytest.raises(RuntimeError, match="保存してから閉じ"):
         pipeline.approve_workbook_command(tmp_path)
+
+
+def test_pipeline_rejects_aspect_ratio_changed_after_pin(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    storyboard = make_storyboard()
+    (tmp_path / "storyboard.json").write_text(
+        storyboard.model_dump_json(indent=2),
+        encoding="utf-8",
+    )
+    guidance = SimpleNamespace(
+        profile=SimpleNamespace(
+            media=SimpleNamespace(aspect_ratio="9:16")
+        )
+    )
+    monkeypatch.setattr(pipeline, "load_run_guidance", lambda _run_dir: guidance)
+
+    with pytest.raises(RuntimeError, match="制作途中では映像比率を変更できません"):
+        pipeline.build_workbook_command(tmp_path)

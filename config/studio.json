@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "knowledge_manifest_url": "https://manual.nijiunit.com/knowledge/v1/manifest.json",
+  "allowed_origins": [
+    "https://manual.nijiunit.com"
+  ],
+  "check_interval_hours": 24,
+  "request_timeout_seconds": 15,
+  "maximum_resource_bytes": 1048576
+}

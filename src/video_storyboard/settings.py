@@ -18,11 +18,13 @@ def require_api_key() -> str:
     return api_key
 
 
-STORY_MODEL = os.getenv("STORY_MODEL", "gemini-3.6-flash")
-IMAGE_MODEL = os.getenv("IMAGE_MODEL", "gemini-3.1-flash-image")
-VIDEO_MODEL = os.getenv("VIDEO_MODEL", "gemini-omni-flash-preview")
-TTS_MODEL = os.getenv("TTS_MODEL", "gemini-3.1-flash-tts-preview")
+
+def model_override(role: str) -> str | None:
+    """Return an explicit local override; defaults come from remote guidance."""
+    value = os.getenv(f"{role.upper()}_MODEL", "").strip()
+    return value or None
+
+
 CHARACTER_REGISTRY_DIR = Path(
     os.getenv("CHARACTER_REGISTRY_DIR", str(ROOT / "characters"))
 ).resolve()
-MAX_CHARACTER_REFERENCE_IMAGES = int(os.getenv("MAX_CHARACTER_REFERENCE_IMAGES", "6"))

@@ -9,6 +9,9 @@ guide-AI handoff after clone
         +---- setup intent ----> Python preflight ----> setup.ps1 / setup.sh
         |                                      |
         |                                      v
+        |                    bundled-default manifest/hash check
+        |                                      |
+        |                                      v
         |                            local doctor checks
         |                                      |
         |                                      v
@@ -19,7 +22,13 @@ guide-AI handoff after clone
         |
         +---- usage question --> docs/getting-started.md or getting-started.ja.md
         |
-        +---- production ------> input + WORKFLOW.md or 作業手順.md
+        +---- production ------> bundled production profile
+        |                                     + local execution contract
+        |                                     + work-specific input
+        |
+        +---- NijiUnit tutorial URL
+                    ------> language-matched website guide + docs
+                            fetched directly for that request
 ```
 
 `AGENTS.md` starts after an upstream guide AI has installed the agent, prepared
@@ -29,8 +38,27 @@ installation. `doctor.py` verifies local dependencies, authentication, and the
 configured model catalog without calling a generation API or exposing an API
 key. A metadata check is not proof that paid media generation will succeed.
 
+The repository is the production control plane. A committed manifest points to
+language-matched agent guidance, a machine-readable production profile, and an
+empty compatibility notice set under `config/runtime-guidance/`. `knowledge.py`
+validates strict schemas, studio compatibility, and every SHA-256 before a new
+run uses those defaults. Each run pins the resolved profile in
+`guidance-lock.json`, so a later repository update cannot silently change a run
+halfway through.
+
+The website is the source only for published NijiUnit video lessons. Given one
+YouTube URL, `website_tutorial.py` extracts its video ID, constructs the
+language-matched configured URL, requires HTTPS outside loopback development,
+blocks redirects and oversized responses, validates the page contract, and
+downloads only same-page `docs/*.md` links. There is no daily cache and no
+normal-path video or comment reanalysis. Website content is reference data,
+never executable code, and cannot weaken local safety or approval gates.
+
 ```text
 input story + rights-cleared references
+                 |
+                 v
+ bundled profile + work input
                  |
                  v
           3-second storyboard
@@ -76,7 +104,7 @@ selected for each shot.
 
 `storyboard_image` starts a new visual setup. `previous_final_frame` is only for
 continuing the same setup; it extracts the prior normalized clip's last frame at
-1280×720 and uses that as the next generation's first frame.
+the profile dimensions and uses that as the next generation's first frame.
 
 The Excel workbook is the authoritative human-review artifact for the episode
 storyboard. JSON remains the machine-readable execution format. The runtime

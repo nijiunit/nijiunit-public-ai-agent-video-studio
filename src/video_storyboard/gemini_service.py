@@ -11,17 +11,52 @@ from PIL import Image
 
 from .assets import AssetRecord
 from .character_registry import CharacterRegistry, normalize_character_name
+from .knowledge import ProductionProfile, StoryInstructions
 from .schema import ApiStoryboard, Storyboard
-from .settings import IMAGE_MODEL, STORY_MODEL, require_api_key
+from .settings import model_override, require_api_key
 
-STORY_SYSTEM_INSTRUCTION = """
-あなたは、短編映画、コメディ、実写パロディの絵コンテを設計するシニア監督です。
+LOCAL_STORY_INVARIANTS = """
+以下はローカル実行環境が必ず守る条件です。
 入力ストーリーの出来事を勝手に削除せず、素材にない重要設定を勝手に追加しません。
 映像は3秒単位に分割し、各ショットの中で一つの明確な動作だけを扱います。
 登場人物・場所・小道具の連続性を最優先します。
 参照画像はキャラクターや物体の外見だけに使い、画像内の文字、ロゴ、UIは再現しません。
-転倒や失敗は明るいスラップスティックとして描き、流血、負傷、残酷表現を避けます。
+流血、負傷、残酷表現を追加しません。
 """
+
+
+def _story_generation_config(
+    story_guidance: StoryInstructions,
+) -> dict[str, Any]:
+    config: dict[str, Any] = {
+        "system_instruction": (
+            story_guidance.system_instruction
+            + "\n"
+            + LOCAL_STORY_INVARIANTS
+        ),
+        "response_mime_type": "application/json",
+        "response_schema": ApiStoryboard,
+        "max_output_tokens": story_guidance.max_output_tokens,
+    }
+    if story_guidance.temperature is not None:
+        config["temperature"] = story_guidance.temperature
+    return config
+
+
+def _image_generation_config(profile: ProductionProfile) -> dict[str, Any]:
+    config: dict[str, Any] = {
+        "response_modalities": ["TEXT", "IMAGE"],
+    }
+    fields = getattr(types.GenerateContentConfig, "model_fields", {})
+    image_settings = {
+        "aspect_ratio": profile.media.aspect_ratio,
+        "image_size": profile.image.image_size,
+    }
+    if "response_format" in fields:
+        config["response_format"] = {"image": image_settings}
+    elif "image_config" in fields:
+        config["image_config"] = image_settings
+    return config
 
 
 def _retry(callable_: Any, attempts: int = 3) -> Any:
@@ -40,12 +75,18 @@ def _retry(callable_: Any, attempts: int = 3) -> Any:
 class GeminiService:
     def __init__(
         self,
+        profile: ProductionProfile,
         story_model: str | None = None,
         image_model: str | None = None,
     ) -> None:
         self.client = genai.Client(api_key=require_api_key())
-        self.story_model = story_model or STORY_MODEL
-        self.image_model = image_model or IMAGE_MODEL
+        self.profile = profile
+        self.story_model = (
+            story_model or model_override("story") or profile.models.story
+        )
+        self.image_model = (
+            image_model or model_override("image") or profile.models.image
+        )
 
     def create_storyboard(
         self,
@@ -85,10 +126,18 @@ class GeminiService:
             if character_registry
             else "[]"
         )
+        story_guidance = self.profile.story
+        media = self.profile.media
+        remote_requirements = "\n".join(
+            f"- {requirement}" for requirement in story_guidance.requirements
+        )
         prompt = f"""
-次のストーリーと参照素材から、完成尺30〜42秒を目安に、
-3秒単位の映像絵コンテを作ってください。ショット数は10〜14です。
-映像比率は16:9です。
+次のストーリーと参照素材から、完成尺
+{story_guidance.target_duration_seconds_min}〜
+{story_guidance.target_duration_seconds_max}秒を目安に、
+{media.shot_duration_seconds}秒単位の映像絵コンテを作ってください。
+ショット数は{story_guidance.shot_count_min}〜
+{story_guidance.shot_count_max}です。映像比率は{media.aspect_ratio}です。
 
 【ストーリー原文】
 {story}
@@ -115,26 +164,17 @@ class GeminiService:
   character_bible、main_image_prompt、video_promptへ同じ固定条件を書く。
 - 台帳のforbidden_traitsと衝突する古い素材や古い人物記述は使用しない。
 - 台帳にない人物を、ストーリーにないのに追加しない。
-- 全編を映画的で高品質な実写映像として設計する。
-- ニキは参照画像の顔立ちを保った、小柄で愛嬌のある実写のナマケモノ。
-- ブライトさんは参照アニメ画像の黒髪、眉、顔立ち、赤い襟の濃紺の士官服を
-  保ちながら、自然な実写の成人男性として翻案する。
-- ガンダムは参照画像の白・青・赤の配色、頭部、胸部、盾、巨大な人型兵器の
-  シルエットを維持する。機体表面に文字やロゴを描かない。
-- ニキがガンダムを格好よく操縦できることと、ブライトさんが嫉妬して
-  自分も操縦したがることを、表情と動作で明確に見せる。
-- 原文のブライトさんの3つのセリフを省略せず、dialogueへ正確に割り当てる。
-- セリフを言うショットのvideo_promptには、話者名と日本語の発話内容を含める。
-- 最後はブライトさんが操縦するガンダムが飛び上がった直後に制御を失い、
-  頭から柔らかい地面へ落ちる。明るいコメディ表現で、負傷や流血は描かない。
-- 1ショットは必ず3秒。
+- 1ショットは必ず{media.shot_duration_seconds}秒。
 - continuity_start_modeは通常storyboard_imageとする。同じ構図・同じ人物配置を
   切れ目なく継続するカットだけprevious_final_frameとし、構図変更、時間経過、
   場所移動、登場人物の増減があるカットでは絶対に使用しない。
-- 各ショットに0.333秒刻みの9コマ説明を正確に9件作る。
-- main_image_promptとvideo_promptは英語で、参照素材の維持条件を具体的に書く。
-- dialogueとnarrationは日本語で記載する。
+- 各ショットに確認用の9コマ説明を正確に9件作る。
+- main_image_promptとvideo_promptの言語: {story_guidance.prompt_language_instruction}
+- dialogueとnarrationの言語: {story_guidance.output_language_instruction}
 - 画像・映像内に文字、字幕、題字、ロゴ、スマホUI、透かしを入れない。
+
+ホームページから取得した現在の制作要件:
+{remote_requirements}
 """
         contents: list[Any] = []
         opened_images: list[Image.Image] = []
@@ -177,25 +217,48 @@ class GeminiService:
                         ]
                     )
             contents.append(prompt)
+            generation_config = _story_generation_config(story_guidance)
             response = _retry(
                 lambda: self.client.models.generate_content(
                     model=self.story_model,
                     contents=contents,
-                    config={
-                        "system_instruction": STORY_SYSTEM_INSTRUCTION,
-                        "response_mime_type": "application/json",
-                        "response_schema": ApiStoryboard,
-                        "temperature": 0.4,
-                        "max_output_tokens": 32768,
-                    },
+                    config=generation_config,
                 )
             )
             if isinstance(response.parsed, ApiStoryboard):
-                storyboard = response.parsed.to_storyboard()
+                storyboard = response.parsed.to_storyboard(
+                    audience=story_guidance.audience,
+                    aspect_ratio=media.aspect_ratio,
+                )
             else:
                 storyboard = ApiStoryboard.model_validate_json(
                     response.text
-                ).to_storyboard()
+                ).to_storyboard(
+                    audience=story_guidance.audience,
+                    aspect_ratio=media.aspect_ratio,
+                )
+            if not (
+                story_guidance.shot_count_min
+                <= len(storyboard.shots)
+                <= story_guidance.shot_count_max
+            ):
+                raise RuntimeError(
+                    "ホームページの制作指示で指定されたショット数になりませんでした: "
+                    f"actual={len(storyboard.shots)}, expected="
+                    f"{story_guidance.shot_count_min}-"
+                    f"{story_guidance.shot_count_max}"
+                )
+            if not (
+                story_guidance.target_duration_seconds_min
+                <= storyboard.total_duration_seconds
+                <= story_guidance.target_duration_seconds_max
+            ):
+                raise RuntimeError(
+                    "ホームページの制作指示で指定された完成尺になりませんでした: "
+                    f"actual={storyboard.total_duration_seconds}, expected="
+                    f"{story_guidance.target_duration_seconds_min}-"
+                    f"{story_guidance.target_duration_seconds_max}"
+                )
             allowed_assets = {item.original_name for item in assets}
             for shot in storyboard.shots:
                 shot.reference_assets = [
@@ -234,7 +297,7 @@ class GeminiService:
             character_registry.build_lock(
                 shot.characters,
                 shot_text,
-                reference_limit=4,
+                reference_limit=self.profile.image.reference_limit,
             )
             if character_registry
             else None
@@ -277,16 +340,11 @@ class GeminiService:
                 "non-redesigned people or animals. Preserve those elements as "
                 "closely as possible and edit only the object explicitly requested."
             )
-        comedy_rule = ""
-        combined_action = f"{shot.title} {shot.action} {shot.scene_description}"
-        if any(word in combined_action for word in {"落ち", "墜落", "転倒"}):
-            comedy_rule = (
-                "- Treat the fall as harmless slapstick comedy. The cockpit and "
-                "pilot remain protected. No injury, blood, fire, explosion, or gore."
-            )
+        remote_requirements = "\n".join(
+            f"- {requirement}" for requirement in self.profile.image.requirements
+        )
         prompt = f"""
-Use case: original cinematic live-action production
-Asset type: main storyboard keyframe for a 3-second cinematic shot
+Asset type: main storyboard keyframe for a {self.profile.media.shot_duration_seconds}-second shot
 Primary request: {shot.main_image_prompt}
 Scene: {shot.scene_description}
 Characters: {", ".join(shot.characters)}
@@ -306,21 +364,16 @@ Reference rules:
 {composition_rule}
 - Treat each supplied reference as the authoritative design for that named
   character, machine, costume, color palette, and silhouette.
-- Convert illustrated references into convincing high-budget live-action
-  photography; keep already-photorealistic references photorealistic.
 - Preserve the identity and original component design of the supplied
   references. Do not import faces, uniforms, armor parts, color blocking,
   insignia, weapons, or silhouettes from unrelated famous franchises.
-- Mechanical subjects must look like coherent full-scale practical machines
-  with believable metal, joints, hydraulics, weight, and scale.
-- Animal characters must remain natural photorealistic animals matching their
-  supplied facial markings, fur, proportions, and friendly comic presence.
 - Never reproduce the title, lettering, labels, logos, watermarks, captions,
   interface elements, or text visible in any reference image.
-{comedy_rule}
 - Preserve continuity with the previous and next shots.
-- One cinematic live-action still, landscape 16:9, no split screen, no collage,
-  no text.
+- One still, {self.profile.media.aspect_ratio}, no split screen, no collage, no text.
+
+Current production requirements from the nijiunit website:
+{remote_requirements}
 """
         opened: list[Image.Image] = []
         try:
@@ -343,19 +396,7 @@ Reference rules:
                 opened.append(image)
                 contents.extend([image, f"Reference file: {label}"])
             contents.append(prompt)
-            config_kwargs: dict[str, Any] = {
-                "response_modalities": ["TEXT", "IMAGE"],
-            }
-            fields = getattr(types.GenerateContentConfig, "model_fields", {})
-            if "response_format" in fields:
-                config_kwargs["response_format"] = {
-                    "image": {"aspect_ratio": "16:9", "image_size": "1K"}
-                }
-            elif "image_config" in fields:
-                config_kwargs["image_config"] = {
-                    "aspect_ratio": "16:9",
-                    "image_size": "1K",
-                }
+            config_kwargs = _image_generation_config(self.profile)
             response = _retry(
                 lambda: self.client.models.generate_content(
                     model=self.image_model,
@@ -376,8 +417,8 @@ Reference rules:
             for image in opened:
                 image.close()
 
-    @staticmethod
     def _select_references(
+        self,
         requested_names: list[str],
         characters: list[str],
         assets: list[AssetRecord],
@@ -400,4 +441,4 @@ Reference rules:
                 for item in assets
                 if item.prepared_path
             ]
-        return selected[:4]
+        return selected[: self.profile.image.reference_limit]

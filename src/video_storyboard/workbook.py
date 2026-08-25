@@ -25,6 +25,12 @@ THIN = Side(style="thin", color="A6A6A6")
 DEFAULT_CORRECTION_INSTRUCTION = "ここへ具体的な訂正指示を記入してください。"
 
 
+def _review_image_size(aspect_ratio: str, long_edge: int) -> tuple[int, int]:
+    if aspect_ratio == "9:16":
+        return round(long_edge * 9 / 16), long_edge
+    return long_edge, round(long_edge * 9 / 16)
+
+
 def _timecode(seconds: int) -> str:
     return f"{seconds // 60:02d}:{seconds % 60:02d}"
 
@@ -195,8 +201,10 @@ def create_workbook(
         image_path = _image_for_shot(run_dir, shot, assets)
         if image_path:
             image = ExcelImage(str(image_path))
-            image.width = 720
-            image.height = 405
+            image.width, image.height = _review_image_size(
+                storyboard.aspect_ratio,
+                720,
+            )
             ws.add_image(image, "B10")
 
         fields = [
@@ -393,8 +401,10 @@ def create_video_workbook(
             )
             cell.comment = Comment(description, "Gemini storyboard")
             image = ExcelImage(str(frame_path))
-            image.width = 400
-            image.height = 225
+            image.width, image.height = _review_image_size(
+                storyboard.aspect_ratio,
+                400,
+            )
             ws.add_image(image, cell.coordinate)
     destination.parent.mkdir(parents=True, exist_ok=True)
     workbook.save(destination)

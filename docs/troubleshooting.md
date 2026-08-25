@@ -4,7 +4,7 @@
 
 The base application and local video tools are installed, but generation is not
 ready yet. Follow `docs/google-api-setup.md` one user action at a time. Because
-the default video model is paid-tier, confirm pricing, the project billing plan,
+the current website-selected video model may require paid access, confirm its current pricing, the project billing plan,
 and any prepaid balance before creating or reusing a key. Never paste the key
 into chat. Setup itself does not call a generation API.
 

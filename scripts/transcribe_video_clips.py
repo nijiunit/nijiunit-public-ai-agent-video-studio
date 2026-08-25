@@ -12,10 +12,11 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from video_storyboard.settings import require_api_key  # noqa: E402
+from video_storyboard.knowledge import load_builtin_guidance  # noqa: E402
+from video_storyboard.settings import model_override, require_api_key  # noqa: E402
 
 
-def transcribe(path: Path, model: str) -> str:
+def transcribe(path: Path, model: str, instruction: str) -> str:
     mime_type = {
         ".wav": "audio/wav",
         ".mp3": "audio/mpeg",
@@ -32,10 +33,7 @@ def transcribe(path: Path, model: str) -> str:
                 data=path.read_bytes(),
                 mime_type=mime_type,
             ),
-            (
-                "この短い動画の音声を一字一句そのまま日本語で文字起こししてください。"
-                "説明、要約、補足、引用符は不要です。聞こえない箇所は［不明］と記載してください。"
-            ),
+            instruction,
         ],
     )
     return (response.text or "").strip()
@@ -44,11 +42,14 @@ def transcribe(path: Path, model: str) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("clips", type=Path, nargs="+")
-    parser.add_argument("--model", default="gemini-3-flash-preview")
+    parser.add_argument("--model", default=None)
     args = parser.parse_args()
+    guidance = load_builtin_guidance()
+    model = args.model or model_override("asr") or guidance.profile.models.asr
+    instruction = guidance.profile.audio.transcription_instruction
     for clip in args.clips:
         resolved = clip.resolve()
-        print(f"{resolved.name}: {transcribe(resolved, args.model)}")
+        print(f"{resolved.name}: {transcribe(resolved, model, instruction)}")
 
 
 if __name__ == "__main__":

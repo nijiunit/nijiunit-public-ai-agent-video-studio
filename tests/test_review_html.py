@@ -1,5 +1,9 @@
 from pathlib import Path
+from xml.etree import ElementTree
+from zipfile import ZipFile
 
+import pytest
+from openpyxl import load_workbook
 from PIL import Image
 
 from scripts.build_html_review_from_workbook import extract_main_images
@@ -8,12 +12,13 @@ from video_storyboard.schema import CharacterProfile, Shot, Storyboard
 from video_storyboard.workbook import create_workbook
 
 
-def make_storyboard() -> Storyboard:
+def make_storyboard(aspect_ratio: str = "16:9") -> Storyboard:
     return Storyboard(
         title="虹の旅",
         logline="ロボットと光の友達が虹の台地へ向かう。",
         audience="家族",
         visual_style="映画的",
+        aspect_ratio=aspect_ratio,
         story_summary="旅",
         character_bible=[CharacterProfile(name="ミオ", description="ロボット")],
         shots=[
@@ -113,3 +118,42 @@ def test_legacy_workbook_can_be_converted_without_generation_api(
 
     assert count == 1
     assert (extracted_dir / "shot_001.png").is_file()
+
+
+@pytest.mark.parametrize("aspect_ratio", ["9:16", "16:9"])
+def test_excel_and_html_keep_the_selected_aspect_ratio(
+    tmp_path: Path,
+    aspect_ratio: str,
+) -> None:
+    storyboard = make_storyboard(aspect_ratio)
+    prepare_images(tmp_path)
+    workbook_path = tmp_path / f"storyboard_{aspect_ratio.replace(':', '-')}.xlsx"
+    create_workbook(storyboard, tmp_path, [], workbook_path)
+    html_path = create_review_html(
+        storyboard,
+        tmp_path,
+        tmp_path
+        / "review"
+        / f"storyboard_{aspect_ratio.replace(':', '-')}.ja.html",
+        language="ja",
+    )
+
+    workbook = load_workbook(workbook_path)
+    assert workbook["00_全体"]["D3"].value == aspect_ratio
+    with ZipFile(workbook_path) as archive:
+        drawing = ElementTree.fromstring(
+            archive.read("xl/drawings/drawing1.xml")
+        )
+    extent = drawing.find(
+        ".//{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}ext"
+    )
+    assert extent is not None
+    image_width = int(extent.attrib["cx"])
+    image_height = int(extent.attrib["cy"])
+    if aspect_ratio == "9:16":
+        assert image_height > image_width
+    else:
+        assert image_width > image_height
+    assert f"aspect-ratio: {aspect_ratio.replace(':', '/')}" in html_path.read_text(
+        encoding="utf-8"
+    )

@@ -18,13 +18,23 @@ from .assets import (
     read_story,
     save_manifest,
 )
-from .character_registry import CharacterRegistry
+from .character_registry import (
+    CharacterRegistry,
+    require_resolved_character_names,
+)
 from .gemini_service import GeminiService
+from .knowledge import (
+    ensure_production_allowed,
+    load_builtin_guidance,
+    load_run_guidance,
+    snapshot_guidance,
+)
 from .motion_assets import prepare_motion_keyframes
 from .review_html import create_review_html
 from .schema import Storyboard
 from .settings import CHARACTER_REGISTRY_DIR
 from .video import concatenate_clips, inspect_video, render_video_shots
+from .website_tutorial import fetch_tutorial_page, format_tutorial_page
 from .workbook import (
     approve_workbook,
     create_video_workbook,
@@ -47,10 +57,34 @@ def _next_run_dir(output_root: Path) -> Path:
     return run_dir
 
 
+def _current_production_guidance():
+    guidance = load_builtin_guidance()
+    ensure_production_allowed(guidance, "ja")
+    if guidance.warning:
+        print(f"[warning] {guidance.warning}")
+    return guidance
+
+
 def _load_storyboard(run_dir: Path) -> Storyboard:
     return Storyboard.model_validate_json(
         (run_dir / "storyboard.json").read_text(encoding="utf-8")
     )
+
+
+def _require_storyboard_matches_guidance(storyboard, guidance) -> None:
+    selected_aspect_ratio = guidance.profile.media.aspect_ratio
+    if storyboard.aspect_ratio != selected_aspect_ratio:
+        raise RuntimeError(
+            "制作開始時に固定した映像比率とstoryboard.jsonの映像比率が"
+            "一致しません。制作途中では映像比率を変更できません。"
+            "別の映像比率で作る場合は、新しい制作として最初から開始してください。"
+        )
+
+
+def _load_pinned_guidance(run_dir: Path, storyboard: Storyboard):
+    guidance = load_run_guidance(run_dir)
+    _require_storyboard_matches_guidance(storyboard, guidance)
+    return guidance
 
 
 def _workbook_path(run_dir: Path) -> Path:
@@ -127,9 +161,17 @@ def create_command(
     output_root: Path,
     story_model: str | None = None,
     character_registry_dir: Path | None = CHARACTER_REGISTRY_DIR,
+    aspect_ratio: str | None = None,
 ) -> str:
     input_dir = input_dir.resolve()
+    if aspect_ratio is None:
+        raise RuntimeError(
+            "制作開始前に、利用者へ縦長9:16または横長16:9を確認し、"
+            "--aspect-ratioで明示してください。"
+        )
+    guidance = _current_production_guidance().for_aspect_ratio(aspect_ratio)
     run_dir = _next_run_dir(output_root.resolve())
+    snapshot_guidance(guidance, run_dir)
     reference_dir = run_dir / "references"
     reference_dir.mkdir()
 
@@ -140,7 +182,10 @@ def create_command(
     save_manifest(assets, story_path, run_dir / "manifest.json")
 
     print("[3/3] Geminiで3秒構成を生成")
-    service = GeminiService(story_model=story_model)
+    service = GeminiService(
+        profile=guidance.profile,
+        story_model=story_model,
+    )
     character_registry = CharacterRegistry.load_optional(character_registry_dir)
     storyboard = service.create_storyboard(
         story,
@@ -148,6 +193,7 @@ def create_command(
         input_dir,
         character_registry,
     )
+    _require_storyboard_matches_guidance(storyboard, guidance)
     (run_dir / "storyboard.json").write_text(
         storyboard.model_dump_json(indent=2),
         encoding="utf-8",
@@ -155,6 +201,12 @@ def create_command(
     print(
         f"構成完了: {len(storyboard.shots)}シート / "
         f"{storyboard.total_duration_seconds}秒"
+    )
+    print(f"使用したホームページ指示: {guidance.manifest.knowledge_version}")
+    print(
+        "映像比率: "
+        f"{guidance.profile.media.aspect_ratio} "
+        f"({guidance.profile.media.width}x{guidance.profile.media.height})"
     )
     print(
         "次はメイン画像を生成し、Excelコンテを作成します。"
@@ -172,9 +224,14 @@ def create_storyboard_in_run_command(
     """Resume storyboard generation after references were already prepared."""
     input_dir = input_dir.resolve()
     run_dir = run_dir.resolve()
+    _current_production_guidance()
     _, story = read_story(input_dir)
     assets = load_manifest(run_dir / "manifest.json")
-    service = GeminiService(story_model=story_model)
+    guidance = load_run_guidance(run_dir)
+    service = GeminiService(
+        profile=guidance.profile,
+        story_model=story_model,
+    )
     character_registry = CharacterRegistry.load_optional(character_registry_dir)
     storyboard = service.create_storyboard(
         story,
@@ -182,6 +239,7 @@ def create_storyboard_in_run_command(
         input_dir,
         character_registry,
     )
+    _require_storyboard_matches_guidance(storyboard, guidance)
     (run_dir / "storyboard.json").write_text(
         storyboard.model_dump_json(indent=2),
         encoding="utf-8",
@@ -196,8 +254,10 @@ def render_images_command(
     character_registry_dir: Path | None = CHARACTER_REGISTRY_DIR,
 ) -> str:
     run_dir = run_dir.resolve()
+    _current_production_guidance()
     storyboard = _load_storyboard(run_dir)
     assets = load_manifest(run_dir / "manifest.json")
+    guidance = _load_pinned_guidance(run_dir, storyboard)
     character_registry = CharacterRegistry.load_optional(character_registry_dir)
     if character_registry:
         issues = character_registry.validate()
@@ -205,7 +265,14 @@ def render_images_command(
             raise RuntimeError(
                 "Invalid character registry:\n" + "\n".join(issues)
             )
-    service = GeminiService(image_model=image_model)
+    require_resolved_character_names(
+        character_registry,
+        [name for shot in storyboard.shots for name in shot.characters],
+    )
+    service = GeminiService(
+        profile=guidance.profile,
+        image_model=image_model,
+    )
     generated = 0
     for index, shot in enumerate(storyboard.shots):
         destination = run_dir / "images" / f"shot_{shot.shot_number:03d}.png"
@@ -262,6 +329,7 @@ def render_images_command(
 def build_workbook_command(run_dir: Path) -> str:
     run_dir = run_dir.resolve()
     storyboard = _load_storyboard(run_dir)
+    _load_pinned_guidance(run_dir, storyboard)
     _require_storyboard_images(storyboard, run_dir)
     assets = load_manifest(run_dir / "manifest.json")
     destination = next_storyboard_workbook(run_dir)
@@ -283,6 +351,7 @@ def build_workbook_command(run_dir: Path) -> str:
 def approve_workbook_command(run_dir: Path) -> str:
     run_dir = run_dir.resolve()
     storyboard = _load_storyboard(run_dir)
+    _load_pinned_guidance(run_dir, storyboard)
     _require_storyboard_images(storyboard, run_dir)
     workbook_path = _workbook_path(run_dir)
     try:
@@ -304,10 +373,13 @@ def render_videos_command(
 ) -> str:
     run_dir = run_dir.resolve()
     storyboard = _load_storyboard(run_dir)
+    guidance = _load_pinned_guidance(run_dir, storyboard)
     _require_approved_workbook(storyboard, run_dir)
+    _current_production_guidance()
     completed = render_video_shots(
         storyboard=storyboard,
         run_dir=run_dir,
+        profile=guidance.profile,
         model=video_model,
         limit=limit,
         character_registry_dir=character_registry_dir,
@@ -340,8 +412,9 @@ def prepare_motion_keyframes_command(
 def finalize_video_command(run_dir: Path) -> str:
     run_dir = run_dir.resolve()
     storyboard = _load_storyboard(run_dir)
+    guidance = _load_pinned_guidance(run_dir, storyboard)
     destination = run_dir / "final" / f"story_video_{run_dir.name}.mp4"
-    concatenate_clips(storyboard, run_dir, destination)
+    concatenate_clips(storyboard, run_dir, destination, guidance.profile.media)
     metadata = inspect_video(destination)
     (destination.parent / "video_metadata.json").write_text(
         json.dumps(metadata, ensure_ascii=False, indent=2),
@@ -353,6 +426,7 @@ def finalize_video_command(run_dir: Path) -> str:
 def build_video_workbook_command(run_dir: Path) -> str:
     run_dir = run_dir.resolve()
     storyboard = _load_storyboard(run_dir)
+    _load_pinned_guidance(run_dir, storyboard)
     source = _require_approved_workbook(storyboard, run_dir)
     destination = next_video_review_workbook(run_dir)
     create_video_workbook(storyboard, source, run_dir, destination)
@@ -454,3 +528,13 @@ def extract_corrections_command(
     )
     extract_corrections(workbook_path, destination)
     return str(destination)
+
+
+def prepare_tutorial_command(
+    *,
+    youtube_url: str,
+    language: str = "ja",
+) -> str:
+    if language not in {"ja", "en"}:
+        raise ValueError("language must be 'ja' or 'en'")
+    return format_tutorial_page(fetch_tutorial_page(youtube_url, language))

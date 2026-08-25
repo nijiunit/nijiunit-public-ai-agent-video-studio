@@ -20,12 +20,27 @@ from video_storyboard.character_registry import (  # noqa: E402
     CharacterRecord,
     CharacterRegistry,
 )
+from video_storyboard.knowledge import (  # noqa: E402
+    MediaContract,
+    ProductionProfile,
+    ensure_production_allowed,
+    load_builtin_guidance,
+)
 from video_storyboard.schema import Shot  # noqa: E402
 from video_storyboard.video import (  # noqa: E402
     VideoService,
     extract_nine_frames,
     inspect_video,
     standardize_clip,
+)
+
+DESIGN_MEDIA = MediaContract(
+    shot_duration_seconds=3,
+    aspect_ratio="16:9",
+    width=1280,
+    height=720,
+    frames_per_second=24,
+    review_frames_per_second=3,
 )
 
 
@@ -86,6 +101,7 @@ def make_shot(record: CharacterRecord, motion: CharacterMotion) -> Shot:
 
 def render_motion(
     service: VideoService,
+    profile: ProductionProfile,
     registry: CharacterRegistry,
     record: CharacterRecord,
     motion: CharacterMotion,
@@ -115,9 +131,9 @@ def render_motion(
                 metadata,
                 character_lock=None,
             )
-            standardize_clip(raw, clip)
+            standardize_clip(raw, clip, profile.media)
             remove_audio_track(clip)
-            extract_nine_frames(clip, frames)
+            extract_nine_frames(clip, frames, profile.media)
             design_metadata = {
                 "schema_version": "1.0",
                 "status": "candidate",
@@ -130,6 +146,8 @@ def render_motion(
                 "start_frame": start_frame.name,
                 "clip": clip.name,
                 "prompt_en": motion.prompt_en,
+                "knowledge_version": profile.knowledge_version,
+                "media_contract": profile.media.model_dump(),
                 "inspection": inspect_video(clip),
             }
             (directory / f"{motion.id}_design.json").write_text(
@@ -178,10 +196,13 @@ def main() -> None:
     if not selected:
         raise SystemExit("No matching character or motion id.")
 
-    service = VideoService(model=args.model)
+    guidance = load_builtin_guidance()
+    ensure_production_allowed(guidance, "ja")
+    design_profile = guidance.profile.model_copy(update={"media": DESIGN_MEDIA})
+    service = VideoService(profile=design_profile, model=args.model)
     for record, motion in selected:
         print(
-            f"[done] {render_motion(service, registry, record, motion, args.overwrite, args.keep_provider_artifacts)}",
+            f"[done] {render_motion(service, design_profile, registry, record, motion, args.overwrite, args.keep_provider_artifacts)}",
             flush=True,
         )
 

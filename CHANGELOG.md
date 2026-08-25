@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Added verified nijiunit YouTube tutorial sessions: safe URL and official-channel
+  validation, paired website catalogs, opt-in Gemini video observation and live
+  comments, untrusted-comment isolation, sequential steps, and one-time official
+  subscription, milestone-thanks, and activity messages after completion.
+- Added a per-production `9:16` or `16:9` choice, with the resolved dimensions
+  pinned in the guidance lock for consistent prompts, review artifacts, and output.
+- Made story sampling temperature optional and omit it from Gemini requests when
+  the website profile does not explicitly provide it.
+- Added a versioned, SHA-256-verified website-guidance channel with daily
+  manifest checks, immutable caches, expiry and compatibility enforcement,
+  operator notices, and per-production guidance snapshots.
+- Moved current model choices, media settings, and evolving story, image,
+  video, and speech guidance out of core Python into the website production
+  profile, while retaining local safety and Excel approval enforcement.
+- Removed work-specific story and soundtrack behavior from the generic engine;
+  public samples, HOWTO movies, and deterministic sample soundtracks now live
+  in the separate `nijiunit-public-ai-agent-video-studio-howto-movie`
+  repository, while generic ambience accepts work-specific JSON settings.
 - Restored the Excel storyboard as the mandatory human-review artifact for
   every production, with automatic workbook creation after all starting images
   exist and an explicit approval command.

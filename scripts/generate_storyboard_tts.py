@@ -17,9 +17,13 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from video_storyboard.settings import TTS_MODEL, require_api_key  # noqa: E402
+from video_storyboard.knowledge import (  # noqa: E402
+    ensure_production_allowed,
+    load_builtin_guidance,
+    load_run_guidance,
+)
+from video_storyboard.settings import model_override, require_api_key  # noqa: E402
 
-DEFAULT_MODEL = TTS_MODEL
 FFMPEG = get_ffmpeg_exe()
 
 
@@ -126,9 +130,9 @@ def main() -> None:
         description="Generate dedicated TTS for every storyboard dialogue line."
     )
     parser.add_argument("--run-dir", required=True, type=Path)
-    parser.add_argument("--model", default=DEFAULT_MODEL)
-    parser.add_argument("--voice", default="Achird")
-    parser.add_argument("--speaker", default="calm friendly character")
+    parser.add_argument("--model", default=None)
+    parser.add_argument("--voice", default=None)
+    parser.add_argument("--speaker", default=None)
     parser.add_argument(
         "--voice-config",
         type=Path,
@@ -139,16 +143,19 @@ def main() -> None:
     )
     parser.add_argument(
         "--style",
-        default=(
-            "Warm, compact, friendly Japanese delivery. Speak clearly and "
-            "naturally, with short pauses, finishing within 2.55 seconds."
-        ),
+        default=None,
     )
     args = parser.parse_args()
 
-    voice_overrides = load_voice_overrides(args.voice_config)
-
     run_dir = args.run_dir.resolve()
+    ensure_production_allowed(load_builtin_guidance(), "ja")
+    guidance = load_run_guidance(run_dir)
+    audio_profile = guidance.profile.audio
+    model = args.model or model_override("tts") or guidance.profile.models.tts
+    default_voice = args.voice or audio_profile.default_voice
+    default_speaker = args.speaker or audio_profile.default_speaker
+    default_style = args.style or audio_profile.default_style
+    voice_overrides = load_voice_overrides(args.voice_config)
     storyboard = json.loads((run_dir / "storyboard.json").read_text(encoding="utf-8"))
     lines = [shot for shot in storyboard["shots"] if shot.get("dialogue")]
     raw_dir = run_dir / "audio" / "tts_raw"
@@ -162,18 +169,20 @@ def main() -> None:
         number = int(shot["shot_number"])
         line = str(shot["dialogue"])
         override = voice_overrides.get(str(number), {})
-        voice = str(override.get("voice", args.voice))
-        speaker = str(override.get("speaker", args.speaker))
-        style = str(override.get("style", args.style))
+        voice = str(override.get("voice", default_voice))
+        speaker = str(override.get("speaker", default_speaker))
+        style = str(override.get("style", default_style))
         raw = raw_dir / f"shot_{number:03d}.wav"
         destination = output_dir / f"shot_{number:03d}.wav"
         prompt = (
-            "Read only the following Japanese sentence. Do not add a speaker "
+            "Read only the following sentence. Do not add a speaker "
             "name, explanation, paraphrase, repetition, laugh, or sigh. "
+            f"Language: {audio_profile.tts_language_instruction}. "
+            f"Finish within {audio_profile.maximum_speech_seconds:.2f} seconds. "
             f"Speaker: {speaker}. Style: {style}\nSentence: {line}"
         )
         if not destination.exists():
-            audio = create_audio(client, args.model, voice, prompt, number)
+            audio = create_audio(client, model, voice, prompt, number)
             save_audio(audio, raw)
             standardize(raw, destination)
         item = {
@@ -189,7 +198,8 @@ def main() -> None:
     (run_dir / "audio" / "tts_report.json").write_text(
         json.dumps(
             {
-                "model": args.model,
+                "model": model,
+                "knowledge_version": guidance.manifest.knowledge_version,
                 "video_api_audio_used": False,
                 "shots": report,
             },

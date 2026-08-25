@@ -21,9 +21,18 @@ output/*
 !output/.gitkeep
 tmp/
 logs/
+.nijiunit/
 
 # Local maintainer notes. Never publish this operator-only file.
 /運営者用.md
+/temp202608191000.md
+/temp20260819.md
+/temp202608241530.md
+/再設計20260819.md
+/nijiunit-public-ai-agent-video-studio-運用資料まとめ.md
+
+# Public sample and HOWTO productions live in the separate movie repository.
+/examples/
 
 # Editor and OS files
 .DS_Store

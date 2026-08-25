@@ -55,4 +55,4 @@ If `bash scripts/setup.sh` reports that Python is missing, guide these actions o
 
 ## Completion condition
 
-Python preparation is complete when setup step `[1/5]` displays Python 3.11 or later and proceeds to create `.venv`. Do not report that the entire application is ready merely because Python has been installed.
+Python preparation is complete when setup step `[1/6]` displays Python 3.11 or later and proceeds to create `.venv`. Do not report that the entire application is ready merely because Python has been installed.

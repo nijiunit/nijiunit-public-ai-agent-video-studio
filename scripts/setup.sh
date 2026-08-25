@@ -35,17 +35,17 @@ if [[ -z "$python_launcher" ]]; then
   exit 10
 fi
 
-echo "[1/5] Checking Python 3.11+"
+echo "[1/6] Checking Python 3.11+"
 "$python_launcher" -c 'import sys; print("      Python " + sys.version.split()[0])'
 
-echo "[2/5] Preparing .venv"
+echo "[2/6] Preparing .venv"
 if [[ ! -x .venv/bin/python ]]; then
   "$python_launcher" -m venv .venv
 else
   echo "      Existing .venv will be reused."
 fi
 
-echo "[3/5] Installing the application"
+echo "[3/6] Installing the application"
 extras=()
 [[ "$with_dev" -eq 1 ]] && extras+=(dev)
 [[ "$with_asr" -eq 1 ]] && extras+=(asr)
@@ -56,7 +56,7 @@ if [[ "${#extras[@]}" -gt 0 ]]; then
 fi
 ./.venv/bin/python -m pip install --editable "$package_spec"
 
-echo "[4/5] Preparing .env"
+echo "[4/6] Preparing .env"
 if [[ ! -f .env ]]; then
   cp .env.example .env
   echo "      Created .env. The safe API-key guide follows."
@@ -64,7 +64,10 @@ else
   echo "      Existing .env was preserved."
 fi
 
-echo "[5/5] Running local diagnostics (no generation API calls)"
+echo "[5/6] Checking the bundled production defaults"
+./.venv/bin/python -c "from video_storyboard.knowledge import load_builtin_guidance; print(load_builtin_guidance().profile.profile_id)"
+
+echo "[6/6] Running local diagnostics (no generation API calls)"
 ./.venv/bin/python scripts/doctor.py
 
-echo "Base installation finished. The AI agent must continue with docs/google-api-setup.md."
+echo "Base installation finished. Continue with the language-matched Google API guide. Video-specific guides are read directly from the NijiUnit website when needed."

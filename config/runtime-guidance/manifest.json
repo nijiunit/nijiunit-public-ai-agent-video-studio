@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "knowledge_version": "0.6.0-local.1",
+  "published_at": "2026-08-19T00:00:00+09:00",
+  "compatibility": {
+    "minimum_studio_version": "0.6.0",
+    "maximum_studio_version_exclusive": "1.0.0"
+  },
+  "resources": {
+    "agent_guide_ja": {
+      "url": "agent_guide_ja.md",
+      "sha256": "b63d2e282d53e39d2eff3d75495eac500ac12bc7b356a2507e94711fb2f858ef",
+      "media_type": "text/markdown"
+    },
+    "agent_guide_en": {
+      "url": "agent_guide_en.md",
+      "sha256": "f37688bc1f3bbff34e9da2bebb84efc96c8dd1973abf2766b046866c8037bf88",
+      "media_type": "text/markdown"
+    },
+    "production_profile": {
+      "url": "production_profile.json",
+      "sha256": "b9ece368c644884cad86e4484fab93904a26060062023172715a0ab2dfd8a752",
+      "media_type": "application/json"
+    },
+    "notices_ja": {
+      "url": "notices_ja.json",
+      "sha256": "5260d2193d3b9ea9b18d941daf5e201de7e78145ccd9ce7efccdca78018ce423",
+      "media_type": "application/json"
+    },
+    "notices_en": {
+      "url": "notices_en.json",
+      "sha256": "5260d2193d3b9ea9b18d941daf5e201de7e78145ccd9ce7efccdca78018ce423",
+      "media_type": "application/json"
+    }
+  }
+}

@@ -54,6 +54,13 @@ def test_readiness_distinguishes_warning_from_failure() -> None:
         == "NOT READY"
     )
     assert readiness([Check("FFmpeg", "FAIL", "missing")]) == "NOT READY"
+    # A legacy website-guidance warning no longer blocks new productions.
+    assert readiness(
+        [
+            Check("nijiunit website guidance", "WARN", "missing"),
+            Check("GEMINI_API_KEY", "WARN", "missing"),
+        ]
+    ) == "LOCAL READY (Google API setup required)"
 
 
 def test_configured_models_reads_overrides_without_exposing_key(tmp_path: Path) -> None:
@@ -75,6 +82,7 @@ def test_online_api_key_checks_models_without_generating_media() -> None:
         "image": "image-model",
         "video": "video-model",
         "tts": "tts-model",
+        "asr": "asr-model",
     }
 
     class Models:

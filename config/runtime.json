@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "tutorial_base_url": "https://manual.nijiunit.com",
+  "github_repository_url": "https://github.com/nijiunit/nijiunit-public-ai-agent-video-studio",
+  "request_timeout_seconds": 20,
+  "maximum_page_bytes": 2097152
+}

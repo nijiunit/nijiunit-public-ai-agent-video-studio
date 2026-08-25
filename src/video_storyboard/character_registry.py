@@ -718,3 +718,31 @@ class CharacterRegistry:
             encoding="utf-8",
         )
         return output
+
+
+def require_resolved_character_names(
+    registry: CharacterRegistry | None,
+    character_names: list[str],
+) -> None:
+    """Stop paid image/video generation unless every named character is locked."""
+    requested = list(
+        dict.fromkeys(name.strip() for name in character_names if name.strip())
+    )
+    if not requested:
+        return
+    if registry is None:
+        raise RuntimeError(
+            "キャラクターが登場するため、生成前にキャラクター台帳が必要です。"
+            "AIエージェントに、各キャラクターの基準画像と特徴を台帳へ登録するよう"
+            "依頼してください。登録が終わるまで有料の画像・動画生成は開始しません。\n"
+            "A character registry is required before paid image or video generation."
+        )
+    _, unresolved = registry.resolve(requested)
+    if unresolved:
+        raise RuntimeError(
+            "次のキャラクターを台帳で確認できないため、生成を停止しました: "
+            + ", ".join(unresolved)
+            + "。AIエージェントに、同じキャラクターとして使う基準画像と特徴を"
+            "台帳へ登録するよう依頼してください。\n"
+            "Generation stopped before billing because character identity is unresolved."
+        )

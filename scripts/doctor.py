@@ -15,6 +15,11 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from video_storyboard.knowledge import (  # noqa: E402
+    ensure_production_allowed,
+    load_builtin_guidance,
+)
+
 MINIMUM_PYTHON = (3, 11)
 PROJECT_DISTRIBUTION = "nijiunit-ai-agent-video-studio"
 DEPENDENCIES = {
@@ -25,12 +30,7 @@ DEPENDENCIES = {
     "dotenv": "python-dotenv",
     "imageio_ffmpeg": "imageio-ffmpeg",
 }
-DEFAULT_MODELS = {
-    "story": "gemini-3.6-flash",
-    "image": "gemini-3.1-flash-image",
-    "video": "gemini-omni-flash-preview",
-    "tts": "gemini-3.1-flash-tts-preview",
-}
+MODEL_ROLES = ("story", "image", "video", "tts", "asr", "tutorial")
 
 
 @dataclass(frozen=True)
@@ -83,17 +83,20 @@ def read_env_setting(
 
 def configured_models(
     env_path: Path,
+    defaults: dict[str, str] | None = None,
     environ: dict[str, str] | None = None,
 ) -> dict[str, str]:
-    return {
+    defaults = defaults or {}
+    values = {
         role: read_env_setting(
             env_path,
             f"{role.upper()}_MODEL",
-            default,
+            defaults.get(role, ""),
             environ=environ,
         )
-        for role, default in DEFAULT_MODELS.items()
+        for role in MODEL_ROLES
     }
+    return {role: model for role, model in values.items() if model}
 
 
 def api_key_is_set(env_path: Path, environ: dict[str, str] | None = None) -> bool:
@@ -223,27 +226,6 @@ def ffmpeg_check() -> Check:
         return Check("FFmpeg", "FAIL", f"{type(error).__name__}: {error}")
 
 
-def registry_check() -> Check:
-    registry_dir = ROOT / "examples" / "space-friends" / "characters"
-    try:
-        from video_storyboard.character_registry import CharacterRegistry
-
-        registry = CharacterRegistry.load(registry_dir)
-        issues = registry.validate()
-        if issues:
-            return Check("character registry", "FAIL", "; ".join(issues[:3]))
-        names = ", ".join(
-            f"{record.id}/{record.version}" for record in registry.records
-        )
-        return Check("character registry", "PASS", names)
-    except Exception as error:  # noqa: BLE001
-        return Check(
-            "character registry",
-            "FAIL",
-            f"{type(error).__name__}: {error}",
-        )
-
-
 def spreadsheet_viewer_check() -> Check:
     try:
         from video_storyboard.artifacts import detect_spreadsheet_viewers
@@ -265,25 +247,6 @@ def spreadsheet_viewer_check() -> Check:
     return Check("spreadsheet viewer", "PASS", names)
 
 
-def demo_check() -> Check:
-    demo = ROOT / "examples" / "space-friends" / "demo.mp4"
-    if not demo.is_file():
-        return Check("public demo", "FAIL", "examples/space-friends/demo.mp4 missing")
-    try:
-        from video_storyboard.video import inspect_video
-
-        info = inspect_video(demo)
-    except Exception as error:  # noqa: BLE001
-        return Check("public demo", "FAIL", f"{type(error).__name__}: {error}")
-    if (
-        abs(float(info.get("duration_seconds") or 0) - 30.0) > 0.1
-        or (info.get("width"), info.get("height")) != (1280, 720)
-        or not info.get("has_audio")
-    ):
-        return Check("public demo", "FAIL", f"unexpected media metadata: {info}")
-    return Check("public demo", "PASS", "30.00s, 1280x720, audio present")
-
-
 def collect_checks(
     require_api_key: bool = False,
     verify_api_key_online: bool = False,
@@ -302,9 +265,27 @@ def collect_checks(
         dependency_check(module, distribution)
         for module, distribution in DEPENDENCIES.items()
     )
-    checks.extend(
-        [ffmpeg_check(), registry_check(), spreadsheet_viewer_check(), demo_check()]
-    )
+    checks.extend([ffmpeg_check(), spreadsheet_viewer_check()])
+
+    guidance = None
+    try:
+        guidance = load_builtin_guidance()
+        ensure_production_allowed(guidance, "ja")
+        checks.append(
+            Check(
+                "bundled production defaults",
+                "PASS",
+                f"verified version {guidance.manifest.knowledge_version}",
+            )
+        )
+    except Exception:
+        checks.append(
+            Check(
+                "bundled production defaults",
+                "FAIL",
+                "not available; update or reinstall this repository",
+            )
+        )
 
     api_key = read_api_key(ROOT / ".env")
     key_set = bool(api_key)
@@ -319,11 +300,12 @@ def collect_checks(
             ),
         )
     )
-    if verify_api_key_online and key_set:
+    if verify_api_key_online and key_set and guidance:
+        profile_models = guidance.profile.models.model_dump()
         checks.extend(
             api_key_online_checks(
                 api_key,
-                configured_models(ROOT / ".env"),
+                configured_models(ROOT / ".env", defaults=profile_models),
             )
         )
     output_dir = ROOT / "output"
@@ -342,7 +324,11 @@ def collect_checks(
 def readiness(checks: list[Check], online_verification_requested: bool = False) -> str:
     if any(item.status == "FAIL" for item in checks):
         return "NOT READY"
-    if any(item.name == "GEMINI_API_KEY" and item.status == "WARN" for item in checks):
+    api_key_missing = any(
+        item.name == "GEMINI_API_KEY" and item.status == "WARN"
+        for item in checks
+    )
+    if api_key_missing:
         return "LOCAL READY (Google API setup required)"
     if not online_verification_requested:
         return "LOCAL READY (online verification required)"

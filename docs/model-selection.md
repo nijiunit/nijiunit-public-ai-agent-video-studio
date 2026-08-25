@@ -10,12 +10,12 @@ best for every task.
 | Design motion | stable identity and visible controlled motion in three seconds |
 | Story video | first-frame fidelity, motion quality, character reference support |
 | TTS | pronunciation, voice consistency, completion within the shot |
-| Transcription | local privacy, exact word checking |
+| Transcription | prefer local privacy; when remote review is explicitly used, exact word checking with the website-selected ASR model |
 | Subtitles/concatenation | deterministic local rendering; no generative model |
 
 Using several models is intentional: image composition, temporal motion, speech,
-and verification are different problems. A model switch must be recorded by
-stage and shot in the episode's AI model usage record. Availability, price, and
-input limits change; model names in `.env.example` are working examples, not a
-promise that the provider will keep them available.
-
+and verification are different problems. Current recommended model identifiers
+come from the verified nijiunit website production profile. `.env` contains only
+optional local overrides. A model switch must be recorded by stage and shot in
+the episode's AI model usage record. Availability, price, and input limits
+change, so the user reviews current provider information before paid generation.
