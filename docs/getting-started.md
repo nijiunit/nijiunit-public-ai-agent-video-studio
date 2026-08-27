@@ -82,43 +82,29 @@ Open [Google AI Studio API Keys](https://aistudio.google.com/app/apikey) and con
 
 Treat the key like a password. Never paste it into chat, an issue, email, screen sharing, a command argument, or a committed file. If it is exposed, revoke it in Google AI Studio and create a replacement.
 
-### 2.3 Store the key without displaying it
+### 2.3 Store the key in the local setup page
 
-Windows:
+After pricing, project, and billing have been reviewed, the AI agent opens the local setup page. The beginner does not operate a terminal for the normal path.
+
+On Windows, the agent runs:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\configure_api_key.py
+.\.venv\Scripts\python.exe scripts\open_setup.py --language en
 ```
 
 macOS or Linux:
 
 ```bash
-./.venv/bin/python scripts/configure_api_key.py
+./.venv/bin/python scripts/open_setup.py --language en
 ```
 
-Paste the key at the prompt and press Enter. Hidden input is expected. The tool preserves other `.env` settings and never prints the key. To replace an existing key, explicitly add `--replace`.
+The NijiUnit page guides the user one screen at a time: open Google AI Studio in another tab, compare the illustrated instructions with Google's page, copy the key, return to NijiUnit, and paste it into the masked local field. Never paste the key into chat, a terminal, or a URL.
 
-```powershell
-.\.venv\Scripts\python.exe scripts\configure_api_key.py --replace
-```
-
-The Git-ignored `.env` is the only local file intended to store this key.
+The page listens only on `127.0.0.1`. It does not place the key in command arguments, URLs, logs, or browser storage and stores it only in the Git-ignored `.env`. It preserves unrelated `.env` settings and requires explicit on-page confirmation before replacing an existing key. Use `scripts/configure_api_key.py` only as a recovery path when the browser page cannot run.
 
 ### 2.4 Verify authentication and configured models
 
-Windows:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\doctor.py --require-api-key --verify-api-key-online
-```
-
-macOS or Linux:
-
-```bash
-./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
-```
-
-This diagnostic does not generate media. It checks Google authentication and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not guarantee account balance, quota, regional access, preview eligibility, or a successful paid generation. Confirm possible charges before the first user-approved generation.
+For a new key, press **Save on this PC and check connection** on the same local page. For an existing key, press **Check the saved connection**. This checks Google authentication and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not generate media or perform a billable generation request. It does not guarantee account balance, quota, regional access, preview eligibility, or a successful paid generation. Confirm possible charges before the first user-approved generation. Use `doctor.py --require-api-key --verify-api-key-online` only as a recovery path if the page cannot run.
 
 ## 3. Check local readiness
 

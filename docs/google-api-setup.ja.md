@@ -71,39 +71,27 @@
 
 ## G6: APIキーを安全に保存する
 
-AIエージェントはOSに応じた次のコマンドを提示します。この操作だけは、利用者本人が対話可能なローカル端末で行います。
+AIエージェントがOSに応じた次のコマンドを実行し、画像付きのNijiUnitローカル設定画面をブラウザで開きます。初心者本人にターミナルを操作させません。
 
 Windows:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\configure_api_key.py
+.\.venv\Scripts\python.exe scripts\open_setup.py --language ja
 ```
 
 macOS:
 
 ```bash
-./.venv/bin/python scripts/configure_api_key.py
+./.venv/bin/python scripts/open_setup.py --language ja
 ```
 
-利用者へは「貼り付けても文字が表示されないのが正常」「貼り付けたらEnter」とだけ説明し、キーそのものを尋ねません。
+画面は、Google AI Studioを別タブで開くところから、画像と文章によるGoogle画面の見方、コピー、NijiUnitへの戻り方、貼り付けまでを一画面ずつ案内します。Google公式画面のコピー印を利用者本人が押し、ローカル設定画面の秘密入力欄へ貼り付けます。文字が丸で隠れるのが正常です。キーそのものは尋ねません。
+
+設定画面は`127.0.0.1`だけで待ち受けます。キーをURL、ログ、ブラウザ保存領域へ残さず、Git管理外の`.env`だけへ保存します。既存キーは、利用者が交換確認を明示した場合だけ変更します。ブラウザ画面を使えない場合だけ、`configure_api_key.py`を復旧用として使用します。
 
 ## G7: 接続とモデル構成を確認する
 
-利用者が保存完了を伝えた後、AIエージェントが次を実行します。
-
-Windows:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\doctor.py --require-api-key --verify-api-key-online
-```
-
-macOS:
-
-```bash
-./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
-```
-
-この診断はメディアを生成せず、APIキーの認証と、設定された物語・画像・動画・TTS・音声確認モデルがモデル一覧に存在することを確認します。有料の生成処理は行いません。
+新しいキーでは、同じ画面の「このPCに保存して、接続を確認する」を押します。保存済みキーでは「保存済みのキーで接続を確認する」を押します。APIキーの認証と、設定された物語・画像・動画・TTS・音声確認モデルがモデル一覧に存在することだけを確認します。メディアを生成せず、有料の生成処理は行いません。画面を使えない場合だけ、`doctor.py --require-api-key --verify-api-key-online`を復旧用として使用します。
 
 モデル一覧の確認だけでは、残高、地域、利用上限、プレビュー提供条件による実生成の成功までは保証できません。診断結果は「有料生成未テスト」と明示します。最初の画像・動画生成前に、利用者へ料金が発生することを伝え、生成依頼を確認します。
 

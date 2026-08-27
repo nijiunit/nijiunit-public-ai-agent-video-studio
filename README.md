@@ -30,7 +30,7 @@ Open the cloned repository in Codex or another compatible AI agent and ask:
 Please make this application ready to use.
 ```
 
-Following [AGENTS.md](AGENTS.md), the agent runs the dedicated setup script and checks the virtual environment, dependencies, bundled production defaults, `.env`, and FFmpeg. If an API key is missing, it guides the user through Google AI Studio, hidden local input, and a new diagnostic. Setup never calls a generation API and never overwrites an existing `.env` without permission.
+Following [AGENTS.md](AGENTS.md), the agent runs the dedicated setup script and checks the virtual environment, dependencies, bundled production defaults, `.env`, and FFmpeg. If an API key is missing, it opens an illustrated local setup page for Google AI Studio, masked secret entry, and connection verification. A beginner does not normally paste the key into a terminal. Setup never calls a generation API and never overwrites an existing `.env` without permission.
 
 This request assumes that the upstream guide has already helped the user install an AI agent and Git, clone the repository, and open this folder. From that point, this repository is responsible for Python, FFmpeg, Google Generative AI API pricing and billing guidance, secure API-key setup, and connection checks. When a beginner must operate a screen, the agent explains only one action at a time.
 
@@ -69,23 +69,21 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 
 After local setup, the agent follows the [first-time Google Generative AI API guide](docs/google-api-setup.md), one user action at a time. The user must verify the paid-access requirement, current prices, selected project, and billing terms for every configured model before production use.
 
-After obtaining a key, do not paste it into chat. Enter it into the dedicated local tool; the input is hidden.
+After obtaining a key, do not paste it into chat. The agent opens the dedicated local browser page, and the user pastes the key into its masked field.
 
 Windows:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\configure_api_key.py
-.\.venv\Scripts\python.exe scripts\doctor.py --require-api-key --verify-api-key-online
+.\.venv\Scripts\python.exe scripts\open_setup.py --language en
 ```
 
 macOS / Linux:
 
 ```bash
-./.venv/bin/python scripts/configure_api_key.py
-./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
+./.venv/bin/python scripts/open_setup.py --language en
 ```
 
-The key is stored only in the Git-ignored `.env`. The online diagnostic generates no media: it checks authentication and confirms that the configured story, image, video, TTS, and speech-review model identifiers appear in the provider model catalog. It does not guarantee paid generation, account balance, regional availability, or quota. Before the first generation request, the agent explains that charges may apply and waits for the user's request.
+The page listens only on this computer's `127.0.0.1` address and stores the key only in the Git-ignored `.env`. It does not put the key in chat, a URL, logs, or browser storage. Its connection check generates no media: it checks authentication and confirms that the configured story, image, video, TTS, and speech-review model identifiers appear in the provider model catalog. It does not guarantee paid generation, account balance, regional availability, or quota. Before the first generation request, the agent explains that charges may apply and waits for the user's request. `scripts/configure_api_key.py` and the command-line doctor remain recovery tools for environments where the browser page cannot run.
 
 ## First local check
 

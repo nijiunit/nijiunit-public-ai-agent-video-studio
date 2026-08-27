@@ -71,39 +71,27 @@ Current newly created Google AI Studio keys are authentication keys. Ask the use
 
 ## G6: Store the API key safely
 
-The AI agent presents the command for the user's platform. The user runs this step in an interactive local terminal.
+The AI agent runs the command for the user's platform and opens the illustrated NijiUnit local setup page in a browser. A beginner does not operate a terminal for the normal path.
 
 Windows:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\configure_api_key.py
+.\.venv\Scripts\python.exe scripts\open_setup.py --language en
 ```
 
 macOS or Linux:
 
 ```bash
-./.venv/bin/python scripts/configure_api_key.py
+./.venv/bin/python scripts/open_setup.py --language en
 ```
 
-Explain only that hidden input is normal and that the user should paste the key and press Enter. Never ask for the key itself.
+The page guides the user one screen at a time: open Google AI Studio in another tab, compare the illustrated instructions with Google's page, copy the key, return to NijiUnit, and paste into the masked local field. Never ask for the key itself.
+
+The page binds only to `127.0.0.1`. It does not put the key in a URL, log, or browser storage and stores it only in the Git-ignored `.env`. It requires explicit confirmation before replacing an existing key. Use `configure_api_key.py` only as a recovery path when the browser page cannot run.
 
 ## G7: Verify authentication and model configuration
 
-After the user reports that storage succeeded, the AI agent runs:
-
-Windows:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\doctor.py --require-api-key --verify-api-key-online
-```
-
-macOS or Linux:
-
-```bash
-./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
-```
-
-This check generates no media. It authenticates the key and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not perform paid generation.
+For a new key, the user presses **Save on this PC and check connection** on the same page. For an existing key, the user presses **Check the saved connection**. This check generates no media. It authenticates the key and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not perform paid generation. Use `doctor.py --require-api-key --verify-api-key-online` only as a recovery path if the page cannot run.
 
 A model-catalog check cannot guarantee sufficient balance, regional support, quota, preview eligibility, or successful generation. Report the result as "paid generation not tested." Before the first image or video request, tell the user that charges may apply and confirm the generation request.
 

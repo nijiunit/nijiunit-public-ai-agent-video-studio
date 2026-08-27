@@ -160,7 +160,7 @@ try {
         throw "Diagnostics reported a blocking failure."
     }
 
-    Write-Host "Base installation finished. Continue with docs/google-api-setup.ja.md. Video-specific guides are read directly from the NijiUnit website when needed."
+    Write-Host "Base installation finished. Review pricing and billing using docs/google-api-setup.ja.md, then open the beginner setup page with scripts/open_setup.py."
 } finally {
     Pop-Location
 }

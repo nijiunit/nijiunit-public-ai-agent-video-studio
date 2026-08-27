@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 0.7.0 - 2026-08-27
+
+- Added a beginner-first local browser setup page with illustrated Google AI
+  Studio guidance, masked API-key storage, explicit replacement protection,
+  and non-generation authentication/model verification. The page is
+  loopback-only, serves its owned visual assets locally, and does not put
+  secrets in chat, URLs, logs, or browser storage.
+- Restricted website handoff sync to explicitly verified routes. All language
+  and agent drafts now pin a dedicated Documents location, forbid temporary or
+  workspace copies, and scope `.env` use to the exact target repository.
+- Strengthened the public-repository safety check to scan tracked and
+  non-ignored untracked candidates of every file type, reject tracked local
+  environment files, and require manual review for oversized files or links.
 - Added verified nijiunit YouTube tutorial sessions: safe URL and official-channel
   validation, paired website catalogs, opt-in Gemini video observation and live
   comments, untrusted-comment isolation, sequential steps, and one-time official

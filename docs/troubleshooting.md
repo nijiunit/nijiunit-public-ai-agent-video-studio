@@ -19,8 +19,10 @@ page. Do not send the API key itself when asking for help. See the official
 ## The API key was pasted into chat or committed to Git
 
 Treat it as exposed. Revoke the key in Google AI Studio, create a replacement,
-and run `scripts/configure_api_key.py --replace`. Removing a key from the latest
-file is not enough if it remains in chat, logs, or Git history.
+and open `scripts/open_setup.py` to store it with the explicit replacement
+confirmation. Use `scripts/configure_api_key.py --replace` only if the local
+browser page cannot run. Removing a key from the latest file is not enough if it
+remains in chat, logs, or Git history.
 
 ## Setup reports that Python is missing or too old
 

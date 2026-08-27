@@ -32,7 +32,7 @@ AIエージェントと生成AIを使い、3秒単位の短い動画を、キャ
 このアプリを使えるようにしてください。
 ```
 
-AIエージェントは[AGENTS.md](AGENTS.md)に従い、専用セットアップスクリプトを実行して、仮想環境、依存関係、`.env`、FFmpeg、同梱された制作基本設定を診断します。APIキーが未設定なら、Google AI Studioでの取得、安全な非表示入力、再診断まで案内します。セットアップ中に生成APIは呼ばず、既存の`.env`も無断で上書きしません。
+AIエージェントは[AGENTS.md](AGENTS.md)に従い、専用セットアップスクリプトを実行して、仮想環境、依存関係、`.env`、FFmpeg、同梱された制作基本設定を診断します。APIキーが未設定なら、画像付きのローカル設定画面を開き、Google AI Studioでの取得、秘密入力、接続確認まで案内します。初心者が通常の手順でターミナルへAPIキーを貼る必要はありません。セットアップ中に生成APIは呼ばず、既存の`.env`も無断で上書きしません。
 
 この依頼は、案内AIによってAIエージェントの導入、Gitの準備、リポジトリのクローン、このフォルダを開くところまで終わった後に行います。以降はこのリポジトリ側が、Python、FFmpeg、Google生成AI APIの料金・課金・APIキー・接続確認を担当します。初心者本人の操作が必要な場面では、一度に一つだけ案内します。
 
@@ -69,23 +69,21 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 
 ローカル環境の準備後は、[Google生成AI APIの初回準備](docs/google-api-setup.ja.md)に従い、AIエージェントが一操作ずつ案内します。同梱設定のモデルについて、有料枠の要否、最新料金、プロジェクト、課金方式をAPIキーより先に利用者本人と確認します。
 
-APIキーを取得した後は、キーをチャットへ貼らず、次の専用ツールへ入力してください。入力内容は画面に表示されません。
+APIキーを取得した後は、キーをチャットへ貼らず、AIエージェントが次のローカル設定画面を開きます。ブラウザに表示された秘密入力欄へ、利用者本人が貼り付けます。
 
 Windows:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\configure_api_key.py
-.\.venv\Scripts\python.exe scripts\doctor.py --require-api-key --verify-api-key-online
+.\.venv\Scripts\python.exe scripts\open_setup.py --language ja
 ```
 
 macOS / Linux:
 
 ```bash
-./.venv/bin/python scripts/configure_api_key.py
-./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
+./.venv/bin/python scripts/open_setup.py --language ja
 ```
 
-キーはGit管理されない`.env`へ保存されます。再診断ではメディアを生成せず、Google側の認証と、設定した物語・画像・動画・TTS・音声確認モデルがモデル一覧にあることを確認します。ただし、有料生成の成功、残高、地域、利用上限までは保証しません。最初の生成前に料金が発生することを説明し、利用者の依頼を確認します。
+画面はこのPCの`127.0.0.1`だけで動き、キーをGit管理されない`.env`へ保存します。キーをURL、チャット、ログ、ブラウザ保存領域へ残しません。接続確認ではメディアを生成せず、Google側の認証と、設定した物語・画像・動画・TTS・音声確認モデルがモデル一覧にあることを確認します。ただし、有料生成の成功、残高、地域、利用上限までは保証しません。最初の生成前に料金が発生することを説明し、利用者の依頼を確認します。ブラウザ画面を利用できない環境に限り、`scripts/configure_api_key.py`と`doctor.py`を復旧用手順として使用します。
 
 ## まず試す
 

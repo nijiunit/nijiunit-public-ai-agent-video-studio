@@ -25,9 +25,8 @@ logs/
 
 # Local maintainer notes. Never publish this operator-only file.
 /運営者用.md
-/temp202608191000.md
-/temp20260819.md
-/temp202608241530.md
+/temp*.md
+/会話履歴*.md
 /再設計20260819.md
 /nijiunit-public-ai-agent-video-studio-運用資料まとめ.md
 

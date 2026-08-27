@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="__LANG__">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NijiUnit 初回設定 / First setup</title>
+  <style nonce="__NONCE__">
+    :root {
+      color-scheme: light;
+      --ink: #24324a;
+      --muted: #607089;
+      --violet: #4b3fd0;
+      --teal: #078f92;
+      --line: rgba(115, 134, 180, .24);
+      --glass: rgba(255, 255, 255, .90);
+      --soft: rgba(244, 247, 255, .88);
+      --good: #17745b;
+      --bad: #a53748;
+      --shadow: 0 24px 70px rgba(49, 64, 115, .18);
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--ink);
+      font-family: "Yu Gothic UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+      background:
+        linear-gradient(rgba(255,255,255,.30), rgba(255,255,255,.48)),
+        url("/assets/niji-background.png") center / cover fixed,
+        linear-gradient(135deg, #fff7ed, #eefeff 52%, #eef2ff);
+    }
+    button, input { font: inherit; }
+    button, .button {
+      min-height: 52px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 12px 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+    }
+    button:hover, .button:hover { transform: translateY(-1px); }
+    button:focus-visible, input:focus-visible, .button:focus-visible {
+      outline: 4px solid rgba(69, 82, 210, .22);
+      outline-offset: 3px;
+    }
+    button:disabled { opacity: .48; cursor: wait; transform: none; }
+    .primary {
+      color: #fff;
+      background: linear-gradient(112deg, var(--violet), var(--teal));
+      box-shadow: 0 12px 28px rgba(47, 78, 173, .24);
+    }
+    .secondary { color: #394a9f; background: rgba(255,255,255,.92); border-color: #ccd6ee; }
+    .text-button { min-height: 42px; color: #455575; background: transparent; padding-inline: 10px; }
+    .setup-header {
+      min-height: 116px;
+      padding: 18px clamp(20px, 5vw, 78px);
+      display: grid;
+      grid-template-columns: minmax(210px, 1fr) auto minmax(210px, 1fr);
+      align-items: center;
+      gap: 24px;
+      background: rgba(255, 252, 253, .91);
+      border-bottom: 1px solid rgba(214, 215, 231, .8);
+      backdrop-filter: blur(16px);
+    }
+    .brand-logo { width: min(280px, 100%); height: auto; display: block; }
+    .product-pill {
+      padding: 12px 24px;
+      border: 1px solid rgba(157, 166, 191, .35);
+      border-radius: 999px;
+      background: rgba(255,255,255,.86);
+      box-shadow: 0 10px 26px rgba(45, 56, 91, .08);
+      font-size: 18px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .product-pill .spark { color: #8a84df; }
+    .product-pill .video { color: #4d4fd1; }
+    .product-pill .studio { color: #117b72; }
+    .languages { justify-self: end; display: flex; gap: 8px; }
+    .language {
+      min-height: 44px;
+      padding: 8px 17px;
+      color: #475673;
+      background: rgba(255,255,255,.88);
+      border-color: rgba(143, 154, 185, .28);
+    }
+    .language.active { color: #273858; background: linear-gradient(115deg, #eeeaff, #e9fbfa); border-color: #cdd5ff; }
+    main { width: min(1280px, calc(100% - 32px)); margin: 30px auto 70px; }
+    .progress {
+      width: min(850px, 100%);
+      margin: 0 auto 22px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,.72);
+      border-radius: 999px;
+      background: rgba(255,255,255,.68);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 12px 35px rgba(35, 53, 93, .10);
+    }
+    .progress-item {
+      min-width: 0;
+      min-height: 58px;
+      padding: 8px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #6c7891;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .progress-item.current { color: #263753; background: rgba(239, 240, 255, .95); }
+    .progress-item.done { color: #176c5c; }
+    .progress-num {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #e9edfa;
+    }
+    .current .progress-num { color: #fff; background: linear-gradient(135deg, var(--violet), var(--teal)); }
+    .done .progress-num { background: #e2f7f1; }
+    .shell {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.84);
+      border-radius: 34px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(153, 227, 255, .26), transparent 36%),
+        radial-gradient(circle at 0% 100%, rgba(255, 214, 146, .22), transparent 35%),
+        var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(22px);
+    }
+    .shell::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 5px;
+      background: linear-gradient(90deg, #6d63ff, #4bd8d4, #f6c466, #ef8ebd);
+    }
+    .stage { display: none; min-height: 650px; padding: clamp(30px, 5vw, 66px); }
+    .stage.active { display: block; animation: stage-in .28s ease both; }
+    @keyframes stage-in { from { opacity: 0; transform: translateY(8px); } }
+    .welcome-grid, .finish-grid {
+      min-height: 520px;
+      display: grid;
+      grid-template-columns: 1.28fr .72fr;
+      gap: clamp(28px, 5vw, 72px);
+      align-items: center;
+    }
+    .eyebrow {
+      margin: 0 0 14px;
+      color: #637292;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { overflow-wrap: anywhere; }
+    h1 { margin: 0 0 20px; font-size: clamp(38px, 5.2vw, 68px); line-height: 1.18; letter-spacing: -.035em; }
+    h2 { margin: 0 0 16px; font-size: clamp(31px, 4vw, 48px); line-height: 1.25; letter-spacing: -.025em; }
+    h3 { margin: 0 0 9px; font-size: 20px; }
+    p { line-height: 1.85; }
+    .lead { margin: 0 0 22px; color: var(--muted); font-size: clamp(16px, 1.7vw, 19px); }
+    .promise {
+      margin: 24px 0;
+      padding: 18px 20px;
+      border-left: 5px solid var(--teal);
+      border-radius: 5px 18px 18px 5px;
+      background: rgba(235, 250, 248, .86);
+      line-height: 1.75;
+    }
+    .actions { display: flex; align-items: center; gap: 13px; flex-wrap: wrap; margin-top: 24px; }
+    .hero-visual { text-align: center; }
+    .hero-visual img {
+      width: min(100%, 390px);
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 34px;
+      box-shadow: 0 24px 52px rgba(44, 59, 104, .20);
+    }
+    .visual-caption { margin: 14px auto 0; color: #66758e; font-size: 14px; }
+    .stage-head { max-width: 800px; margin-bottom: 28px; }
+    .stage-head .step-label { color: var(--teal); font-weight: 800; }
+    .info-card {
+      padding: clamp(22px, 3vw, 32px);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,.82);
+    }
+    .tab-demo {
+      margin: 24px 0;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(247,249,255,.84);
+    }
+    .fake-tab {
+      padding: 15px 17px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 14px 14px 7px 7px;
+      background: #fff;
+      box-shadow: 0 5px 16px rgba(45,62,100,.08);
+      font-weight: 700;
+    }
+    .fake-tab.active { box-shadow: inset 0 -3px 0 #4d73dc, 0 5px 16px rgba(45,62,100,.08); }
+    .tab-icon { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg,#6c60e8,#1dc3af); color:#fff; font-size:12px; }
+    .google-icon { background: conic-gradient(#4285f4, #34a853, #fbbc05, #ea4335, #4285f4); }
+    .single-action {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: linear-gradient(120deg, rgba(236,239,255,.92), rgba(232,251,248,.92));
+      line-height: 1.75;
+    }
+    .guide-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.42fr) minmax(280px, .58fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+    .screen-illustration {
+      position: relative;
+      min-height: 410px;
+      overflow: hidden;
+      border: 1px solid #d9e0ec;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 16px 38px rgba(55,67,103,.11);
+    }
+    .screen-top {
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #3f4d68;
+      border-bottom: 1px solid #e4e7ed;
+      font-weight: 800;
+    }
+    .screen-dot { width: 11px; height: 11px; border-radius: 50%; background: #dfe4ed; }
+    .screen-body { padding: 26px 25px 32px; }
+    .screen-title { margin-bottom: 21px; font-size: 27px; font-weight: 800; color: #202b40; }
+    .key-table { min-width: 570px; border: 1px solid #e1e5ec; border-radius: 15px; overflow: hidden; }
+    .key-row { display: grid; grid-template-columns: 1.08fr 1.28fr 1fr 64px; align-items: center; min-height: 72px; }
+    .key-row.head { min-height: 48px; color: #687386; background: #f6f7fa; font-size: 13px; font-weight: 800; }
+    .key-row > div { padding: 10px 13px; }
+    .key-name { color: #246dd3; font-weight: 800; }
+    .billing { display: inline-flex; padding: 5px 10px; border-radius: 999px; color: #176c55; background: #e9f7f1; font-weight: 800; font-size: 13px; }
+    .copy-icon { position: relative; width: 37px; height: 37px; margin: auto; display: block; border: 1px solid #cad4e3; border-radius: 10px; background: #fff; }
+    .copy-icon::before, .copy-icon::after { content: ""; position: absolute; width: 11px; height: 14px; border: 2px solid #243047; border-radius: 2px; background: #fff; }
+    .copy-icon::before { left: 11px; top: 9px; }
+    .copy-icon::after { left: 15px; top: 13px; }
+    .guide-steps { padding: 8px; display: grid; gap: 12px; }
+    .guide-step {
+      padding: 17px;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.83);
+    }
+    .guide-step strong { display: block; margin-bottom: 5px; }
+    .guide-step p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .step-circle { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(135deg, var(--violet), var(--teal)); font-weight: 900; }
+    .return-note { margin-top: 14px; padding: 14px 16px; border-radius: 16px; background: rgba(255,246,226,.92); line-height: 1.7; }
+    .account-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .choice-card { min-height: 132px; padding: 21px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; text-align: left; border: 1px solid var(--line); border-radius: 20px; color: var(--ink); background: rgba(255,255,255,.92); box-shadow: 0 12px 28px rgba(56,66,105,.08); }
+    .choice-card:hover { transform: translateY(-2px); border-color: #aebbe7; }
+    .choice-card strong { font-size: 21px; }
+    .choice-card span { color: var(--muted); line-height: 1.65; }
+    .prompt-copy { margin-top: 20px; padding: 20px; border: 1px solid var(--line); border-radius: 20px; background: #f9fbff; }
+    .prompt-text { margin: 0; color: var(--ink); font-weight: 700; line-height: 1.8; white-space: pre-wrap; }
+    .verification-list { margin: 20px 0 0; display: grid; gap: 10px; }
+    .verification-item { padding: 13px 15px; display: grid; grid-template-columns: 28px 1fr; gap: 11px; align-items: center; border: 1px solid var(--line); border-radius: 14px; background: #f7f9fd; color: var(--muted); font-weight: 800; }
+    .verification-icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: #58647c; background: #e8edf7; }
+    .verification-item.checking { color: #165f78; border-color: #a8dce1; background: #f0fbfb; }
+    .verification-item.checking .verification-icon { color: #fff; background: var(--teal); }
+    .verification-item.done { color: #176b59; border-color: #a9dfce; background: #edf9f5; }
+    .verification-item.done .verification-icon { color: #fff; background: #199477; }
+    .form-wrap { max-width: 830px; margin: 0 auto; }
+    label { display: block; margin-bottom: 10px; font-weight: 800; font-size: 18px; }
+    .secret-input {
+      width: 100%;
+      min-height: 62px;
+      padding: 15px 18px;
+      border: 2px solid #cbd5e7;
+      border-radius: 16px;
+      color: var(--ink);
+      background: #fff;
+      letter-spacing: .08em;
+    }
+    .hint { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .check-row {
+      margin-top: 18px;
+      padding: 15px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--soft);
+      line-height: 1.65;
+    }
+    .check-row input { width: 22px; height: 22px; flex: 0 0 auto; margin: 2px 0 0; accent-color: var(--teal); }
+    .message { min-height: 29px; margin: 15px 0 0; font-weight: 800; }
+    .message.good { color: var(--good); }
+    .message.bad { color: var(--bad); }
+    .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.45); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success-mark {
+      width: 108px;
+      height: 108px;
+      display: grid;
+      place-items: center;
+      border: 8px solid rgba(255,255,255,.82);
+      border-radius: 50%;
+      color: #fff;
+      background: linear-gradient(135deg, #16a282, #4f4fd4);
+      box-shadow: 0 18px 40px rgba(33,121,114,.25);
+      font-size: 54px;
+      font-weight: 900;
+    }
+    .finish-visual { display: grid; place-items: center; gap: 20px; text-align: center; }
+    .small-note { color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .existing-status { display: inline-flex; margin-bottom: 18px; padding: 9px 14px; border-radius: 999px; color: #176b59; background: #e8f7f2; font-weight: 800; }
+    [hidden] { display: none !important; }
+    @media (max-width: 900px) {
+      .setup-header { grid-template-columns: 1fr auto; min-height: 92px; }
+      .product-pill { display: none; }
+      .brand-logo { width: min(230px, 65vw); }
+      .welcome-grid, .finish-grid, .guide-layout { grid-template-columns: 1fr; }
+      .account-grid { grid-template-columns: 1fr; }
+      .hero-visual { order: -1; }
+      .hero-visual img { width: min(100%, 310px); }
+      .stage { min-height: 0; }
+    }
+    @media (max-width: 640px) {
+      main { width: calc(100% - 18px); max-width: 1280px; margin-top: 12px; }
+      .setup-header { grid-template-columns: minmax(0, 1fr) auto; padding: 12px 10px; gap: 4px; }
+      .brand-logo { width: min(168px, 100%); }
+      .languages { gap: 3px; }
+      .language { min-width: 0; padding-inline: 8px; font-size: 12px; }
+      .progress { border-radius: 24px; }
+      .progress-item { min-height: 52px; padding: 7px 5px; gap: 5px; font-size: 12px; text-align: center; }
+      .progress-item > span:last-child { min-width: 0; }
+      .progress-num { width: 29px; height: 29px; }
+      .shell { border-radius: 25px; }
+      .stage { padding: 25px 20px 34px; }
+      .welcome-grid { min-height: 0; }
+      .actions > * { width: 100%; }
+      .tab-demo { grid-template-columns: 1fr; }
+      .screen-illustration { min-height: 360px; overflow-x: auto; }
+      .screen-body { width: 660px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="setup-header">
+    <img class="brand-logo" src="/assets/nijiunit-logo-side-name.png" alt="NijiUnit">
+    <div class="product-pill"><span class="spark">✦</span> NijiUnit AI Agent <span class="video">Video</span> <span class="studio">Studio</span> ▶</div>
+    <div class="languages" aria-label="Language">
+      <button class="language" id="langJa" type="button">日本語</button>
+      <button class="language" id="langEn" type="button">English</button>
+    </div>
+  </header>
+
+  <main>
+    <nav class="progress" aria-label="Setup progress">
+      <div class="progress-item current" id="progress1"><span class="progress-num">1</span><span data-ja="Googleで取得" data-en="Get from Google">Googleで取得</span></div>
+      <div class="progress-item" id="progress2"><span class="progress-num">2</span><span data-ja="このPCへ保存" data-en="Save on this PC">このPCへ保存</span></div>
+      <div class="progress-item" id="progress3"><span class="progress-num">3</span><span data-ja="準備完了" data-en="Ready">準備完了</span></div>
+    </nav>
+
+    <div class="shell">
+      <section class="stage active" id="stageWelcome">
+        <div class="welcome-grid">
+          <div>
+            <p class="eyebrow" data-ja="NijiUnitのインストール完了" data-en="NIJIUNIT INSTALLATION COMPLETE">NijiUnitのインストール完了</p>
+            <h1 data-ja="おめでとうございます。<br>NijiUnitを導入できました" data-en="Congratulations.<br>NijiUnit is installed">おめでとうございます。<br>NijiUnitを導入できました</h1>
+            <p class="lead" data-ja="ここからは、動画生成に使う有料サービス「Google Gemini API」の初回設定を行います。動画生成サービスは複数ありますが、NijiUnitはGoogle Gemini APIを使う仕様です。" data-en="Next, complete the one-time setup for the paid video-generation service, Google Gemini API. NijiUnit is designed to use Google Gemini API.">ここからは、動画生成に使う有料サービス「Google Gemini API」の初回設定を行います。動画生成サービスは複数ありますが、NijiUnitはGoogle Gemini APIを使う仕様です。</p>
+            <div class="promise" data-ja="このWeb画面はNijiUnit本体ではなく、APIキーをこのPCの .env へ安全に保存し、接続を確認するための設定補助画面です。通常の動画制作では使いません。" data-en="This webpage is not the NijiUnit application. It is a one-time setup helper that safely saves the API key to this computer's .env file and checks the connection.">このWeb画面はNijiUnit本体ではなく、APIキーをこのPCの .env へ安全に保存し、接続を確認するための設定補助画面です。通常の動画制作では使いません。</div>
+            <div class="actions">
+              <button class="primary" id="startSetup" type="button" disabled><span data-ja="Google Gemini APIの設定へ" data-en="Set up Google Gemini API">Google Gemini APIの設定へ</span> <span aria-hidden="true">→</span></button>
+            </div>
+            <p class="small-note" id="loadingStatus" data-ja="このPCの設定を確認しています…" data-en="Checking this computer…">このPCの設定を確認しています…</p>
+          </div>
+          <div class="hero-visual">
+            <img src="/assets/nijiunit-guide-friends-hero.png" alt="">
+            <p class="visual-caption" data-ja="迷ったときは、画面を見ながら一つずつ進められます。" data-en="Follow one clear screen at a time.">迷ったときは、画面を見ながら一つずつ進められます。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="stage" id="stageAccount">
+        <div class="stage-head">
+          <p class="step-label" data-ja="1 / 3　Googleで取得" data-en="1 / 3  Get from Google">1 / 3　Googleで取得</p>
+          <h2 data-ja="Googleアカウントをお持ちですか？" data-en="Do you have a Google Account?">Googleアカウントをお持ちですか？</h2>
+          <p class="lead" data-ja="Google AI Studioへログインできるアカウントについて、今の状況を一つ選んでください。ここでは契約や課金は始まりません。" data-en="Choose the option that describes your access to a Google Account for Google AI Studio. This does not start a contract or billing.">Google AI Studioへログインできるアカウントについて、今の状況を一つ選んでください。ここでは契約や課金は始まりません。</p>
+        </div>
+        <div class="account-grid">
+          <button class="choice-card" id="accountYes" type="button"><strong data-ja="はい" data-en="Yes">はい</strong><span data-ja="自分で管理できるGoogleアカウントがあります" data-en="I have a Google Account I can manage">自分で管理できるGoogleアカウントがあります</span></button>
+          <button class="choice-card" id="accountNo" type="button"><strong data-ja="いいえ" data-en="No">いいえ</strong><span data-ja="アカウント作成からAIエージェントに相談します" data-en="Ask the AI agent to guide account creation">アカウント作成からAIエージェントに相談します</span></button>
+          <button class="choice-card" id="accountUnknown" type="button"><strong data-ja="分からない" data-en="Not sure">分からない</strong><span data-ja="持っているかの確認方法をAIエージェントに聞きます" data-en="Ask the AI agent how to check">持っているかの確認方法をAIエージェントに聞きます</span></button>
+        </div>
+        <div class="actions"><button class="text-button" id="accountBack" type="button" data-ja="前の画面へ戻る" data-en="Go back">前の画面へ戻る</button></div>
+      </section>
+
+      <section class="stage" id="stageAgentHelp">
+        <div class="form-wrap">
+          <div class="stage-head">
+            <p class="step-label" data-ja="Googleアカウントの準備" data-en="PREPARE A GOOGLE ACCOUNT">Googleアカウントの準備</p>
+            <h2 data-ja="AIエージェントへ、この文章を送ります" data-en="Send this message to your AI agent">AIエージェントへ、この文章を送ります</h2>
+            <p class="lead" data-ja="設定画面が契約方法を決めるのではなく、現在使っているAIエージェントが公式情報を確認しながら一つずつ案内します。" data-en="This setup page does not decide account terms. Your current AI agent will check official information and guide you one action at a time.">設定画面が契約方法を決めるのではなく、現在使っているAIエージェントが公式情報を確認しながら一つずつ案内します。</p>
+          </div>
+          <div class="prompt-copy">
+            <p class="prompt-text" id="accountPrompt"></p>
+            <div class="actions">
+              <button class="primary" id="copyAccountPrompt" type="button"><span data-ja="案内文をコピーする" data-en="Copy the message">案内文をコピーする</span></button>
+              <button class="secondary" id="returnForAccount" type="button" data-ja="この画面を閉じてAIエージェントへ戻る" data-en="Close this page and return to the AI agent">この画面を閉じてAIエージェントへ戻る</button>
+              <button class="text-button" id="accountHelpBack" type="button" data-ja="選び直す" data-en="Choose again">選び直す</button>
+            </div>
+            <p class="message" id="accountCopyMessage" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="stage" id="stageOpen">
+        <div class="stage-head">
+          <p class="step-label" data-ja="1 / 3　Googleで取得" data-en="1 / 3  Get from Google">1 / 3　Googleで取得</p>
+          <h2 data-ja="Google AI Studioを開きます" data-en="Open Google AI Studio">Google AI Studioを開きます</h2>
+          <p class="lead" data-ja="下のボタンを押すと、Google AI Studioが別のブラウザ画面で開きます。このNijiUnit初回設定画面は残ります。Google側でキーをコピーしたあと、引き続きこの画面へ戻って案内を見ます。" data-en="The button opens Google AI Studio in a separate browser window. This NijiUnit setup page remains open. After copying the key on Google, return here and continue with this guide.">下のボタンを押すと、Google AI Studioが別のブラウザ画面で開きます。このNijiUnit初回設定画面は残ります。Google側でキーをコピーしたあと、引き続きこの画面へ戻って案内を見ます。</p>
+        </div>
+        <div class="info-card">
+          <div class="tab-demo" aria-hidden="true">
+            <div class="fake-tab"><span class="tab-icon">N</span><span>NijiUnit 初回設定</span></div>
+            <div class="fake-tab active"><span class="tab-icon google-icon">G</span><span>Google AI Studio</span></div>
+          </div>
+          <div class="single-action" data-ja="次にすることは一つだけです。下のボタンを押してください。" data-en="There is only one action now: press the button below.">次にすることは一つだけです。下のボタンを押してください。</div>
+          <div class="actions">
+            <button class="primary" id="openStudio" type="button"><span data-ja="別の画面でGoogle AI Studioを開く" data-en="Open Google AI Studio separately">別の画面でGoogle AI Studioを開く</span> <span aria-hidden="true">↗</span></button>
+            <button class="text-button" id="backWelcome" type="button" data-ja="前の画面へ戻る" data-en="Go back">前の画面へ戻る</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="stage" id="stageCopy">
+        <div class="stage-head">
+          <p class="step-label" data-ja="1 / 3　Googleで取得" data-en="1 / 3  Get from Google">1 / 3　Googleで取得</p>
+          <h2 data-ja="Google画面では、この3か所を見ます" data-en="Check these three places on Google">Google画面では、この3か所を見ます</h2>
+          <p class="lead" data-ja="下の絵とGoogleの画面を見比べてください。実際の表示はGoogleの更新により少し変わる場合があります。" data-en="Compare this illustration with Google's page. Google may change small details over time.">下の絵とGoogleの画面を見比べてください。実際の表示はGoogleの更新により少し変わる場合があります。</p>
+        </div>
+        <div class="guide-layout">
+          <div class="screen-illustration" role="img" aria-label="Google AI Studio API key screen illustration">
+            <div class="screen-top"><span class="screen-dot"></span><span class="screen-dot"></span><span class="screen-dot"></span><span>Google AI Studio</span></div>
+            <div class="screen-body">
+              <div class="screen-title" data-ja="API キー" data-en="API keys">API キー</div>
+              <div class="key-table">
+                <div class="key-row head"><div data-ja="キー" data-en="Key">キー</div><div data-ja="プロジェクト" data-en="Project">プロジェクト</div><div data-ja="請求階層" data-en="Billing tier">請求階層</div><div></div></div>
+                <div class="key-row"><div class="key-name">••••••••2j20</div><div>NijiUnit Video Production</div><div><span class="billing" data-ja="有料 / 前払い" data-en="Paid / Prepay">有料 / 前払い</span></div><div><span class="copy-icon" aria-hidden="true"></span></div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="guide-steps">
+              <div class="guide-step"><span class="step-circle">1</span><div><strong data-ja="使うプロジェクトを確認" data-en="Check the project">使うプロジェクトを確認</strong><p data-ja="自分が管理するプロジェクトの行を見ます。分からないときは、新しいキーを作らずAIエージェントへ相談します。" data-en="Use a project you control. If unsure, do not create another key; ask your AI agent.">自分が管理するプロジェクトの行を見ます。分からないときは、新しいキーを作らずAIエージェントへ相談します。</p></div></div>
+              <div class="guide-step"><span class="step-circle">2</span><div><strong data-ja="請求階層を確認" data-en="Check billing tier">請求階層を確認</strong><p data-ja="料金や入金設定はGoogleの表示が基準です。想定した契約かを本人が確認します。" data-en="Google's live page is authoritative for billing and deposits. Confirm it matches your intention.">料金や入金設定はGoogleの表示が基準です。想定した契約かを本人が確認します。</p></div></div>
+              <div class="guide-step"><span class="step-circle">3</span><div><strong data-ja="コピーの印を押す" data-en="Press the copy icon">コピーの印を押す</strong><p data-ja="使うキーと同じ行にある、四角が重なった印を押します。キーをチャットへ貼らないでください。" data-en="Press the overlapping-squares icon in the chosen key's row. Never paste the key into chat.">使うキーと同じ行にある、四角が重なった印を押します。キーをチャットへ貼らないでください。</p></div></div>
+            </div>
+            <div class="return-note" data-ja="コピーできたら、Googleの画面を閉じるか最小化し、残してある「NijiUnit 初回設定」画面へ戻ります。" data-en="After copying, close or minimise Google's window, then return to the NijiUnit First Setup window that remains open.">コピーできたら、Googleの画面を閉じるか最小化し、残してある「NijiUnit 初回設定」画面へ戻ります。</div>
+            <div class="actions">
+              <button class="primary" id="copiedKey" type="button"><span data-ja="コピーできました" data-en="I copied it">コピーできました</span> <span aria-hidden="true">→</span></button>
+              <button class="secondary" id="reopenStudio" type="button" data-ja="Google画面をもう一度開く" data-en="Open Google again">Google画面をもう一度開く</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stage" id="stagePaste">
+        <div class="form-wrap">
+          <div class="stage-head">
+            <p class="step-label" data-ja="2 / 3　このPCへ保存" data-en="2 / 3  Save on this PC">2 / 3　このPCへ保存</p>
+            <h2 data-ja="コピーしたキーを、ここに貼り付けます" data-en="Paste the copied key here">コピーしたキーを、ここに貼り付けます</h2>
+            <p class="lead" data-ja="この欄はNijiUnit専用です。貼り付けた文字が●で隠れるのが正常です。" data-en="This field belongs only to NijiUnit. Dots hiding the pasted value are normal.">この欄はNijiUnit専用です。貼り付けた文字が●で隠れるのが正常です。</p>
+          </div>
+          <div class="info-card">
+            <label for="apiKey" data-ja="Google Gemini APIキー" data-en="Google Gemini API key">Google Gemini APIキー</label>
+            <input class="secret-input" id="apiKey" type="password" autocomplete="off" spellcheck="false" aria-describedby="keyHint">
+            <p class="hint" id="keyHint" data-ja="入力欄を一度クリックし、Windowsは Ctrl+V、Macは command+V で貼り付けます。" data-en="Click the field once, then paste with Ctrl+V on Windows or command+V on Mac.">入力欄を一度クリックし、Windowsは Ctrl+V、Macは command+V で貼り付けます。</p>
+            <label class="check-row"><input id="projectConfirmed" type="checkbox"><span data-ja="Google画面で、使うプロジェクトと請求階層を確認しました。" data-en="I checked the intended project and billing tier on Google's page.">Google画面で、使うプロジェクトと請求階層を確認しました。</span></label>
+            <label class="check-row" id="replaceRow" hidden><input id="replaceConfirmed" type="checkbox"><span data-ja="このPCに保存済みのAPIキーを、今回のキーへ交換します。" data-en="Replace the API key already stored on this computer.">このPCに保存済みのAPIキーを、今回のキーへ交換します。</span></label>
+            <div class="verification-list" id="saveChecks" aria-live="polite">
+              <div class="verification-item" data-check="save"><span class="verification-icon">1</span><span data-ja="APIキーを .env へ安全に保存" data-en="Save the API key safely to .env">APIキーを .env へ安全に保存</span></div>
+              <div class="verification-item" data-check="auth"><span class="verification-icon">2</span><span data-ja="Google Gemini APIへ接続" data-en="Connect to Google Gemini API">Google Gemini APIへ接続</span></div>
+              <div class="verification-item" data-check="models"><span class="verification-icon">3</span><span data-ja="NijiUnitに必要なモデルを確認" data-en="Check the models NijiUnit needs">NijiUnitに必要なモデルを確認</span></div>
+            </div>
+            <p class="message" id="saveMessage" role="status" aria-live="polite"></p>
+            <div class="actions">
+              <button class="primary" id="saveConnect" type="button"><span data-ja="このPCに保存して、接続を確認する" data-en="Save on this PC and check connection">このPCに保存して、接続を確認する</span> <span aria-hidden="true">→</span></button>
+              <button class="text-button" id="backCopy" type="button" data-ja="取得方法をもう一度見る" data-en="Review the instructions">取得方法をもう一度見る</button>
+            </div>
+            <p class="small-note" data-ja="接続確認では、認証と必要なモデルの有無だけを確認します。画像や動画は生成せず、生成料金は発生させません。" data-en="The connection check only tests authentication and model availability. It does not generate media or incur generation charges.">接続確認では、認証と必要なモデルの有無だけを確認します。画像や動画は生成せず、生成料金は発生させません。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="stage" id="stageExisting">
+        <div class="form-wrap">
+          <div class="stage-head">
+            <span class="existing-status" data-ja="APIキーは保存済みです" data-en="An API key is already stored">APIキーは保存済みです</span>
+            <h2 data-ja="保存済みの設定を確認します" data-en="Check the saved setup">保存済みの設定を確認します</h2>
+            <p class="lead" data-ja="APIキーの文字は表示しません。そのまま接続確認するか、本人の希望がある場合だけ交換します。" data-en="The key itself is never shown. Check the current connection, or replace it only if you intend to.">APIキーの文字は表示しません。そのまま接続確認するか、本人の希望がある場合だけ交換します。</p>
+          </div>
+          <div class="info-card">
+            <p id="managedText" hidden data-ja="このキーはNijiUnitの外側で管理されています。この画面では交換せず、接続確認だけ行えます。" data-en="This key is managed outside NijiUnit. This page can check the connection but cannot replace it.">このキーはNijiUnitの外側で管理されています。この画面では交換せず、接続確認だけ行えます。</p>
+            <div class="verification-list" id="existingChecks" aria-live="polite">
+              <div class="verification-item done" data-check="save"><span class="verification-icon">✓</span><span data-ja="APIキーは保存済み" data-en="The API key is already saved">APIキーは保存済み</span></div>
+              <div class="verification-item" data-check="auth"><span class="verification-icon">2</span><span data-ja="Google Gemini APIへ接続" data-en="Connect to Google Gemini API">Google Gemini APIへ接続</span></div>
+              <div class="verification-item" data-check="models"><span class="verification-icon">3</span><span data-ja="NijiUnitに必要なモデルを確認" data-en="Check the models NijiUnit needs">NijiUnitに必要なモデルを確認</span></div>
+            </div>
+            <p class="message" id="existingMessage" role="status" aria-live="polite"></p>
+            <div class="actions">
+              <button class="primary" id="verifyExisting" type="button"><span data-ja="保存済みのキーで接続を確認する" data-en="Check the saved connection">保存済みのキーで接続を確認する</span> <span aria-hidden="true">→</span></button>
+              <button class="secondary" id="replaceExisting" type="button" data-ja="別のキーへ交換する" data-en="Replace with another key">別のキーへ交換する</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stage" id="stageSuccess">
+        <div class="finish-grid">
+          <div>
+            <p class="eyebrow" data-ja="初回設定完了" data-en="FIRST SETUP COMPLETE">初回設定完了</p>
+            <h1 data-ja="おめでとうございます。<br>設定は完了です" data-en="Congratulations.<br>Setup is complete">おめでとうございます。<br>設定は完了です</h1>
+            <p class="lead" data-ja="Google Gemini APIキーをこのPCの .env へ保存し、接続と必要なモデルを確認できました。画像や動画の生成は、まだ行っていません。" data-en="The Google Gemini API key is saved to this computer's .env file, and the connection and required models were verified. No media has been generated yet.">Google Gemini APIキーをこのPCの .env へ保存し、接続と必要なモデルを確認できました。画像や動画の生成は、まだ行っていません。</p>
+            <div class="promise" data-ja="初回設定に使ったこのWeb画面は、普段の動画制作では使用しません。これからはAIエージェントに動画制作を依頼してください。APIキーが変わったときや設定をやり直したいときも、AIエージェントに「NijiUnitの初回設定を開いて」と依頼すれば、この画面を開けます。" data-en="This setup webpage is not used for normal video production. From now on, ask your AI agent to create videos. If the key changes or setup must be repeated, ask the agent to open NijiUnit First Setup again.">初回設定に使ったこのWeb画面は、普段の動画制作では使用しません。これからはAIエージェントに動画制作を依頼してください。APIキーが変わったときや設定をやり直したいときも、AIエージェントに「NijiUnitの初回設定を開いて」と依頼すれば、この画面を開けます。</div>
+            <div class="actions">
+              <button class="primary" id="finishSetup" type="button"><span data-ja="この設定画面を閉じてAIエージェントへ戻る" data-en="Close setup and return to the AI agent">この設定画面を閉じてAIエージェントへ戻る</span> <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+          <div class="finish-visual"><div class="success-mark">✓</div><strong data-ja="NijiUnitの初回設定が完了しました" data-en="NijiUnit first setup is complete">NijiUnitの初回設定が完了しました</strong></div>
+        </div>
+      </section>
+
+      <section class="stage" id="stageFailure">
+        <div class="form-wrap">
+          <div class="stage-head">
+            <p class="eyebrow" data-ja="接続を確認できませんでした" data-en="CONNECTION NOT VERIFIED">接続を確認できませんでした</p>
+            <h2 data-ja="設定は保存しました。表示された内容を基に確認します" data-en="The setting was saved. Review the actual result before continuing">設定は保存しました。表示された内容を基に確認します</h2>
+            <p class="lead" data-ja="何度もキーを作り直す必要はありません。まず同じキーでもう一度確認できます。解決しない場合は、設定画面を終えてAIエージェントへ相談します。" data-en="Do not create keys repeatedly. Try the same saved key once more. If it still fails, finish this page and ask your AI agent.">何度もキーを作り直す必要はありません。まず同じキーでもう一度確認できます。解決しない場合は、設定画面を終えてAIエージェントへ相談します。</p>
+          </div>
+          <div class="info-card">
+            <p class="message bad" id="failureMessage" role="status"></p>
+            <div class="actions">
+              <button class="primary" id="retryVerify" type="button" data-ja="同じ設定でもう一度確認する" data-en="Check the same setup again">同じ設定でもう一度確認する</button>
+              <button class="secondary" id="replaceAfterFailure" type="button" data-ja="取得方法を見てキーを交換する" data-en="Review and replace the key">取得方法を見てキーを交換する</button>
+              <button class="text-button" id="askAgent" type="button" data-ja="設定を終えてAIエージェントへ相談する" data-en="Finish and ask the AI agent">設定を終えてAIエージェントへ相談する</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stage" id="stageClosed">
+        <div class="finish-grid">
+          <div><p class="eyebrow" data-ja="NijiUnit 初回設定" data-en="NIJIUNIT FIRST SETUP">NijiUnit 初回設定</p><h2 data-ja="この画面での操作は終わりました" data-en="This setup page is finished">この画面での操作は終わりました</h2><p class="lead" data-ja="このタブを閉じて、元のAIエージェントへ戻ってください。" data-en="Close this tab and return to your AI agent.">このタブを閉じて、元のAIエージェントへ戻ってください。</p></div>
+          <div class="finish-visual"><div class="success-mark">✓</div></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script nonce="__NONCE__">
+    "use strict";
+    const sessionToken = "__TOKEN__";
+    const initialLanguage = "__LANG__";
+    const stages = ["Welcome", "Account", "AgentHelp", "Open", "Copy", "Paste", "Existing", "Success", "Failure", "Closed"];
+    const progressByStage = {Welcome: 1, Account: 1, AgentHelp: 1, Open: 1, Copy: 1, Paste: 2, Existing: 2, Success: 3, Failure: 2, Closed: 3};
+    const messages = {
+      ja: {
+        statusError: "このPCの設定を確認できませんでした。AIエージェントへ戻って相談してください。",
+        keyNeeded: "コピーしたAPIキーを、この専用欄へ貼り付けてください。",
+        confirmNeeded: "Google画面でプロジェクトと請求階層を確認し、チェックを付けてください。",
+        replaceNeeded: "保存済みのキーを交換する確認にチェックを付けてください。",
+        saving: "このPCへ安全に保存しています…",
+        verifying: "Googleとの接続を確認しています。画像や動画は生成しません…",
+        invalidKey: "貼り付けた文字をAPIキーとして確認できません。余分な空白がないか確認してください。",
+        managed: "このキーはNijiUnitの外側で管理されているため、この画面では交換できません。",
+        saveError: "保存できませんでした。APIキーは画面に残していません。AIエージェントへ相談してください。",
+        verifyFailed: "Googleとの接続を確認できませんでした。キー、プロジェクト、利用条件のいずれかを確認します。",
+        ready: "3項目を確認できました。NijiUnitの初回設定は完了です。",
+        copied: "コピーしました。AIエージェントの入力欄へ貼り付けて送信してください。",
+        copyFailed: "コピーできませんでした。文章を選択してコピーしてください。",
+        accountNoPrompt: "Google Gemini APIをNijiUnitで使うため、Googleアカウントを新しく作りたいです。私はPC初心者です。Googleの最新の公式情報を確認し、料金・利用条件・プライバシーを説明したうえで、必ず一度に一つの質問または操作だけを案内し、私の返答を待ってください。パスワードや認証コードはチャットへ入力させず、Googleの公式画面へ私自身が入力するよう案内してください。",
+        accountUnknownPrompt: "Google Gemini APIをNijiUnitで使うため、私がGoogleアカウントを持っているか確認する方法を教えてください。私はPC初心者です。Googleの最新の公式情報を確認し、必ず一度に一つの質問または操作だけを案内し、私の返答を待ってください。パスワードや認証コードはチャットへ入力させず、Googleの公式画面へ私自身が入力するよう案内してください。"
+      },
+      en: {
+        statusError: "This computer's setup could not be checked. Return to your AI agent for help.",
+        keyNeeded: "Paste the copied API key into this secure field.",
+        confirmNeeded: "Check the project and billing tier on Google's page, then select the confirmation.",
+        replaceNeeded: "Confirm that you intend to replace the saved key.",
+        saving: "Saving safely on this computer…",
+        verifying: "Checking the Google connection. No media is being generated…",
+        invalidKey: "The pasted value does not look like an API key. Check for extra spaces.",
+        managed: "This key is managed outside NijiUnit and cannot be replaced on this page.",
+        saveError: "The key could not be saved. It is no longer left in the field. Ask your AI agent for help.",
+        verifyFailed: "The Google connection could not be verified. Check the key, project, or service conditions.",
+        ready: "All three checks passed. NijiUnit first setup is complete.",
+        copied: "Copied. Paste it into your AI agent's input box and send it.",
+        copyFailed: "The message could not be copied. Select the text and copy it manually.",
+        accountNoPrompt: "I want to create a Google Account so I can use Google Gemini API with NijiUnit. I am a PC beginner. Check Google's latest official information, explain pricing, terms, and privacy, then give me exactly one question or action at a time and wait for my reply. Never ask me to put a password or verification code into chat; tell me to enter it myself only on Google's official page.",
+        accountUnknownPrompt: "Please help me check whether I already have a Google Account that I can use for Google Gemini API with NijiUnit. I am a PC beginner. Check Google's latest official information, give me exactly one question or action at a time, and wait for my reply. Never ask me to put a password or verification code into chat; tell me to enter it myself only on Google's official page."
+      }
+    };
+    let language = initialLanguage === "en" ? "en" : "ja";
+    let setupStatus = {configured: false, source: "none", verification: "not_checked"};
+    let accountHelpKind = "no";
+    let googleWindow = null;
+
+    function applyLanguage(nextLanguage) {
+      language = nextLanguage;
+      document.documentElement.lang = language;
+      document.querySelectorAll("[data-ja][data-en]").forEach(function (element) {
+        const value = element.getAttribute("data-" + language);
+        if (element.tagName === "INPUT") {
+          element.placeholder = value;
+        } else if (value && value.indexOf("<br>") !== -1) {
+          element.innerHTML = value;
+        } else {
+          element.textContent = value;
+        }
+      });
+      document.getElementById("langJa").classList.toggle("active", language === "ja");
+      document.getElementById("langEn").classList.toggle("active", language === "en");
+      document.title = language === "ja" ? "NijiUnit 初回設定" : "NijiUnit First setup";
+      const accountPrompt = document.getElementById("accountPrompt");
+      if (accountPrompt && accountPrompt.textContent) {
+        accountPrompt.textContent = accountHelpKind === "no" ? messages[language].accountNoPrompt : messages[language].accountUnknownPrompt;
+      }
+    }
+
+    function showStage(name) {
+      stages.forEach(function (stageName) {
+        document.getElementById("stage" + stageName).classList.toggle("active", stageName === name);
+      });
+      const current = progressByStage[name] || 1;
+      [1, 2, 3].forEach(function (number) {
+        const item = document.getElementById("progress" + number);
+        item.classList.toggle("current", number === current);
+        item.classList.toggle("done", number < current);
+      });
+      window.scrollTo({top: 0, behavior: "smooth"});
+    }
+
+    function setMessage(element, value, kind) {
+      element.textContent = value;
+      element.className = "message" + (kind ? " " + kind : "");
+    }
+
+    function setVerification(listId, step) {
+      const order = ["save", "auth", "models"];
+      const list = document.getElementById(listId);
+      if (!list) { return; }
+      order.forEach(function (name, index) {
+        const item = list.querySelector('[data-check="' + name + '"]');
+        if (!item) { return; }
+        const icon = item.querySelector(".verification-icon");
+        item.classList.toggle("done", index < step);
+        item.classList.toggle("checking", index === step);
+        icon.textContent = index < step ? "✓" : String(index + 1);
+      });
+    }
+
+    function openGoogleStudio() {
+      googleWindow = window.open("https://aistudio.google.com/app/apikey", "NijiUnitGoogleAIStudio", "popup=yes,width=1280,height=900,resizable=yes,scrollbars=yes");
+      if (googleWindow) { googleWindow.focus(); }
+      showStage("Copy");
+    }
+
+    function setBusy(button, busy) {
+      if (!button.dataset.labelJa) {
+        const translatedLabel = button.querySelector("[data-ja][data-en]");
+        button.dataset.labelJa = translatedLabel ? translatedLabel.getAttribute("data-ja") : (button.getAttribute("data-ja") || button.textContent);
+        button.dataset.labelEn = translatedLabel ? translatedLabel.getAttribute("data-en") : (button.getAttribute("data-en") || button.textContent);
+      }
+      button.disabled = busy;
+      if (busy) {
+        button.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>' + (language === "ja" ? "確認中…" : "Checking…") + "</span>";
+      } else {
+        button.textContent = button.dataset["label" + (language === "ja" ? "Ja" : "En")];
+      }
+    }
+
+    async function api(path, payload) {
+      const response = await fetch(path, {
+        method: "POST",
+        cache: "no-store",
+        credentials: "same-origin",
+        headers: {"Content-Type": "application/json", "X-NijiUnit-Token": sessionToken},
+        body: JSON.stringify(payload)
+      });
+      let data = {};
+      try { data = await response.json(); } catch (_error) { data = {}; }
+      return {response: response, data: data};
+    }
+
+    async function refreshStatus() {
+      const response = await fetch("/api/status", {cache: "no-store", credentials: "same-origin"});
+      if (!response.ok) { throw new Error("status"); }
+      setupStatus = await response.json();
+      document.getElementById("startSetup").disabled = false;
+      document.getElementById("loadingStatus").hidden = true;
+      document.getElementById("managedText").hidden = setupStatus.source !== "environment";
+      document.getElementById("replaceExisting").hidden = setupStatus.source === "environment";
+    }
+
+    async function verifyConnection(button, messageElement, listId) {
+      setBusy(button, true);
+      setMessage(messageElement, messages[language].verifying, "");
+      setVerification(listId, 1);
+      try {
+        const result = await api("/api/verify", {});
+        if (result.response.ok && result.data.ok) {
+          setupStatus.verification = "ready";
+          setVerification(listId, 3);
+          setMessage(messageElement, messages[language].ready, "good");
+          await new Promise(function (resolve) { window.setTimeout(resolve, 450); });
+          showStage("Success");
+          return;
+        }
+        setMessage(document.getElementById("failureMessage"), messages[language].verifyFailed, "bad");
+        showStage("Failure");
+      } catch (_error) {
+        setMessage(document.getElementById("failureMessage"), messages[language].verifyFailed, "bad");
+        showStage("Failure");
+      } finally {
+        setBusy(button, false);
+      }
+    }
+
+    async function finish(reason) {
+      try { await api("/api/shutdown", {reason: reason}); } catch (_error) { }
+      window.close();
+      window.setTimeout(function () { showStage("Closed"); }, 250);
+    }
+
+    document.getElementById("langJa").addEventListener("click", function () { applyLanguage("ja"); });
+    document.getElementById("langEn").addEventListener("click", function () { applyLanguage("en"); });
+    document.getElementById("startSetup").addEventListener("click", function () {
+      if (setupStatus.verification === "ready") {
+        showStage("Success");
+      } else if (setupStatus.configured) {
+        showStage("Existing");
+      } else {
+        showStage("Account");
+      }
+    });
+    document.getElementById("accountYes").addEventListener("click", function () { showStage("Open"); });
+    document.getElementById("accountNo").addEventListener("click", function () {
+      accountHelpKind = "no";
+      document.getElementById("accountPrompt").textContent = messages[language].accountNoPrompt;
+      showStage("AgentHelp");
+    });
+    document.getElementById("accountUnknown").addEventListener("click", function () {
+      accountHelpKind = "unknown";
+      document.getElementById("accountPrompt").textContent = messages[language].accountUnknownPrompt;
+      showStage("AgentHelp");
+    });
+    document.getElementById("accountBack").addEventListener("click", function () { showStage("Welcome"); });
+    document.getElementById("accountHelpBack").addEventListener("click", function () { showStage("Account"); });
+    document.getElementById("copyAccountPrompt").addEventListener("click", async function () {
+      const message = document.getElementById("accountCopyMessage");
+      try {
+        await navigator.clipboard.writeText(accountHelpKind === "no" ? messages[language].accountNoPrompt : messages[language].accountUnknownPrompt);
+        setMessage(message, messages[language].copied, "good");
+      } catch (_error) { setMessage(message, messages[language].copyFailed, "bad"); }
+    });
+    document.getElementById("returnForAccount").addEventListener("click", function () { finish("needs_help"); });
+    document.getElementById("backWelcome").addEventListener("click", function () { showStage("Welcome"); });
+    document.getElementById("openStudio").addEventListener("click", openGoogleStudio);
+    document.getElementById("reopenStudio").addEventListener("click", openGoogleStudio);
+    document.getElementById("copiedKey").addEventListener("click", function () {
+      document.getElementById("replaceRow").hidden = !setupStatus.configured;
+      showStage("Paste");
+      window.setTimeout(function () { document.getElementById("apiKey").focus(); }, 280);
+    });
+    document.getElementById("backCopy").addEventListener("click", function () { showStage("Copy"); });
+    document.getElementById("replaceExisting").addEventListener("click", function () {
+      document.getElementById("replaceRow").hidden = false;
+      showStage("Open");
+    });
+    document.getElementById("verifyExisting").addEventListener("click", function () {
+      verifyConnection(document.getElementById("verifyExisting"), document.getElementById("existingMessage"), "existingChecks");
+    });
+    document.getElementById("saveConnect").addEventListener("click", async function () {
+      const button = document.getElementById("saveConnect");
+      const apiKey = document.getElementById("apiKey");
+      const message = document.getElementById("saveMessage");
+      if (!apiKey.value.trim()) { setMessage(message, messages[language].keyNeeded, "bad"); return; }
+      if (!document.getElementById("projectConfirmed").checked) { setMessage(message, messages[language].confirmNeeded, "bad"); return; }
+      if (setupStatus.configured && !document.getElementById("replaceConfirmed").checked) { setMessage(message, messages[language].replaceNeeded, "bad"); return; }
+      setBusy(button, true);
+      setMessage(message, messages[language].saving, "");
+      setVerification("saveChecks", 0);
+      try {
+        const result = await api("/api/key", {api_key: apiKey.value, replace: Boolean(setupStatus.configured)});
+        apiKey.value = "";
+        if (!result.response.ok) {
+          const errorMessage = result.data.code === "invalid_key" ? messages[language].invalidKey :
+            (result.data.code === "managed_by_environment" ? messages[language].managed :
+            (result.data.code === "replace_required" ? messages[language].replaceNeeded : messages[language].saveError));
+          setMessage(message, errorMessage, "bad");
+          return;
+        }
+        setupStatus.configured = true;
+        setupStatus.source = "file";
+        setVerification("saveChecks", 1);
+        setMessage(message, messages[language].verifying, "");
+        const verification = await api("/api/verify", {});
+        if (verification.response.ok && verification.data.ok) {
+          setupStatus.verification = "ready";
+          setVerification("saveChecks", 3);
+          setMessage(message, messages[language].ready, "good");
+          await new Promise(function (resolve) { window.setTimeout(resolve, 450); });
+          showStage("Success");
+        } else {
+          setMessage(document.getElementById("failureMessage"), messages[language].verifyFailed, "bad");
+          showStage("Failure");
+        }
+      } catch (_error) {
+        apiKey.value = "";
+        setMessage(message, messages[language].saveError, "bad");
+      } finally {
+        setBusy(button, false);
+      }
+    });
+    document.getElementById("retryVerify").addEventListener("click", function () {
+      verifyConnection(document.getElementById("retryVerify"), document.getElementById("failureMessage"), "existingChecks");
+    });
+    document.getElementById("replaceAfterFailure").addEventListener("click", function () {
+      document.getElementById("replaceRow").hidden = false;
+      showStage("Copy");
+    });
+    document.getElementById("finishSetup").addEventListener("click", function () { finish("ready"); });
+    document.getElementById("askAgent").addEventListener("click", function () { finish("needs_help"); });
+
+    applyLanguage(language);
+    refreshStatus().catch(function () {
+      document.getElementById("loadingStatus").textContent = messages[language].statusError;
+      document.getElementById("loadingStatus").className = "message bad";
+    });
+  </script>
+</body>
+</html>

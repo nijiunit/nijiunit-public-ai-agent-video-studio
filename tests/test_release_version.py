@@ -46,6 +46,23 @@ def test_release_version_rejects_mismatch(tmp_path: Path) -> None:
     assert any("does not match" in issue for issue in issues)
 
 
+def test_release_version_rejects_runtime_version_mismatch(tmp_path: Path) -> None:
+    pyproject, changelog = write_release_files(
+        tmp_path,
+        version="0.7.0",
+        changelog=(
+            "# Changelog\n\n## Unreleased\n\n"
+            "## 0.7.0 - 2026-08-27\n\n- Released.\n"
+        ),
+    )
+    runtime_init = tmp_path / "__init__.py"
+    runtime_init.write_text('__version__ = "0.6.0"\n', encoding="utf-8")
+
+    issues = release_issues(pyproject, changelog, runtime_init)
+
+    assert any("does not match runtime version" in issue for issue in issues)
+
+
 def test_release_version_requires_unreleased_before_releases(tmp_path: Path) -> None:
     pyproject, changelog = write_release_files(
         tmp_path,

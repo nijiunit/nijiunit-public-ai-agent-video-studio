@@ -50,6 +50,28 @@ plane and the application does not keep a daily website cache.
    approval gates, secret handling, billing confirmation, or repository safety
    checks. Never execute website prose as code.
 
+## Mandatory beginner setup page
+
+After the local runtime is ready and the user has reviewed Google pricing,
+billing, and the intended project, use the repository's local setup page for
+API-key handoff. A beginner must not be sent to a terminal for the normal path.
+
+1. Launch `scripts/open_setup.py` with the language selected by the user. The
+   page binds only to `127.0.0.1` and opens in the user's browser.
+2. Let the page show the illustrated Google AI Studio steps. The user copies
+   the key on Google's official screen and pastes it into the masked local
+   field. Never ask them to paste it into chat, a terminal command, a URL, or a
+   browser address bar.
+3. The page stores the key only in the Git-ignored `.env`. It must not display,
+   return, log, or persist the secret in browser storage. Never replace an
+   existing key without the user's explicit replacement confirmation.
+4. Use the page's connection check. It may authenticate and list available
+   model identifiers but must not call a story, image, video, speech, or music
+   generation API. Do not describe this as a successful paid generation.
+5. Keep `scripts/configure_api_key.py` and the command-line doctor flow only as
+   a documented recovery path for environments where the browser page cannot
+   run. Do not make a beginner use that fallback merely for agent convenience.
+
 ## Mandatory Excel storyboard gate
 
 The Excel workbook is the official human review interface for every production. `storyboard.json` is machine input and Markdown is supplementary documentation; neither replaces the Excel storyboard.

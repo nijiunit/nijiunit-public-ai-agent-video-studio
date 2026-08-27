@@ -296,7 +296,7 @@ def collect_checks(
             (
                 "configured"
                 if key_set
-                else "not configured; run scripts/configure_api_key.py locally"
+                else "not configured; open the local page with scripts/open_setup.py"
             ),
         )
     )

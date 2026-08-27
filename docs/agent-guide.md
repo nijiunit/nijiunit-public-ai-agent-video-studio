@@ -58,12 +58,13 @@ Assume the user may be a computer beginner. Do not reinstall the AI agent or Git
 3. If the user declines billing, stop and report: "The public demo and local tools are available; Google video generation is not configured."
 4. If the user proceeds, they enter payment information directly into Google. Never choose card details, automatic top-up, Prepay, or Postpay for them.
 5. Ask the user to confirm the intended project's paid status and, when applicable, usable Prepay balance on the live screen.
-6. After the user obtains an API key, have them run `configure_api_key.py` in their own interactive local terminal. Never request the key itself.
-7. After storage, run `doctor.py --require-api-key --verify-api-key-online`.
-8. If the result is `READY FOR GENERATION (paid generation not tested)`, report accurately that authentication and model identifiers were verified but paid generation was not attempted.
-9. Before the first image or video generation, explain that charges may apply and wait for a user request. Never run a paid test without that request.
+6. After the user obtains an API key, run `open_setup.py --language en` and open the illustrated local setup page in their browser. Do not send a beginner to a terminal.
+7. The user presses the copy icon on Google's official screen and pastes the key into the local page's masked field. Never request the key in chat, a URL, or logs.
+8. Store and verify the key on the same page. Replace an existing key only after the user explicitly selects the replacement confirmation. Use `configure_api_key.py` and `doctor.py --require-api-key --verify-api-key-online` only as recovery tools if the normal browser path cannot run.
+9. When the page reports success, state accurately that authentication and model identifiers were verified but paid generation was not attempted.
+10. Before the first image or video generation, explain that charges may apply and wait for a user request. Never run a paid test without that request.
 
-Setup must not call story, image, video, speech, or music generation. It must not overwrite an existing `.env`. The key tool changes an existing key only when `--replace` is explicit.
+Setup must not call story, image, video, speech, or music generation. The local page binds only to `127.0.0.1` and must not put the API key in a URL, log, or browser storage. It must not overwrite an existing `.env` or key without explicit replacement confirmation.
 
 ### Explanation requests such as "Please explain how to use this application"
 

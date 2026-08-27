@@ -70,4 +70,4 @@ echo "[5/6] Checking the bundled production defaults"
 echo "[6/6] Running local diagnostics (no generation API calls)"
 ./.venv/bin/python scripts/doctor.py
 
-echo "Base installation finished. Continue with the language-matched Google API guide. Video-specific guides are read directly from the NijiUnit website when needed."
+echo "Base installation finished. Review pricing and billing in the language-matched Google API guide, then open the beginner setup page with scripts/open_setup.py."

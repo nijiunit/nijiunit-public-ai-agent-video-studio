@@ -80,51 +80,33 @@ AIエージェントは支払方法や自動入金を勝手に決定しません
 
 APIキーはパスワードと同じ秘密情報です。チャット、Issue、メール、画面共有、コマンド引数へ貼り付けないでください。誤って公開した場合は、そのキーをGoogle AI Studioで失効させ、新しいキーへ交換します。
 
-### 2.3 画面に表示せず`.env`へ保存する
+### 2.3 ローカル設定画面で安全に保存する
 
-Windowsでは次を実行します。
+料金、プロジェクト、課金状態を確認できたら、AIエージェントがローカル設定画面を開きます。初心者本人がターミナルを操作する必要はありません。
+
+WindowsではAIエージェントが次を実行します。
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\configure_api_key.py
+.\.venv\Scripts\python.exe scripts\open_setup.py --language ja
 ```
 
 macOSまたはLinuxでは次を実行します。
 
 ```bash
-./.venv/bin/python scripts/configure_api_key.py
+./.venv/bin/python scripts/open_setup.py --language ja
 ```
 
-案内の後にAPIキーを貼り付けてEnterを押します。入力内容は端末に表示されません。専用ツールはキーをコマンド引数やログへ出さず、リポジトリ直下の`.env`だけへ保存します。既存の`.env`にある別の設定は残します。
+ブラウザで開くNijiUnit設定画面が、Google AI Studioを別タブで開くところから、画像と文章による画面の見方、コピー、NijiUnitへの戻り方、貼り付けまでを一画面ずつ案内します。利用者本人がGoogle公式画面のコピー印を押し、NijiUnit設定画面の秘密入力欄へ貼り付けます。キーをチャット、ターミナル、URLへ貼り付けません。
 
-すでに設定済みのキーを交換する場合だけ、`--replace`を付けます。
+画面はこのPCの`127.0.0.1`だけで動作します。キーをコマンド引数、URL、ログ、ブラウザ保存領域へ出さず、リポジトリ直下の`.env`だけへ保存します。既存の`.env`にある別の設定は残します。保存済みキーがある場合は、利用者が画面上で交換を明示しない限り変更しません。
 
-```powershell
-.\.venv\Scripts\python.exe scripts\configure_api_key.py --replace
-```
-
-手動設定を選ぶ場合は、リポジトリ直下の`.env`を自分で開き、次の右側へキーを設定できます。
-
-```dotenv
-GEMINI_API_KEY=
-```
-
-`.env`はGit管理されません。
+ブラウザ画面を利用できない環境に限り、`scripts/configure_api_key.py`を復旧用として使います。`.env`はGit管理されません。
 
 ### 2.4 接続と設定モデルを確認する
 
-設定後、値を表示しない診断を実行します。
+新しいキーでは、同じローカル設定画面の「このPCに保存して、接続を確認する」を押します。保存済みキーでは「保存済みのキーで接続を確認する」を押します。Google側の認証と、同梱プロファイルまたは`.env`で設定した物語・画像・動画・TTS・音声確認モデルがモデル一覧に存在することだけを確認します。画像、動画、音声は生成せず、有料の生成処理は行いません。
 
-```powershell
-.\.venv\Scripts\python.exe scripts\doctor.py --require-api-key --verify-api-key-online
-```
-
-macOSまたはLinuxでは次です。
-
-```bash
-./.venv/bin/python scripts/doctor.py --require-api-key --verify-api-key-online
-```
-
-この診断は、Google側の認証と、同梱プロファイルまたは`.env`で設定した物語・画像・動画・TTS・音声確認モデルがモデル一覧に存在することを確認します。画像、動画、音声は生成しません。
+画面を利用できない場合だけ、復旧用として`doctor.py --require-api-key --verify-api-key-online`を使用します。
 
 最後が`READY FOR GENERATION (paid generation not tested)`なら、最初のユーザー承認済み生成へ進めます。ただし、有料生成の成功、残高、地域、利用上限はまだ保証されていません。最初の生成前に料金が発生することを確認してください。
 
