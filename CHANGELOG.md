@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.7.1 - 2026-08-28
+
 - Simplified the Japanese and English beginner Google API setup into one
   NijiUnit page: users review the numbered Google AI Studio illustration,
   open Google in a separate window, return to the same page, paste into a

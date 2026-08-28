@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nijiunit-ai-agent-video-studio"
-version = "0.7.0"
+version = "0.7.1"
 description = "Reference workflow for agent-assisted, identity-consistent three-second AI video production"
 readme = "README.md"
 requires-python = ">=3.11"
