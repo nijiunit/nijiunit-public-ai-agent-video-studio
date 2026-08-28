@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Simplified the Japanese and English beginner Google API setup into one
+  NijiUnit page: users review the numbered Google AI Studio illustration,
+  open Google in a separate window, return to the same page, paste into a
+  highlighted local field, and save and verify without an intermediate screen.
+  Updated the Codex handoff and setup guides to launch this page immediately
+  after local preparation and direct beginners to the printed local URL.
+
 ## 0.7.0 - 2026-08-27
 
 - Added a beginner-first local browser setup page with illustrated Google AI
