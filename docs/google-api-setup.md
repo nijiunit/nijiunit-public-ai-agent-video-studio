@@ -28,19 +28,37 @@ Official references:
 - When discussing prices, state the review date and link to the official pricing page. The live Google screen is the final authority.
 - If the user declines billing, stop and report: "The public demo and local tools are available; the video-generation API is not configured."
 
-## G1: Confirm a Google account
+## G1: Open NijiUnit First-time Setup
+
+As soon as the local environment reaches `LOCAL READY`, the AI agent does not first ask about a Google account or pricing in chat. It runs the command for the user's platform and opens the illustrated local setup page. A beginner does not operate a terminal.
+
+Windows:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\open_setup.py --language en
+```
+
+macOS or Linux:
+
+```bash
+./.venv/bin/python scripts/open_setup.py --language en
+```
+
+After confirming that the page is visible, let the user follow its on-screen guidance. Do not operate Google AI Studio on the user's behalf or replace the page flow with a chat-only walkthrough.
+
+## G2: Confirm a Google account on the page
 
 Ask only whether the user can access Google AI Studio with an account they personally control over time. Explain that managed work or school accounts may be restricted by an administrator.
 
 If the user has no account, direct them to Google's official account-creation flow. The user performs account creation, identity verification, and password entry personally.
 
-## G2: Open Google AI Studio
+## G3: Open Google AI Studio from the setup page
 
-Ask the user to open [Google AI Studio API Keys](https://aistudio.google.com/app/apikey), then wait. If a sign-in or terms screen appears, handle that screen before proceeding.
+The user opens [Google AI Studio API Keys](https://aistudio.google.com/app/apikey) from the local setup page. If a sign-in or terms screen appears, handle that screen before proceeding.
 
 For a new user, accepting the terms may create a default Google Cloud project and API key. Existing Google Cloud users may need to import or select the intended project.
 
-## G3: Review pricing and paid use
+## G4: Review pricing and paid use
 
 Before beginning billing setup, explain these points one at a time:
 
@@ -55,7 +73,7 @@ Prices change, so this repository does not treat a recorded price as authoritati
 
 After the explanation, ask the user to choose either "continue with paid setup" or "stop here."
 
-## G4: Configure project billing
+## G5: Configure project billing
 
 Only if the user chooses paid setup, guide them to `Set up billing` for the intended project.
 
@@ -63,29 +81,11 @@ Review country, terms, contact information, payment method, Prepay/Postpay, and 
 
 Afterward, confirm with the user that the intended project shows the appropriate paid plan or billing tier in the API Keys or Projects screen. For Prepay, also confirm that usable balance is present. If billing activation is delayed, wait and recheck rather than repeatedly changing settings.
 
-## G5: Prepare an API key
+## G6: Prepare and store an API key safely
 
 If a suitable key already exists for the selected project, do not create a duplicate. Use `Create API key` only when required.
 
-Current newly created Google AI Studio keys are authentication keys. Ask the user to copy the key but never to paste it into chat.
-
-## G6: Store the API key safely
-
-The AI agent runs the command for the user's platform and opens the illustrated NijiUnit local setup page in a browser. A beginner does not operate a terminal for the normal path.
-
-Windows:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\open_setup.py --language en
-```
-
-macOS or Linux:
-
-```bash
-./.venv/bin/python scripts/open_setup.py --language en
-```
-
-The page guides the user one screen at a time: open Google AI Studio in another tab, compare the illustrated instructions with Google's page, copy the key, return to NijiUnit, and paste into the masked local field. Never ask for the key itself.
+Current newly created Google AI Studio keys are authentication keys. The user copies the key, returns to the still-open NijiUnit page, and pastes it into the masked local field. Never ask for the key itself or have it pasted into chat.
 
 The page binds only to `127.0.0.1`. It does not put the key in a URL, log, or browser storage and stores it only in the Git-ignored `.env`. It requires explicit confirmation before replacing an existing key. Use `configure_api_key.py` only as a recovery path when the browser page cannot run.
 

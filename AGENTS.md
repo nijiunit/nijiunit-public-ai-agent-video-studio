@@ -52,23 +52,31 @@ plane and the application does not keep a daily website cache.
 
 ## Mandatory beginner setup page
 
-After the local runtime is ready and the user has reviewed Google pricing,
-billing, and the intended project, use the repository's local setup page for
-API-key handoff. A beginner must not be sent to a terminal for the normal path.
+Immediately after the local runtime reaches `LOCAL READY`, use the repository's
+local setup page as the normal starting point for Google setup. Launch it before
+asking about a Google account, opening Google AI Studio, reviewing billing or
+the intended project, or obtaining an API key. A beginner must not be sent to a
+terminal for the normal path.
 
 1. Launch `scripts/open_setup.py` with the language selected by the user. The
    page binds only to `127.0.0.1` and opens in the user's browser.
-2. Let the page show the illustrated Google AI Studio steps. The user copies
-   the key on Google's official screen and pastes it into the masked local
-   field. Never ask them to paste it into chat, a terminal command, a URL, or a
-   browser address bar.
-3. The page stores the key only in the Git-ignored `.env`. It must not display,
+2. Let the page guide the user through their Google-account state, opening the
+   official Google AI Studio page, reviewing the intended project and billing
+   tier, copying the key, and returning to NijiUnit. Do not replace this normal
+   path with an AI-agent-controlled browser walkthrough.
+3. If the live Google screen requires a billing or contract decision, explain
+   current official pricing and the visible choice one action at a time, then
+   return the user to the still-open local setup page. The user performs all
+   Google account, payment, and key-copy actions personally.
+4. The user pastes the key into the page's masked local field. Never ask them
+   to paste it into chat, a terminal command, a URL, or a browser address bar.
+5. The page stores the key only in the Git-ignored `.env`. It must not display,
    return, log, or persist the secret in browser storage. Never replace an
    existing key without the user's explicit replacement confirmation.
-4. Use the page's connection check. It may authenticate and list available
+6. Use the page's connection check. It may authenticate and list available
    model identifiers but must not call a story, image, video, speech, or music
    generation API. Do not describe this as a successful paid generation.
-5. Keep `scripts/configure_api_key.py` and the command-line doctor flow only as
+7. Keep `scripts/configure_api_key.py` and the command-line doctor flow only as
    a documented recovery path for environments where the browser page cannot
    run. Do not make a beginner use that fallback merely for agent convenience.
 

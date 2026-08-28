@@ -200,35 +200,6 @@
       border-radius: 24px;
       background: rgba(255,255,255,.82);
     }
-    .tab-demo {
-      margin: 24px 0;
-      padding: 18px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background: rgba(247,249,255,.84);
-    }
-    .fake-tab {
-      padding: 15px 17px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-radius: 14px 14px 7px 7px;
-      background: #fff;
-      box-shadow: 0 5px 16px rgba(45,62,100,.08);
-      font-weight: 700;
-    }
-    .fake-tab.active { box-shadow: inset 0 -3px 0 #4d73dc, 0 5px 16px rgba(45,62,100,.08); }
-    .tab-icon { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg,#6c60e8,#1dc3af); color:#fff; font-size:12px; }
-    .google-icon { background: conic-gradient(#4285f4, #34a853, #fbbc05, #ea4335, #4285f4); }
-    .single-action {
-      padding: 16px 18px;
-      border-radius: 18px;
-      background: linear-gradient(120deg, rgba(236,239,255,.92), rgba(232,251,248,.92));
-      line-height: 1.75;
-    }
     .guide-layout {
       display: grid;
       grid-template-columns: minmax(0, 1.42fr) minmax(280px, .58fr);
@@ -256,13 +227,17 @@
     .screen-dot { width: 11px; height: 11px; border-radius: 50%; background: #dfe4ed; }
     .screen-body { padding: 26px 25px 32px; }
     .screen-title { margin-bottom: 21px; font-size: 27px; font-weight: 800; color: #202b40; }
-    .key-table { min-width: 570px; border: 1px solid #e1e5ec; border-radius: 15px; overflow: hidden; }
-    .key-row { display: grid; grid-template-columns: 1.08fr 1.28fr 1fr 64px; align-items: center; min-height: 72px; }
+    .key-table { min-width: 680px; border: 1px solid #e1e5ec; border-radius: 15px; overflow: hidden; }
+    .key-row { display: grid; grid-template-columns: 1fr 1.3fr 1.08fr 112px; align-items: center; min-height: 84px; }
     .key-row.head { min-height: 48px; color: #687386; background: #f6f7fa; font-size: 13px; font-weight: 800; }
     .key-row > div { padding: 10px 13px; }
+    .key-example { display: grid; gap: 5px; }
     .key-name { color: #246dd3; font-weight: 800; }
+    .key-label { color: #687386; font-size: 12px; line-height: 1.4; }
+    .marked-cell { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .table-marker { width: 28px; height: 28px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(135deg, var(--violet), var(--teal)); font-size: 14px; font-weight: 900; }
     .billing { display: inline-flex; padding: 5px 10px; border-radius: 999px; color: #176c55; background: #e9f7f1; font-weight: 800; font-size: 13px; }
-    .copy-icon { position: relative; width: 37px; height: 37px; margin: auto; display: block; border: 1px solid #cad4e3; border-radius: 10px; background: #fff; }
+    .copy-icon { position: relative; width: 37px; height: 37px; flex: 0 0 auto; display: block; border: 1px solid #cad4e3; border-radius: 10px; background: #fff; }
     .copy-icon::before, .copy-icon::after { content: ""; position: absolute; width: 11px; height: 14px; border: 2px solid #243047; border-radius: 2px; background: #fff; }
     .copy-icon::before { left: 11px; top: 9px; }
     .copy-icon::after { left: 15px; top: 13px; }
@@ -279,7 +254,33 @@
     .guide-step strong { display: block; margin-bottom: 5px; }
     .guide-step p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
     .step-circle { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(135deg, var(--violet), var(--teal)); font-weight: 900; }
-    .return-note { margin-top: 14px; padding: 14px 16px; border-radius: 16px; background: rgba(255,246,226,.92); line-height: 1.7; }
+    .flow-instructions {
+      margin: 0 0 28px;
+      padding: clamp(20px, 2.7vw, 28px);
+      border: 2px solid #efd38d;
+      border-radius: 20px;
+      color: #3b321e;
+      background: rgba(255,246,211,.97);
+      box-shadow: 0 12px 28px rgba(117,89,29,.12);
+      font-size: clamp(17px, 1.8vw, 21px);
+      font-weight: 700;
+      line-height: 1.85;
+    }
+    .combined-form {
+      max-width: 830px;
+      margin: 48px auto 0;
+      padding-top: 40px;
+      border-top: 1px solid var(--line);
+    }
+    .combined-form-head { margin-bottom: 22px; }
+    .combined-form-head .step-label { margin: 0 0 12px; color: var(--teal); font-weight: 800; }
+    .combined-form-head h3 { font-size: clamp(25px, 3vw, 34px); line-height: 1.4; }
+    .combined-form-head .lead { margin-bottom: 0; }
+    .paste-card {
+      border: 2px solid #e8c45b;
+      background: rgba(255,246,201,.96);
+      box-shadow: 0 16px 36px rgba(117,89,29,.12);
+    }
     .account-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
     .choice-card { min-height: 132px; padding: 21px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; text-align: left; border: 1px solid var(--line); border-radius: 20px; color: var(--ink); background: rgba(255,255,255,.92); box-shadow: 0 12px 28px rgba(56,66,105,.08); }
     .choice-card:hover { transform: translateY(-2px); border-color: #aebbe7; }
@@ -365,7 +366,6 @@
       .stage { padding: 25px 20px 34px; }
       .welcome-grid { min-height: 0; }
       .actions > * { width: 100%; }
-      .tab-demo { grid-template-columns: 1fr; }
       .screen-illustration { min-height: 360px; overflow-x: auto; }
       .screen-body { width: 660px; }
     }
@@ -395,7 +395,7 @@
             <p class="eyebrow" data-ja="NijiUnitのインストール完了" data-en="NIJIUNIT INSTALLATION COMPLETE">NijiUnitのインストール完了</p>
             <h1 data-ja="おめでとうございます。<br>NijiUnitを導入できました" data-en="Congratulations.<br>NijiUnit is installed">おめでとうございます。<br>NijiUnitを導入できました</h1>
             <p class="lead" data-ja="ここからは、動画生成に使う有料サービス「Google Gemini API」の初回設定を行います。動画生成サービスは複数ありますが、NijiUnitはGoogle Gemini APIを使う仕様です。" data-en="Next, complete the one-time setup for the paid video-generation service, Google Gemini API. NijiUnit is designed to use Google Gemini API.">ここからは、動画生成に使う有料サービス「Google Gemini API」の初回設定を行います。動画生成サービスは複数ありますが、NijiUnitはGoogle Gemini APIを使う仕様です。</p>
-            <div class="promise" data-ja="このWeb画面はNijiUnit本体ではなく、APIキーをこのPCの .env へ安全に保存し、接続を確認するための設定補助画面です。通常の動画制作では使いません。" data-en="This webpage is not the NijiUnit application. It is a one-time setup helper that safely saves the API key to this computer's .env file and checks the connection.">このWeb画面はNijiUnit本体ではなく、APIキーをこのPCの .env へ安全に保存し、接続を確認するための設定補助画面です。通常の動画制作では使いません。</div>
+            <div class="promise" data-ja="この画面では、動画生成に必要なGoogleの初回設定を行います。Googleから取得する接続用の鍵（APIキー）は、このPCだけに保存します。通常の動画制作では、この画面を使いません。" data-en="Use this page for the one-time Google setup required for video generation. The connection key you obtain from Google (the API key) is stored only on this computer. You will not use this page during normal video production.">この画面では、動画生成に必要なGoogleの初回設定を行います。Googleから取得する接続用の鍵（APIキー）は、このPCだけに保存します。通常の動画制作では、この画面を使いません。</div>
             <div class="actions">
               <button class="primary" id="startSetup" type="button" disabled><span data-ja="Google Gemini APIの設定へ" data-en="Set up Google Gemini API">Google Gemini APIの設定へ</span> <span aria-hidden="true">→</span></button>
             </div>
@@ -444,28 +444,10 @@
       <section class="stage" id="stageOpen">
         <div class="stage-head">
           <p class="step-label" data-ja="1 / 3　Googleで取得" data-en="1 / 3  Get from Google">1 / 3　Googleで取得</p>
-          <h2 data-ja="Google AI Studioを開きます" data-en="Open Google AI Studio">Google AI Studioを開きます</h2>
-          <p class="lead" data-ja="下のボタンを押すと、Google AI Studioが別のブラウザ画面で開きます。このNijiUnit初回設定画面は残ります。Google側でキーをコピーしたあと、引き続きこの画面へ戻って案内を見ます。" data-en="The button opens Google AI Studio in a separate browser window. This NijiUnit setup page remains open. After copying the key on Google, return here and continue with this guide.">下のボタンを押すと、Google AI Studioが別のブラウザ画面で開きます。このNijiUnit初回設定画面は残ります。Google側でキーをコピーしたあと、引き続きこの画面へ戻って案内を見ます。</p>
+          <h2 data-ja="Google AI StudioでAPIキーを取得します" data-en="Get an API key from Google AI Studio">Google AI StudioでAPIキーを取得します</h2>
+          <p class="lead" data-ja="NijiUnitを使うには、Google AI StudioでAPIキーを取得する必要があります。下の説明を読んでください。" data-en="NijiUnit needs an API key from Google AI Studio. Read the instructions below before continuing.">NijiUnitを使うには、Google AI StudioでAPIキーを取得する必要があります。下の説明を読んでください。</p>
         </div>
-        <div class="info-card">
-          <div class="tab-demo" aria-hidden="true">
-            <div class="fake-tab"><span class="tab-icon">N</span><span>NijiUnit 初回設定</span></div>
-            <div class="fake-tab active"><span class="tab-icon google-icon">G</span><span>Google AI Studio</span></div>
-          </div>
-          <div class="single-action" data-ja="次にすることは一つだけです。下のボタンを押してください。" data-en="There is only one action now: press the button below.">次にすることは一つだけです。下のボタンを押してください。</div>
-          <div class="actions">
-            <button class="primary" id="openStudio" type="button"><span data-ja="別の画面でGoogle AI Studioを開く" data-en="Open Google AI Studio separately">別の画面でGoogle AI Studioを開く</span> <span aria-hidden="true">↗</span></button>
-            <button class="text-button" id="backWelcome" type="button" data-ja="前の画面へ戻る" data-en="Go back">前の画面へ戻る</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="stage" id="stageCopy">
-        <div class="stage-head">
-          <p class="step-label" data-ja="1 / 3　Googleで取得" data-en="1 / 3  Get from Google">1 / 3　Googleで取得</p>
-          <h2 data-ja="Google画面では、この3か所を見ます" data-en="Check these three places on Google">Google画面では、この3か所を見ます</h2>
-          <p class="lead" data-ja="下の絵とGoogleの画面を見比べてください。実際の表示はGoogleの更新により少し変わる場合があります。" data-en="Compare this illustration with Google's page. Google may change small details over time.">下の絵とGoogleの画面を見比べてください。実際の表示はGoogleの更新により少し変わる場合があります。</p>
-        </div>
+        <div class="flow-instructions" data-ja="下の青いボタン「Google AI Studioを別ウィンドウで開く」を押すと、Google AI Studioが別ウィンドウで表示されます。①②③の手順でAPIキーをコピーし、Google画面を閉じるか最小化して、この画面に戻ってください。戻ったら、下の黄色い部分にAPIキーを貼り付け、「Google画面で、使うプロジェクトと請求階層を確認しました。」にチェックを付けます。最後に、青いボタン「このPCに保存して、接続を確認する」を押してください。" data-en="Press the blue button labelled ‘Open Google AI Studio in a separate window’. Google AI Studio opens in another window. Follow steps 1, 2, and 3 to copy the API key, then close or minimise Google's window and return to this page. Paste the API key into the yellow section below, select the confirmation that you checked the project and billing tier, then press the blue ‘Save on this PC and check connection’ button.">下の青いボタン「Google AI Studioを別ウィンドウで開く」を押すと、Google AI Studioが別ウィンドウで表示されます。①②③の手順でAPIキーをコピーし、Google画面を閉じるか最小化して、この画面に戻ってください。戻ったら、下の黄色い部分にAPIキーを貼り付け、「Google画面で、使うプロジェクトと請求階層を確認しました。」にチェックを付けます。最後に、青いボタン「このPCに保存して、接続を確認する」を押してください。</div>
         <div class="guide-layout">
           <div class="screen-illustration" role="img" aria-label="Google AI Studio API key screen illustration">
             <div class="screen-top"><span class="screen-dot"></span><span class="screen-dot"></span><span class="screen-dot"></span><span>Google AI Studio</span></div>
@@ -473,47 +455,47 @@
               <div class="screen-title" data-ja="API キー" data-en="API keys">API キー</div>
               <div class="key-table">
                 <div class="key-row head"><div data-ja="キー" data-en="Key">キー</div><div data-ja="プロジェクト" data-en="Project">プロジェクト</div><div data-ja="請求階層" data-en="Billing tier">請求階層</div><div></div></div>
-                <div class="key-row"><div class="key-name">••••••••2j20</div><div>NijiUnit Video Production</div><div><span class="billing" data-ja="有料 / 前払い" data-en="Paid / Prepay">有料 / 前払い</span></div><div><span class="copy-icon" aria-hidden="true"></span></div></div>
+                <div class="key-row">
+                  <div class="key-example"><span class="key-name">••••••••ABCD</span><span class="key-label" data-ja="ご自身のAPIキー（表示例）" data-en="Your API key (example)">ご自身のAPIキー（表示例）</span></div>
+                  <div class="marked-cell"><span class="table-marker" aria-hidden="true">1</span><span data-ja="ご自身のプロジェクト（表示例）" data-en="Your project (example)">ご自身のプロジェクト（表示例）</span></div>
+                  <div class="marked-cell"><span class="table-marker" aria-hidden="true">2</span><span class="billing" data-ja="有料 / 前払い（表示例）" data-en="Paid / Prepay (example)">有料 / 前払い（表示例）</span></div>
+                  <div class="marked-cell"><span class="table-marker" aria-hidden="true">3</span><span class="copy-icon" aria-hidden="true"></span></div>
+                </div>
               </div>
             </div>
           </div>
           <div>
             <div class="guide-steps">
-              <div class="guide-step"><span class="step-circle">1</span><div><strong data-ja="使うプロジェクトを確認" data-en="Check the project">使うプロジェクトを確認</strong><p data-ja="自分が管理するプロジェクトの行を見ます。分からないときは、新しいキーを作らずAIエージェントへ相談します。" data-en="Use a project you control. If unsure, do not create another key; ask your AI agent.">自分が管理するプロジェクトの行を見ます。分からないときは、新しいキーを作らずAIエージェントへ相談します。</p></div></div>
-              <div class="guide-step"><span class="step-circle">2</span><div><strong data-ja="請求階層を確認" data-en="Check billing tier">請求階層を確認</strong><p data-ja="料金や入金設定はGoogleの表示が基準です。想定した契約かを本人が確認します。" data-en="Google's live page is authoritative for billing and deposits. Confirm it matches your intention.">料金や入金設定はGoogleの表示が基準です。想定した契約かを本人が確認します。</p></div></div>
-              <div class="guide-step"><span class="step-circle">3</span><div><strong data-ja="コピーの印を押す" data-en="Press the copy icon">コピーの印を押す</strong><p data-ja="使うキーと同じ行にある、四角が重なった印を押します。キーをチャットへ貼らないでください。" data-en="Press the overlapping-squares icon in the chosen key's row. Never paste the key into chat.">使うキーと同じ行にある、四角が重なった印を押します。キーをチャットへ貼らないでください。</p></div></div>
+              <div class="guide-step"><span class="step-circle">1</span><div><strong data-ja="使うプロジェクトを確認" data-en="Check the project">使うプロジェクトを確認</strong><p data-ja="左の①が付いた「プロジェクト」を見て、自分が使うプロジェクトの行を確認します。分からないときは、新しいキーを作らずAIエージェントへ相談します。" data-en="At marker 1 on the left, find the Project column and confirm the row for the project you will use. If unsure, do not create another key; ask your AI agent.">左の①が付いた「プロジェクト」を見て、自分が使うプロジェクトの行を確認します。分からないときは、新しいキーを作らずAIエージェントへ相談します。</p></div></div>
+              <div class="guide-step"><span class="step-circle">2</span><div><strong data-ja="同じ行の請求階層を確認" data-en="Check billing on the same row">同じ行の請求階層を確認</strong><p data-ja="同じ行にある左の②「請求階層」を見ます。料金や入金設定はGoogleの表示が基準です。" data-en="On the same row, check Billing tier at marker 2 on the left. Google's live page is authoritative for billing and deposits.">同じ行にある左の②「請求階層」を見ます。料金や入金設定はGoogleの表示が基準です。</p></div></div>
+              <div class="guide-step"><span class="step-circle">3</span><div><strong data-ja="同じ行のコピーの印を押す" data-en="Press copy on the same row">同じ行のコピーの印を押す</strong><p data-ja="同じ行の右端にある左の③、四角が重なった印を押します。キーをチャットへ貼らないでください。" data-en="On the same row, press the overlapping-squares icon at marker 3 on the left. Never paste the key into chat.">同じ行の右端にある左の③、四角が重なった印を押します。キーをチャットへ貼らないでください。</p></div></div>
             </div>
-            <div class="return-note" data-ja="コピーできたら、Googleの画面を閉じるか最小化し、残してある「NijiUnit 初回設定」画面へ戻ります。" data-en="After copying, close or minimise Google's window, then return to the NijiUnit First Setup window that remains open.">コピーできたら、Googleの画面を閉じるか最小化し、残してある「NijiUnit 初回設定」画面へ戻ります。</div>
             <div class="actions">
-              <button class="primary" id="copiedKey" type="button"><span data-ja="コピーできました" data-en="I copied it">コピーできました</span> <span aria-hidden="true">→</span></button>
-              <button class="secondary" id="reopenStudio" type="button" data-ja="Google画面をもう一度開く" data-en="Open Google again">Google画面をもう一度開く</button>
+              <button class="primary" id="openStudio" type="button"><span data-ja="Google AI Studioを別ウィンドウで開く" data-en="Open Google AI Studio in a separate window">Google AI Studioを別ウィンドウで開く</span> <span aria-hidden="true">↗</span></button>
+              <button class="text-button" id="backWelcome" type="button" data-ja="前の画面へ戻る" data-en="Go back">前の画面へ戻る</button>
             </div>
           </div>
         </div>
-      </section>
-
-      <section class="stage" id="stagePaste">
-        <div class="form-wrap">
-          <div class="stage-head">
+        <div class="combined-form">
+          <div class="combined-form-head">
             <p class="step-label" data-ja="2 / 3　このPCへ保存" data-en="2 / 3  Save on this PC">2 / 3　このPCへ保存</p>
-            <h2 data-ja="コピーしたキーを、ここに貼り付けます" data-en="Paste the copied key here">コピーしたキーを、ここに貼り付けます</h2>
-            <p class="lead" data-ja="この欄はNijiUnit専用です。貼り付けた文字が●で隠れるのが正常です。" data-en="This field belongs only to NijiUnit. Dots hiding the pasted value are normal.">この欄はNijiUnit専用です。貼り付けた文字が●で隠れるのが正常です。</p>
+            <h3 data-ja="コピーしたAPIキーを、この画面に貼り付けてください" data-en="Paste the copied API key into this page">コピーしたAPIキーを、この画面に貼り付けてください</h3>
+            <p class="lead" data-ja="貼り付けた文字は●で隠れます。" data-en="The pasted characters will be hidden by dots.">貼り付けた文字は●で隠れます。</p>
           </div>
-          <div class="info-card">
+          <div class="info-card paste-card">
             <label for="apiKey" data-ja="Google Gemini APIキー" data-en="Google Gemini API key">Google Gemini APIキー</label>
             <input class="secret-input" id="apiKey" type="password" autocomplete="off" spellcheck="false" aria-describedby="keyHint">
             <p class="hint" id="keyHint" data-ja="入力欄を一度クリックし、Windowsは Ctrl+V、Macは command+V で貼り付けます。" data-en="Click the field once, then paste with Ctrl+V on Windows or command+V on Mac.">入力欄を一度クリックし、Windowsは Ctrl+V、Macは command+V で貼り付けます。</p>
             <label class="check-row"><input id="projectConfirmed" type="checkbox"><span data-ja="Google画面で、使うプロジェクトと請求階層を確認しました。" data-en="I checked the intended project and billing tier on Google's page.">Google画面で、使うプロジェクトと請求階層を確認しました。</span></label>
             <label class="check-row" id="replaceRow" hidden><input id="replaceConfirmed" type="checkbox"><span data-ja="このPCに保存済みのAPIキーを、今回のキーへ交換します。" data-en="Replace the API key already stored on this computer.">このPCに保存済みのAPIキーを、今回のキーへ交換します。</span></label>
             <div class="verification-list" id="saveChecks" aria-live="polite">
-              <div class="verification-item" data-check="save"><span class="verification-icon">1</span><span data-ja="APIキーを .env へ安全に保存" data-en="Save the API key safely to .env">APIキーを .env へ安全に保存</span></div>
+              <div class="verification-item" data-check="save"><span class="verification-icon">1</span><span data-ja="APIキーをこのPCに保存" data-en="Save the API key on this computer">APIキーをこのPCに保存</span></div>
               <div class="verification-item" data-check="auth"><span class="verification-icon">2</span><span data-ja="Google Gemini APIへ接続" data-en="Connect to Google Gemini API">Google Gemini APIへ接続</span></div>
               <div class="verification-item" data-check="models"><span class="verification-icon">3</span><span data-ja="NijiUnitに必要なモデルを確認" data-en="Check the models NijiUnit needs">NijiUnitに必要なモデルを確認</span></div>
             </div>
             <p class="message" id="saveMessage" role="status" aria-live="polite"></p>
             <div class="actions">
               <button class="primary" id="saveConnect" type="button"><span data-ja="このPCに保存して、接続を確認する" data-en="Save on this PC and check connection">このPCに保存して、接続を確認する</span> <span aria-hidden="true">→</span></button>
-              <button class="text-button" id="backCopy" type="button" data-ja="取得方法をもう一度見る" data-en="Review the instructions">取得方法をもう一度見る</button>
             </div>
             <p class="small-note" data-ja="接続確認では、認証と必要なモデルの有無だけを確認します。画像や動画は生成せず、生成料金は発生させません。" data-en="The connection check only tests authentication and model availability. It does not generate media or incur generation charges.">接続確認では、認証と必要なモデルの有無だけを確認します。画像や動画は生成せず、生成料金は発生させません。</p>
           </div>
@@ -548,7 +530,7 @@
           <div>
             <p class="eyebrow" data-ja="初回設定完了" data-en="FIRST SETUP COMPLETE">初回設定完了</p>
             <h1 data-ja="おめでとうございます。<br>設定は完了です" data-en="Congratulations.<br>Setup is complete">おめでとうございます。<br>設定は完了です</h1>
-            <p class="lead" data-ja="Google Gemini APIキーをこのPCの .env へ保存し、接続と必要なモデルを確認できました。画像や動画の生成は、まだ行っていません。" data-en="The Google Gemini API key is saved to this computer's .env file, and the connection and required models were verified. No media has been generated yet.">Google Gemini APIキーをこのPCの .env へ保存し、接続と必要なモデルを確認できました。画像や動画の生成は、まだ行っていません。</p>
+            <p class="lead" data-ja="Google Gemini APIキーをこのPCに保存し、接続と必要なモデルを確認できました。画像や動画の生成は、まだ行っていません。" data-en="The Google Gemini API key is saved on this computer, and the connection and required models were verified. No media has been generated yet.">Google Gemini APIキーをこのPCに保存し、接続と必要なモデルを確認できました。画像や動画の生成は、まだ行っていません。</p>
             <div class="promise" data-ja="初回設定に使ったこのWeb画面は、普段の動画制作では使用しません。これからはAIエージェントに動画制作を依頼してください。APIキーが変わったときや設定をやり直したいときも、AIエージェントに「NijiUnitの初回設定を開いて」と依頼すれば、この画面を開けます。" data-en="This setup webpage is not used for normal video production. From now on, ask your AI agent to create videos. If the key changes or setup must be repeated, ask the agent to open NijiUnit First Setup again.">初回設定に使ったこのWeb画面は、普段の動画制作では使用しません。これからはAIエージェントに動画制作を依頼してください。APIキーが変わったときや設定をやり直したいときも、AIエージェントに「NijiUnitの初回設定を開いて」と依頼すれば、この画面を開けます。</div>
             <div class="actions">
               <button class="primary" id="finishSetup" type="button"><span data-ja="この設定画面を閉じてAIエージェントへ戻る" data-en="Close setup and return to the AI agent">この設定画面を閉じてAIエージェントへ戻る</span> <span aria-hidden="true">→</span></button>
@@ -589,8 +571,8 @@
     "use strict";
     const sessionToken = "__TOKEN__";
     const initialLanguage = "__LANG__";
-    const stages = ["Welcome", "Account", "AgentHelp", "Open", "Copy", "Paste", "Existing", "Success", "Failure", "Closed"];
-    const progressByStage = {Welcome: 1, Account: 1, AgentHelp: 1, Open: 1, Copy: 1, Paste: 2, Existing: 2, Success: 3, Failure: 2, Closed: 3};
+    const stages = ["Welcome", "Account", "AgentHelp", "Open", "Existing", "Success", "Failure", "Closed"];
+    const progressByStage = {Welcome: 1, Account: 1, AgentHelp: 1, Open: 1, Existing: 2, Success: 3, Failure: 2, Closed: 3};
     const messages = {
       ja: {
         statusError: "このPCの設定を確認できませんでした。AIエージェントへ戻って相談してください。",
@@ -687,9 +669,25 @@
     }
 
     function openGoogleStudio() {
-      googleWindow = window.open("https://aistudio.google.com/app/apikey", "NijiUnitGoogleAIStudio", "popup=yes,width=1280,height=900,resizable=yes,scrollbars=yes");
-      if (googleWindow) { googleWindow.focus(); }
-      showStage("Copy");
+      const availableWidth = window.screen.availWidth || window.innerWidth;
+      const availableHeight = window.screen.availHeight || window.innerHeight;
+      const availableLeft = Number.isFinite(window.screen.availLeft) ? window.screen.availLeft : 0;
+      const availableTop = Number.isFinite(window.screen.availTop) ? window.screen.availTop : 0;
+      const popupWidth = Math.max(800, Math.min(1280, Math.floor(availableWidth * 0.64)));
+      const popupHeight = Math.max(620, Math.min(860, Math.floor(availableHeight * 0.78)));
+      const popupLeft = availableLeft + 12;
+      const popupTop = availableTop + Math.max(24, Math.floor((availableHeight - popupHeight) / 2));
+      const windowFeatures = `popup=yes,width=${popupWidth},height=${popupHeight},left=${popupLeft},top=${popupTop},resizable=yes,scrollbars=yes`;
+      googleWindow = window.open("https://aistudio.google.com/app/apikey", "NijiUnitGoogleAIStudio", windowFeatures);
+      if (googleWindow) {
+        try {
+          googleWindow.resizeTo(popupWidth, popupHeight);
+          googleWindow.moveTo(popupLeft, popupTop);
+        } catch (_error) {
+          // The browser may adjust popup geometry to keep the window on screen.
+        }
+        googleWindow.focus();
+      }
     }
 
     function setBusy(button, busy) {
@@ -793,13 +791,6 @@
     document.getElementById("returnForAccount").addEventListener("click", function () { finish("needs_help"); });
     document.getElementById("backWelcome").addEventListener("click", function () { showStage("Welcome"); });
     document.getElementById("openStudio").addEventListener("click", openGoogleStudio);
-    document.getElementById("reopenStudio").addEventListener("click", openGoogleStudio);
-    document.getElementById("copiedKey").addEventListener("click", function () {
-      document.getElementById("replaceRow").hidden = !setupStatus.configured;
-      showStage("Paste");
-      window.setTimeout(function () { document.getElementById("apiKey").focus(); }, 280);
-    });
-    document.getElementById("backCopy").addEventListener("click", function () { showStage("Copy"); });
     document.getElementById("replaceExisting").addEventListener("click", function () {
       document.getElementById("replaceRow").hidden = false;
       showStage("Open");
@@ -854,7 +845,7 @@
     });
     document.getElementById("replaceAfterFailure").addEventListener("click", function () {
       document.getElementById("replaceRow").hidden = false;
-      showStage("Copy");
+      showStage("Open");
     });
     document.getElementById("finishSetup").addEventListener("click", function () { finish("ready"); });
     document.getElementById("askAgent").addEventListener("click", function () { finish("needs_help"); });

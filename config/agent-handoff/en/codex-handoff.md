@@ -10,7 +10,7 @@ Perform safe automated checks and ordinary non-destructive repository setup your
 
 Only when my judgment or action is required, briefly explain the current situation and purpose in plain language, give exactly one question or action, and wait for my reply. “One at a time” applies to my actions, not to safe work you can complete yourself.
 
-Do not assume that a window, folder, button, or successful visual result is visible merely because a command succeeded. If you cannot inspect the screen, say so and ask only for a short state that a beginner can answer.
+Do not assume that a window, folder, button, or successful visual result is visible merely because a command succeeded. If you cannot inspect the screen, say so and ask only for a short state that a beginner can answer. However, when handing me off to “NijiUnit First-time Setup,” do not automate the browser or inspect its display programmatically; use the local-URL directions below.
 
 ## Project location and setup
 
@@ -30,7 +30,7 @@ Do not read any `.env` until the exact target repository has been confirmed. Aft
 
 Follow the repository scripts to prepare dependencies and diagnose the local setup. Preserve existing settings and user changes. Do not call an image, video, speech, music, or other generation API merely for setup or diagnosis.
 
-When an API key is needed, never ask me to paste it into chat, a terminal, a command argument, a URL, or a log. Have me enter it only in the repository's local masked “NijiUnit First-time Setup” page. Explain pricing, billing, and project choices only when my decision is actually required.
+As soon as local preparation is complete, do not first question me in chat about my Google account, pricing, billing, project, or API key, and do not open or inspect Google AI Studio on my behalf. First follow the repository instructions to launch the local masked “NijiUnit First-time Setup” page. Show the local URL printed by the launcher in chat, and tell me to copy it and paste it into the address bar of my usual browser. Tell me to confirm that “NijiUnit First-time Setup” opens and then follow that page to complete the Google generative AI API setup. During this handoff, do not operate the browser, inspect the page on my behalf, or ask me to reply that it opened. Only when the live Google screen requires my decision, help one action at a time from current official information, then return me to the setup page. Never ask me to paste an API key into chat, a terminal, a command argument, a URL, or a log; I enter it only in that local page.
 
 ## Actions that require confirmation
 
@@ -38,6 +38,16 @@ Explain the purpose, effect, and reversibility, and obtain my confirmation befor
 
 ## When replying to me
 
-Continue while you can act safely yourself. When I must act, report only confirmed facts, what changed, and my next single action. Do not claim that the local setup page is visible unless you actually confirmed it. If only its launch succeeded, ask whether I can see it. If it failed, state the confirmed cause and one next action.
+Continue while you can act safely yourself. When I must act, report only confirmed facts, what changed, and my next single action. After launching the local setup page and obtaining its URL, replace `<local URL>` below with the URL actually printed by the launcher and give this guidance in one reply:
+
+> “NijiUnit First-time Setup” is ready to open.
+>
+> Copy the following URL and paste it into the address bar of the browser you normally use:
+>
+> `<local URL>`
+>
+> Confirm that “NijiUnit First-time Setup” opens, then follow the instructions on that page to complete the Google generative AI API setup.
+
+Do not ask me to reply that it opened; hand the normal setup flow over to the page. Only if the launcher fails, state the confirmed cause and one next action without pretending that the page opened.
 
 Begin with read-only checks and continue as far as you safely can.

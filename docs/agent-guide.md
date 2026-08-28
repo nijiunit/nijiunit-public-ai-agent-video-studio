@@ -54,11 +54,11 @@ Assume the user may be a computer beginner. Do not reinstall the AI agent or Git
 #### B. Prepare the Google Generative AI API
 
 1. Read the complete [Google API setup guide](google-api-setup.md).
-2. Guide account access, terms, project selection, current pricing, paid access, and billing one user action at a time. Before billing setup, verify each model configured in the bundled profile against current official Google information.
-3. If the user declines billing, stop and report: "The public demo and local tools are available; Google video generation is not configured."
-4. If the user proceeds, they enter payment information directly into Google. Never choose card details, automatic top-up, Prepay, or Postpay for them.
-5. Ask the user to confirm the intended project's paid status and, when applicable, usable Prepay balance on the live screen.
-6. After the user obtains an API key, run `open_setup.py --language en` and open the illustrated local setup page in their browser. Do not send a beginner to a terminal.
+2. As soon as local setup reaches `LOCAL READY`, run `open_setup.py --language en` and open the illustrated “NijiUnit First-time Setup” page. Do this before asking about a Google account, pricing, or billing. Do not send a beginner to a terminal.
+3. Have the user follow the visible page. Do not operate Google AI Studio for them or replace the page's flow with a chat-only walkthrough.
+4. Only when the live Google screen requires a contract, pricing, billing, or project decision, verify current official Google information and help one action at a time. Then return the user to the still-open setup page.
+5. If the user declines billing, stop and report: "The public demo and local tools are available; Google video generation is not configured."
+6. If the user proceeds, they enter payment information directly into Google. Never choose card details, automatic top-up, Prepay, or Postpay for them.
 7. The user presses the copy icon on Google's official screen and pastes the key into the local page's masked field. Never request the key in chat, a URL, or logs.
 8. Store and verify the key on the same page. Replace an existing key only after the user explicitly selects the replacement confirmation. Use `configure_api_key.py` and `doctor.py --require-api-key --verify-api-key-online` only as recovery tools if the normal browser path cannot run.
 9. When the page reports success, state accurately that authentication and model identifiers were verified but paid generation was not attempted.

@@ -41,3 +41,23 @@ def test_agent_router_preserves_the_selected_language() -> None:
     assert "日本語とEnglishのどちらで進めますか？" in instructions
     assert "Mandatory Excel storyboard gate" in instructions
     assert "approve-workbook" in instructions
+
+
+def test_beginner_setup_page_starts_google_setup() -> None:
+    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    japanese_handoff = (ROOT / "config/agent-handoff/ja/codex-handoff.md").read_text(
+        encoding="utf-8"
+    )
+    english_handoff = (ROOT / "config/agent-handoff/en/codex-handoff.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Immediately after the local runtime reaches `LOCAL READY`" in instructions
+    assert "まずリポジトリの手順に従ってローカルの「NijiUnit 初回設定」画面を起動" in japanese_handoff
+    assert "次のURLをコピーし、普段お使いのブラウザのアドレス欄へ貼り付けて" in japanese_handoff
+    assert "次のURLをクリックしてください" not in japanese_handoff
+    assert "「開いた」というチャット返信を求めず" in japanese_handoff
+    assert "First follow the repository instructions to launch" in english_handoff
+    assert "Copy the following URL and paste it into the address bar" in english_handoff
+    assert "Click the following URL" not in english_handoff
+    assert "Do not ask me to reply that it opened" in english_handoff

@@ -160,7 +160,7 @@ try {
         throw "Diagnostics reported a blocking failure."
     }
 
-    Write-Host "Base installation finished. Review pricing and billing using docs/google-api-setup.ja.md, then open the beginner setup page with scripts/open_setup.py."
+    Write-Host "Base installation finished. Open the beginner setup page with scripts/open_setup.py now; its screens guide the Google setup."
 } finally {
     Pop-Location
 }

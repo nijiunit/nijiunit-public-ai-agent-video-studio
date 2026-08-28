@@ -83,17 +83,45 @@ def test_page_is_loopback_only_and_has_security_headers(setup_server):
     assert "Congratulations" in html
     assert "NijiUnitのインストール完了" in html
     assert "Google Gemini API" in html
-    assert "このWeb画面はNijiUnit本体ではなく" in html
+    assert "この画面では、動画生成に必要なGoogleの初回設定を行います" in html
     assert "nijiunit-logo-side-name.png" in html
     assert "nijiunit-guide-friends-hero.png" in html
     assert "https://manual.nijiunit.com" not in html
     assert "Googleアカウントをお持ちですか？" in html
-    assert "別の画面でGoogle AI Studioを開く" in html
-    assert "このNijiUnit初回設定画面は残ります" in html
-    assert "Google画面では、この3か所を見ます" in html
+    assert "Google AI StudioでAPIキーを取得します" in html
+    assert "Google AI StudioでAPIキーを取得する必要があります" in html
+    assert "Google AI Studioを別ウィンドウで開く" in html
+    assert "下の青いボタン「Google AI Studioを別ウィンドウで開く」" in html
+    assert "①②③の手順でAPIキーをコピーし" in html
+    assert "下の黄色い部分にAPIキーを貼り付け" in html
+    assert "最後に、青いボタン「このPCに保存して、接続を確認する」" in html
+    assert "コピーしたAPIキーを、この画面に貼り付けてください" in html
+    assert 'class="info-card paste-card"' in html
+    assert "return-note" not in html
+    assert "stageCopy" not in html
+    assert "stagePaste" not in html
+    assert "fake-tab" not in html
+    open_stage_start = html.index('id="stageOpen"')
+    existing_stage_start = html.index('id="stageExisting"')
+    assert open_stage_start < html.index('id="openStudio"') < existing_stage_start
+    assert open_stage_start < html.index('id="apiKey"') < existing_stage_start
+    assert "availableWidth * 0.64" in html
+    assert "availableHeight * 0.78" in html
+    assert "googleWindow.resizeTo(popupWidth, popupHeight)" in html
+    assert "googleWindow.moveTo(popupLeft, popupTop)" in html
+    assert 'showStage("Copy")' not in html
+    assert 'showStage("Paste")' not in html
+    assert "ご自身のプロジェクト（表示例）" in html
+    assert "Your project (example)" in html
+    assert "NijiUnit Video Production" not in html
+    assert "••••••••2j20" not in html
+    assert html.count('class="table-marker"') == 3
+    assert "同じ行の請求階層を確認" in html
+    assert "同じ行のコピーの印を押す" in html
     assert html.count('class="copy-icon"') == 1
     assert "このPCに保存して、接続を確認する" in html
-    assert "APIキーを .env へ安全に保存" in html
+    assert "APIキーをこのPCに保存" in html
+    assert ".env" not in html
     assert "Google Gemini APIへ接続" in html
     assert "NijiUnitに必要なモデルを確認" in html
     assert "おめでとうございます。<br>設定は完了です" in html

@@ -68,23 +68,9 @@ Setup verifies `config/runtime-guidance/manifest.json` and every file's SHA-256.
 
 This first-time process follows the [Google API setup guide](google-api-setup.md). The AI agent must guide the user one action at a time rather than presenting all screens at once.
 
-### 2.1 Review pricing before creating production resources
+### 2.1 Open the local setup page first
 
-The bundled production profile identifies the configured models. Video generation may require paid access, so the user personally reviews the terms, current pricing, selected project, Prepay or Postpay terms, deposits, and automatic top-up behavior in Google AI Studio.
-
-The AI agent does not choose a payment method or automatic top-up. If the user declines paid setup, the public demo and offline tools remain available.
-
-Use the official [Gemini API billing guide](https://ai.google.dev/gemini-api/docs/billing) and [current pricing page](https://ai.google.dev/gemini-api/docs/pricing).
-
-### 2.2 Obtain an API key in Google AI Studio
-
-Open [Google AI Studio API Keys](https://aistudio.google.com/app/apikey) and confirm that the intended project has the appropriate plan or billing tier. Reuse a suitable existing key instead of creating duplicates.
-
-Treat the key like a password. Never paste it into chat, an issue, email, screen sharing, a command argument, or a committed file. If it is exposed, revoke it in Google AI Studio and create a replacement.
-
-### 2.3 Store the key in the local setup page
-
-After pricing, project, and billing have been reviewed, the AI agent opens the local setup page. The beginner does not operate a terminal for the normal path.
+As soon as the local environment reaches `LOCAL READY`, the AI agent opens “NijiUnit First-time Setup.” It does not first question the beginner in chat about a Google account, pricing, project, or API key. This page is the normal starting point, and the beginner does not operate a terminal.
 
 On Windows, the agent runs:
 
@@ -92,17 +78,35 @@ On Windows, the agent runs:
 .\.venv\Scripts\python.exe scripts\open_setup.py --language en
 ```
 
-macOS or Linux:
+On macOS or Linux:
 
 ```bash
 ./.venv/bin/python scripts/open_setup.py --language en
 ```
 
-The NijiUnit page guides the user one screen at a time: open Google AI Studio in another tab, compare the illustrated instructions with Google's page, copy the key, return to NijiUnit, and paste it into the masked local field. Never paste the key into chat, a terminal, or a URL.
+The visible page guides the user one screen at a time through their Google-account state, opening Google AI Studio separately, checking the project and billing tier, copying the key, returning to NijiUnit, and pasting it.
+
+### 2.2 Review pricing before creating production resources
+
+The bundled production profile identifies the configured models. Video generation may require paid access, so the user personally reviews the terms, current pricing, selected project, Prepay or Postpay terms, deposits, and automatic top-up behavior in Google AI Studio.
+
+The AI agent does not choose a payment method or automatic top-up. If the user declines paid setup, the public demo and offline tools remain available.
+
+Use the official [Gemini API billing guide](https://ai.google.dev/gemini-api/docs/billing) and [current pricing page](https://ai.google.dev/gemini-api/docs/pricing).
+
+### 2.3 Obtain an API key in Google AI Studio
+
+Open [Google AI Studio API Keys](https://aistudio.google.com/app/apikey) and confirm that the intended project has the appropriate plan or billing tier. Reuse a suitable existing key instead of creating duplicates.
+
+Treat the key like a password. Never paste it into chat, an issue, email, screen sharing, a command argument, or a committed file. If it is exposed, revoke it in Google AI Studio and create a replacement.
+
+### 2.4 Store the key in the local setup page
+
+The user presses the copy icon on Google's official page, returns to the still-open NijiUnit page, and pastes the key into its masked local field. Never paste the key into chat, a terminal, or a URL.
 
 The page listens only on `127.0.0.1`. It does not place the key in command arguments, URLs, logs, or browser storage and stores it only in the Git-ignored `.env`. It preserves unrelated `.env` settings and requires explicit on-page confirmation before replacing an existing key. Use `scripts/configure_api_key.py` only as a recovery path when the browser page cannot run.
 
-### 2.4 Verify authentication and configured models
+### 2.5 Verify authentication and configured models
 
 For a new key, press **Save on this PC and check connection** on the same local page. For an existing key, press **Check the saved connection**. This checks Google authentication and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not generate media or perform a billable generation request. It does not guarantee account balance, quota, regional access, preview eligibility, or a successful paid generation. Confirm possible charges before the first user-approved generation. Use `doctor.py --require-api-key --verify-api-key-online` only as a recovery path if the page cannot run.
 
