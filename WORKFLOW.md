@@ -20,7 +20,7 @@ Before every new production, check revisions without updating:
 .\.venv\Scripts\python.exe run_storyboard.py check-update --language en
 ```
 
-Never update automatically. Explain the available version, relevant changes, and uncommitted local work, then ask: "Would you like to update before starting production? Reply ‘Update’ or ‘Continue without updating.’" Do not ask for "update and complete," and report completion only after the update succeeds. If GitHub cannot be reached, explain that and ask whether to continue with the versioned local defaults.
+Never update automatically. Only for `relation: local_behind`, explain the available version, relevant changes, and uncommitted local work, then ask: "Would you like to update before starting production? Reply ‘Update’ or ‘Continue without updating.’" `local_ahead` means the authorized local test revision is newer, not that an update is available; do not offer to replace it with the older GitHub revision. Stop and ask the repository maintainer for `diverged`. Do not ask for "update and complete," and report completion only after the update succeeds. If GitHub cannot be reached, explain that and ask whether to continue with the versioned local defaults.
 
 If any shot names a character, resolve every name through the character registry before paid image or video generation. A missing registry or unresolved name is a hard stop. Review new or changed identity references before continuing, and reuse locked references and prior final frames where continuity requires them.
 

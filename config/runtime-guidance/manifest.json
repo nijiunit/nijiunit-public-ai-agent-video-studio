@@ -9,12 +9,12 @@
   "resources": {
     "agent_guide_ja": {
       "url": "agent_guide_ja.md",
-      "sha256": "45927492e909c55d609a250f484c4b783cdde7b19e889e7ca8f79c450ec27790",
+      "sha256": "64e48d82b038efc47b09051b50295e63e157905eb2bcf7ad38a8839fbe6f7937",
       "media_type": "text/markdown"
     },
     "agent_guide_en": {
       "url": "agent_guide_en.md",
-      "sha256": "2c046482e287c54de7475cac62f20c9ab207c91996cf5d301107b7d80d76e6a5",
+      "sha256": "552b240cbb4b0b5db2e97e6a97a14a92e7875be355f95bbbe635dde01ccc3b80",
       "media_type": "text/markdown"
     },
     "production_profile": {

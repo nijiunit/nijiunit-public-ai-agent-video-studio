@@ -268,6 +268,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--output-root", type=Path, default=ROOT / "output" / "storyboard"
     )
     completion.add_argument("--history-root", type=Path, default=ROOT / "history")
+    completion.add_argument(
+        "--language",
+        choices=("ja", "en"),
+        default="ja",
+        help="他の案内コマンドと同じ指定を受け付けます（JSON出力は共通です）",
+    )
 
     archive = subparsers.add_parser(
         "archive-production",

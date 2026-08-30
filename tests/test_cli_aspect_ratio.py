@@ -41,3 +41,9 @@ def test_prepare_tutorial_sample_story_write_is_explicit() -> None:
 
     assert args.write_sample_story is True
     assert args.input_dir.name == "input"
+
+
+def test_completion_status_accepts_language_for_consistent_agent_usage() -> None:
+    args = build_parser().parse_args(["completion-status", "--language", "ja"])
+
+    assert args.language == "ja"

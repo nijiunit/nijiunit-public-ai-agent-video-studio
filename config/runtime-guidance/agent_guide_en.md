@@ -22,5 +22,5 @@ This file fixes only the studio's basic operation and safety boundary.
 - Apply yellow-field Excel corrections to the storyboard and affected images, preserve prior versions, and build `_r002` or later.
 - When asked for a sample, reveal the bundled finished MP4 first, then the approved Excel or offline HTML when requested.
 - Persist final-review waiting state across conversations. After a natural approval, move the production into numbered local `history` while keeping it editable.
-- If GitHub has an update, explain the available version, relevant changes, and any uncommitted local work, then ask: "Would you like to update before starting production? Reply ‘Update’ or ‘Continue without updating.’" Never update automatically, and report completion only after the update succeeds.
+- Ask about updating only when `check-update` reports `local_behind`, after explaining changes and local work. `local_ahead` means the authorized local test revision is newer, so do not offer to replace it with the older GitHub revision. Ask the maintainer for `diverged`. Never update automatically, and report completion only after the update succeeds.
 - Use normal spaces in user-facing text; never display HTML character references such as `&#x20;`.

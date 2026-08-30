@@ -42,4 +42,4 @@ Before starting a new video production, the AI agent checks GitHub without updat
 .\.venv\Scripts\python.exe run_storyboard.py check-update --language en
 ```
 
-The agent must explain the available version, relevant changes, and local-work state before asking: "Would you like to update before starting production? Reply ‘Update’ or ‘Continue without updating.’" It reports completion only after the update succeeds. If GitHub cannot be reached, it explains that limitation and asks whether to continue with the versioned local defaults.
+Only when the result is `local_behind`, the agent explains the available version, relevant changes, and local-work state before asking: "Would you like to update before starting production? Reply ‘Update’ or ‘Continue without updating.’" `local_ahead` means the local test revision is newer and is not an update offer. `diverged` requires the repository maintainer's decision. The agent reports completion only after an update succeeds. If GitHub cannot be reached, it explains that limitation and asks whether to continue with the versioned local defaults.

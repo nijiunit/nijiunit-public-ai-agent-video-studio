@@ -68,10 +68,15 @@ plane and the application does not keep a daily website cache.
    original production that does not follow a NijiUnit tutorial.
 3. At the start of every new production, when the user asks about updates, or
    before proposing a release update, run `run_storyboard.py check-update`.
-   It only compares revisions. If the revisions differ, stop before `create`,
-   explain the available update and any local changes, and use the update-choice
-   wording below. Never pull, merge, overwrite local work, or install an update
-   without first explaining the change and obtaining the user's confirmation.
+   It only compares revisions. If it reports `local_behind`, stop before
+   `create`, explain the available update and any local changes, and use the
+   update-choice wording below. If it reports `local_ahead`, that is not an
+   update offer: never replace the newer local test revision with the older
+   GitHub revision. Continue an explicitly authorized local test; otherwise ask
+   once whether to continue with the local revision. For `diverged`, stop and
+   ask the repository maintainer. Never pull, merge, overwrite local work, or
+   install an update without first explaining the change and obtaining the
+   user's confirmation.
    If the comparison cannot reach GitHub, say so and ask whether to continue
    with the versioned local defaults.
 4. NijiUnit activity, new-video announcements, subscription requests, and Hype
@@ -129,8 +134,9 @@ current decision or action.
 
    Accept an unambiguous natural equivalent such as `16:9`, `9:16`, or
    `縦長です`. Never append a completion word to either choice.
-8. After explaining the available version, relevant changes, and local-work
-   state, ask the update choice in Japanese as:
+8. Only when `check-update` reports `local_behind`, after explaining the
+   available version, relevant changes, and local-work state, ask the update
+   choice in Japanese as:
 
    `制作を始める前に更新しますか？「更新する」または「今回は更新しない」と返信してください。`
 
