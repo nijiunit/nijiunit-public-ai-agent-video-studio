@@ -267,6 +267,12 @@ terminal for the normal path.
 
 The Excel workbook is the official human review interface for every production. `storyboard.json` is machine input and Markdown is supplementary documentation; neither replaces the Excel storyboard.
 
+When the user explicitly asks to retain part of an input video, mark that range
+as `source_video`; do not regenerate it. Split it into review shots of at most
+three seconds, allowing only the last source segment to be shorter so an exact
+cut point is preserved. The first generated shot after it must start from the
+source segment's final frame. Preserve or mute source audio exactly as requested.
+
 For every new video, the AI agent must follow this order:
 
 1. Create the three-second storyboard JSON.

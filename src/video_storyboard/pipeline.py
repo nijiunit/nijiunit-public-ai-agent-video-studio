@@ -51,7 +51,13 @@ from .motion_assets import prepare_motion_keyframes
 from .review_html import create_review_html
 from .schema import Storyboard
 from .settings import CHARACTER_REGISTRY_DIR
-from .video import concatenate_clips, inspect_video, render_video_shots
+from .video import (
+    concatenate_clips,
+    extract_source_frame,
+    inspect_video,
+    render_video_shots,
+    source_asset_path,
+)
 from .website_tutorial import (
     fetch_tutorial_page,
     format_tutorial_page,
@@ -289,7 +295,12 @@ def render_images_command(
             )
     require_resolved_character_names(
         character_registry,
-        [name for shot in storyboard.shots for name in shot.characters],
+        [
+            name
+            for shot in storyboard.shots
+            if shot.production_mode == "generated_video"
+            for name in shot.characters
+        ],
     )
     service = GeminiService(
         profile=guidance.profile,
@@ -300,6 +311,37 @@ def render_images_command(
         destination = run_dir / "images" / f"shot_{shot.shot_number:03d}.png"
         if destination.exists():
             print(f"[skip] S{shot.shot_number:03d}: 生成済み")
+            continue
+        if shot.production_mode == "source_video":
+            source = source_asset_path(shot, assets)
+            extract_source_frame(
+                source,
+                shot.source_start_seconds or 0.0,
+                destination,
+                guidance.profile.media,
+            )
+            print(
+                f"[source] S{shot.shot_number:03d}: "
+                f"{shot.source_asset} の実写フレームを使用"
+            )
+            continue
+        previous = storyboard.shots[index - 1] if index else None
+        if (
+            shot.continuity_start_mode == "previous_final_frame"
+            and previous is not None
+            and previous.production_mode == "source_video"
+        ):
+            source = source_asset_path(previous, assets)
+            extract_source_frame(
+                source,
+                previous.source_end_seconds or 0.0,
+                destination,
+                guidance.profile.media,
+            )
+            print(
+                f"[source-transition] S{shot.shot_number:03d}: "
+                "直前の実写最終フレームを使用"
+            )
             continue
         if limit is not None and generated >= limit:
             break
@@ -398,10 +440,12 @@ def render_videos_command(
     guidance = _load_pinned_guidance(run_dir, storyboard)
     _require_approved_workbook(storyboard, run_dir)
     _current_production_guidance()
+    assets = load_manifest(run_dir / "manifest.json")
     completed = render_video_shots(
         storyboard=storyboard,
         run_dir=run_dir,
         profile=guidance.profile,
+        assets=assets,
         model=video_model,
         limit=limit,
         character_registry_dir=character_registry_dir,

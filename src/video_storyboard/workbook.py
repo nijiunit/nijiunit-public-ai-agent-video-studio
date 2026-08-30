@@ -31,8 +31,12 @@ def _review_image_size(aspect_ratio: str, long_edge: int) -> tuple[int, int]:
     return long_edge, round(long_edge * 9 / 16)
 
 
-def _timecode(seconds: int) -> str:
-    return f"{seconds // 60:02d}:{seconds % 60:02d}"
+def _timecode(seconds: float) -> str:
+    minutes = int(seconds // 60)
+    remainder = seconds - minutes * 60
+    if abs(remainder - round(remainder)) < 0.0005:
+        return f"{minutes:02d}:{round(remainder):02d}"
+    return f"{minutes:02d}:{remainder:06.3f}"
 
 
 def _safe_sheet_title(shot: Shot) -> str:
@@ -256,7 +260,8 @@ def create_workbook(
             cell = ws.cell(row=top_row, column=start_col)
             cell.value = (
                 f"Frame {frame_index + 1}  "
-                f"{frame_index / 3:.3f}s\n\n{description}\n\n"
+                f"{shot.frame_offset_seconds(frame_index):.3f}s\n\n"
+                f"{description}\n\n"
                 "（動画生成後に画像を挿入）"
             )
             cell.fill = PatternFill("solid", fgColor=GRAY)
@@ -397,7 +402,8 @@ def create_video_workbook(
                 ws.row_dimensions[row].height = 48
             cell = ws.cell(row=top_row, column=start_col)
             cell.value = (
-                f"Frame {frame_index + 1} | {frame_index / 3:.3f}s"
+                f"Frame {frame_index + 1} | "
+                f"{shot.frame_offset_seconds(frame_index):.3f}s"
             )
             cell.comment = Comment(description, "Gemini storyboard")
             image = ExcelImage(str(frame_path))

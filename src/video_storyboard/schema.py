@@ -2,14 +2,31 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, PrivateAttr, model_validator
 
 
 class Shot(BaseModel):
     shot_number: int = Field(ge=1, description="Sequential number starting at 1")
-    duration_seconds: int = Field(
-        default=3, ge=3, le=3, description="One three-second review-sheet unit"
+    duration_seconds: float = Field(
+        default=3,
+        gt=0,
+        le=3,
+        description=(
+            "Generated shots are exactly three seconds. Source-video shots may "
+            "use a shorter final segment so a requested cut point stays exact."
+        ),
     )
+    production_mode: Literal["generated_video", "source_video"] = Field(
+        default="generated_video",
+        description="Whether this shot is generated or copied from an input video.",
+    )
+    source_asset: str | None = Field(
+        default=None,
+        description="Exact input filename used by a source-video shot.",
+    )
+    source_start_seconds: float | None = Field(default=None, ge=0)
+    source_end_seconds: float | None = Field(default=None, gt=0)
+    source_audio: Literal["mute", "preserve"] = "mute"
     title: str = Field(description="Short shot title")
     story_purpose: str = Field(description="Purpose within the story")
     scene_description: str = Field(description="Visible content of the frame")
@@ -45,13 +62,52 @@ class Shot(BaseModel):
         description="Nine time-ordered descriptions of visible frame changes",
     )
 
-    @property
-    def start_seconds(self) -> int:
-        return (self.shot_number - 1) * 3
+    _timeline_start_seconds: float = PrivateAttr(default=0.0)
+
+    @model_validator(mode="after")
+    def validate_production_mode(self) -> "Shot":
+        if self.production_mode == "generated_video":
+            if abs(self.duration_seconds - 3.0) > 0.001:
+                raise ValueError("generated_video shots must be exactly 3 seconds")
+            if any(
+                value is not None
+                for value in (
+                    self.source_asset,
+                    self.source_start_seconds,
+                    self.source_end_seconds,
+                )
+            ):
+                raise ValueError(
+                    "generated_video shots must not contain source-video ranges"
+                )
+            return self
+
+        if not self.source_asset:
+            raise ValueError("source_video shots require source_asset")
+        if self.source_start_seconds is None or self.source_end_seconds is None:
+            raise ValueError(
+                "source_video shots require source_start_seconds and source_end_seconds"
+            )
+        source_duration = self.source_end_seconds - self.source_start_seconds
+        if source_duration <= 0:
+            raise ValueError("source video end must be later than its start")
+        if abs(source_duration - self.duration_seconds) > 0.001:
+            raise ValueError(
+                "source-video duration must match source_end_seconds - "
+                "source_start_seconds"
+            )
+        return self
 
     @property
-    def end_seconds(self) -> int:
-        return self.start_seconds + 3
+    def start_seconds(self) -> float:
+        return self._timeline_start_seconds
+
+    @property
+    def end_seconds(self) -> float:
+        return self.start_seconds + self.duration_seconds
+
+    def frame_offset_seconds(self, frame_index: int) -> float:
+        return frame_index * self.duration_seconds / len(self.frame_descriptions)
 
 
 class CharacterProfile(BaseModel):
@@ -61,6 +117,12 @@ class CharacterProfile(BaseModel):
 
 class ApiShot(BaseModel):
     shot_number: int
+    duration_seconds: float = 3
+    production_mode: Literal["generated_video", "source_video"] = "generated_video"
+    source_asset: str | None = None
+    source_start_seconds: float | None = None
+    source_end_seconds: float | None = None
+    source_audio: Literal["mute", "preserve"] = "mute"
     title: str
     purpose: str
     scene_action: str
@@ -101,6 +163,12 @@ class ApiStoryboard(BaseModel):
             converted_shots.append(
                 Shot(
                     shot_number=number,
+                    duration_seconds=source.duration_seconds,
+                    production_mode=source.production_mode,
+                    source_asset=source.source_asset,
+                    source_start_seconds=source.source_start_seconds,
+                    source_end_seconds=source.source_end_seconds,
+                    source_audio=source.source_audio,
                     title=source.title,
                     story_purpose=source.purpose,
                     scene_description=source.scene_action,
@@ -158,10 +226,13 @@ class Storyboard(BaseModel):
 
     @model_validator(mode="after")
     def normalize_shot_numbers(self) -> "Storyboard":
+        timeline = 0.0
         for number, shot in enumerate(self.shots, start=1):
             shot.shot_number = number
+            shot._timeline_start_seconds = timeline
+            timeline += shot.duration_seconds
         return self
 
     @property
-    def total_duration_seconds(self) -> int:
-        return len(self.shots) * 3
+    def total_duration_seconds(self) -> float:
+        return round(sum(shot.duration_seconds for shot in self.shots), 3)

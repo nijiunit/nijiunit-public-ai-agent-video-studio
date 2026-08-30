@@ -82,7 +82,7 @@ Begin with this short overview:
 1. Prepare Python and the local environment.
 2. Review Google API pricing and billing, then store the API key safely.
 3. Write the story in `input/story.md`.
-4. Create the official Excel storyboard from the three-second structure and starting images.
+4. Create the official Excel storyboard from the three-second structure and starting images. Keep explicitly requested source-video ranges unchanged and preserve their exact cut point.
 5. Have the user review, correct, and explicitly approve the Excel workbook.
 6. After approval, generate three-second clips and inspect nine frames from every clip.
 7. Finish voices, subtitles, and sound, then inspect the final video.

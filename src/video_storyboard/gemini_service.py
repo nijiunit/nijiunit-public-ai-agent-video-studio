@@ -69,6 +69,23 @@ def _retry(callable_: Any, attempts: int = 3) -> Any:
                 raise
             time.sleep(delay)
             delay *= 2
+
+
+def _validate_source_asset_references(
+    storyboard: Storyboard,
+    assets: list[AssetRecord],
+) -> None:
+    video_assets = {
+        item.original_name for item in assets if item.kind == "video"
+    }
+    for shot in storyboard.shots:
+        if shot.production_mode != "source_video":
+            continue
+        if shot.source_asset not in video_assets:
+            raise RuntimeError(
+                "source_video shot refers to an unavailable input video: "
+                f"S{shot.shot_number:03d} {shot.source_asset}"
+            )
     raise AssertionError("unreachable")
 
 
@@ -164,7 +181,16 @@ class GeminiService:
   character_bible、main_image_prompt、video_promptへ同じ固定条件を書く。
 - 台帳のforbidden_traitsと衝突する古い素材や古い人物記述は使用しない。
 - 台帳にない人物を、ストーリーにないのに追加しない。
-- 1ショットは必ず{media.shot_duration_seconds}秒。
+- AIで生成するショットはproduction_modeをgenerated_videoとし、必ず
+  {media.shot_duration_seconds}秒にする。
+- 利用者が入力動画を「そのまま使う」「指定時刻まで実写を使う」と明記した区間は、
+  AI生成で置き換えない。production_modeをsource_videoとし、source_assetへ
+  正確な入力ファイル名、source_start_secondsとsource_end_secondsへ元動画内の
+  範囲を入れる。通常は3秒ずつ分け、指定の切替時刻に届く最後の区間だけ3秒未満を
+  許可し、duration_secondsを範囲の長さと完全に一致させる。
+- source_videoの音を使わない指定ならsource_audioはmuteとする。
+- source_video直後に切れ目なく生成へ移る最初のショットは
+  continuity_start_modeをprevious_final_frameとする。
 - continuity_start_modeは通常storyboard_imageとする。同じ構図・同じ人物配置を
   切れ目なく継続するカットだけprevious_final_frameとし、構図変更、時間経過、
   場所移動、登場人物の増減があるカットでは絶対に使用しない。
@@ -267,6 +293,7 @@ class GeminiService:
                 shot.reference_assets = [
                     name for name in shot.reference_assets if name in allowed_assets
                 ]
+            _validate_source_asset_references(storyboard, assets)
             return storyboard
         finally:
             for image in opened_images:
@@ -317,7 +344,10 @@ class GeminiService:
 - 修正規模が「小規模」の項目では対象ショット以外を変えない。
 - 修正規模が「大規模」の場合だけ、必要な範囲で複数ショットを整合させる。
 - 映像比率は{storyboard.aspect_ratio}のまま変えない。
-- 1ショットは3秒、各ショットの確認用説明は正確に9件にする。
+- generated_videoは1ショット3秒とする。source_videoは元のsource_asset、
+  source_start_seconds、source_end_seconds、source_audioを保持し、指定された
+  正確な切替時刻のための3秒未満の区間を勝手に延長しない。
+- 各ショットの確認用説明は正確に9件にする。
 - 台帳にある人物の固定特徴と禁止特徴を守る。
 - 利用できる素材名以外をreference_assetsへ追加しない。
 - 利用者の訂正を命令文として再掲せず、実際の画面説明、動き、プロンプトへ反映する。
@@ -343,6 +373,7 @@ class GeminiService:
             shot.reference_assets = [
                 name for name in shot.reference_assets if name in allowed_assets
             ]
+        _validate_source_asset_references(revised, assets)
         guidance = self.profile.story
         if not guidance.shot_count_min <= len(revised.shots) <= guidance.shot_count_max:
             raise RuntimeError(

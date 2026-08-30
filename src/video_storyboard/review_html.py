@@ -8,8 +8,12 @@ from PIL import Image
 from .schema import Shot, Storyboard
 
 
-def _timecode(seconds: int) -> str:
-    return f"{seconds // 60:02d}:{seconds % 60:02d}"
+def _timecode(seconds: float) -> str:
+    minutes = int(seconds // 60)
+    remainder = seconds - minutes * 60
+    if abs(remainder - round(remainder)) < 0.0005:
+        return f"{minutes:02d}:{round(remainder):02d}"
+    return f"{minutes:02d}:{remainder:06.3f}"
 
 
 def _text(value: str) -> str:
@@ -158,7 +162,8 @@ def _detail_fields(shot: Shot, labels: dict[str, str]) -> str:
 
 def _planned_frames(shot: Shot) -> str:
     items = "".join(
-        f"<li><b>{index / 3:.3f}s</b><span>{_text(description)}</span></li>"
+        f"<li><b>{shot.frame_offset_seconds(index):.3f}s</b>"
+        f"<span>{_text(description)}</span></li>"
         for index, description in enumerate(shot.frame_descriptions)
     )
     return f'<ol class="frames">{items}</ol>'
@@ -186,7 +191,7 @@ def _video_frames(
         )
         _prepare_review_image(source, destination)
         relative = f"{asset_dir.name}/{destination.name}"
-        time = (frame_index - 1) / 3
+        time = shot.frame_offset_seconds(frame_index - 1)
         alt = (
             f"S{shot.shot_number:03d} {labels['frame_alt']} "
             f"{frame_index} {time:.3f}s"

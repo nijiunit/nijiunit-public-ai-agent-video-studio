@@ -14,6 +14,7 @@ from google import genai
 from google.genai import types
 from imageio_ffmpeg import get_ffmpeg_exe
 
+from .assets import AssetRecord
 from .character_registry import (
     CharacterLock,
     CharacterRegistry,
@@ -530,19 +531,162 @@ def standardize_clip(
     return destination
 
 
+def source_asset_path(
+    shot: Shot,
+    assets: list[AssetRecord],
+) -> Path:
+    if shot.production_mode != "source_video" or not shot.source_asset:
+        raise ValueError("source_asset_path requires a source-video shot")
+    record = next(
+        (
+            item
+            for item in assets
+            if item.original_name == shot.source_asset and item.kind == "video"
+        ),
+        None,
+    )
+    if record is None:
+        raise FileNotFoundError(
+            f"Input video is not present in the run manifest: {shot.source_asset}"
+        )
+    candidates = [record.api_path, record.original_path]
+    for value in candidates:
+        if value and Path(value).is_file():
+            return Path(value)
+    raise FileNotFoundError(
+        f"Prepared source video is missing for {shot.source_asset}"
+    )
+
+
+def _blurred_side_fill_filter(media: MediaContract) -> str:
+    return (
+        "[0:v]split=2[background][foreground];"
+        f"[background]scale={media.width}:{media.height}:"
+        "force_original_aspect_ratio=increase,"
+        f"crop={media.width}:{media.height},gblur=sigma=28[blurred];"
+        f"[foreground]scale={media.width}:{media.height}:"
+        "force_original_aspect_ratio=decrease[main];"
+        "[blurred][main]overlay=(W-w)/2:(H-h)/2,format=yuv420p"
+    )
+
+
+def extract_source_frame(
+    source: Path,
+    seconds: float,
+    destination: Path,
+    media: MediaContract,
+) -> Path:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    _run_ffmpeg(
+        [
+            "-ss",
+            f"{seconds:.3f}",
+            "-i",
+            str(source),
+            "-filter_complex",
+            _blurred_side_fill_filter(media) + "[frame]",
+            "-map",
+            "[frame]",
+            "-frames:v",
+            "1",
+            str(destination),
+        ]
+    )
+    if not destination.is_file():
+        raise RuntimeError(f"Could not extract source frame from {source}")
+    return destination
+
+
+def render_source_clip(
+    shot: Shot,
+    source: Path,
+    destination: Path,
+    media: MediaContract,
+) -> Path:
+    if shot.source_start_seconds is None or shot.source_end_seconds is None:
+        raise ValueError("Source-video range is missing")
+    duration = shot.duration_seconds
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    video_filter = (
+        _blurred_side_fill_filter(media)
+        + f",fps={media.frames_per_second},trim=duration={duration:.3f},"
+        f"setpts=N/({media.frames_per_second}*TB)[video]"
+    )
+    arguments = [
+        "-ss",
+        f"{shot.source_start_seconds:.3f}",
+        "-i",
+        str(source),
+    ]
+    if shot.source_audio == "preserve" and inspect_video(source)["has_audio"]:
+        arguments.extend(
+            [
+                "-filter_complex",
+                video_filter,
+                "-map",
+                "[video]",
+                "-map",
+                "0:a:0",
+                "-af",
+                f"atrim=duration={duration:.3f},asetpts=PTS-STARTPTS,aresample=48000",
+            ]
+        )
+    else:
+        arguments.extend(
+            [
+                "-f",
+                "lavfi",
+                "-i",
+                "anullsrc=channel_layout=stereo:sample_rate=48000",
+                "-filter_complex",
+                video_filter,
+                "-map",
+                "[video]",
+                "-map",
+                "1:a:0",
+                "-af",
+                f"atrim=duration={duration:.3f},asetpts=PTS-STARTPTS",
+            ]
+        )
+    arguments.extend(
+        [
+            "-t",
+            f"{duration:.3f}",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "medium",
+            "-crf",
+            "18",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-movflags",
+            "+faststart",
+            str(destination),
+        ]
+    )
+    _run_ffmpeg(arguments)
+    return destination
+
+
 def extract_nine_frames(
     clip: Path,
     destination_dir: Path,
     media: MediaContract,
+    duration_seconds: float | None = None,
 ) -> list[Path]:
     destination_dir.mkdir(parents=True, exist_ok=True)
     pattern = destination_dir / "frame_%02d.jpg"
+    duration = duration_seconds or media.shot_duration_seconds
+    sampling_rate = media.review_frame_count / duration
     _run_ffmpeg(
         [
             "-i",
             str(clip),
             "-vf",
-            f"fps={media.review_frames_per_second},"
+            f"fps={sampling_rate:.9f},"
             f"scale={media.width // 2}:{media.height // 2}",
             "-frames:v",
             str(media.review_frame_count),
@@ -588,6 +732,7 @@ def render_video_shots(
     storyboard: Storyboard,
     run_dir: Path,
     profile: ProductionProfile,
+    assets: list[AssetRecord] | None = None,
     model: str | None = None,
     limit: int | None = None,
     character_registry_dir: Path | None = CHARACTER_REGISTRY_DIR,
@@ -597,16 +742,20 @@ def render_video_shots(
         issues = registry.validate()
         if issues:
             raise RuntimeError("Invalid character registry:\n" + "\n".join(issues))
+    assets = assets or []
+    generated_shots = [
+        shot for shot in storyboard.shots if shot.production_mode == "generated_video"
+    ]
     require_resolved_character_names(
         registry,
-        [name for shot in storyboard.shots for name in shot.characters],
+        [name for shot in generated_shots for name in shot.characters],
     )
     service = VideoService(profile=profile, model=model)
     locks_by_shot: dict[int, CharacterLock] = {}
     if registry:
         reference_limit = profile.video.maximum_character_reference_images
         lock_manifest: list[dict[str, Any]] = []
-        for shot in storyboard.shots:
+        for shot in generated_shots:
             shot_text = " ".join(
                 [
                     shot.title,
@@ -693,6 +842,38 @@ def render_video_shots(
         )
         if clip_path.exists():
             print(f"[skip] S{shot.shot_number:03d}: video already exists")
+            completed.append(clip_path)
+            continue
+        if shot.production_mode == "source_video":
+            source = source_asset_path(shot, assets)
+            print(
+                f"[source] S{shot.shot_number:03d}: {shot.source_asset} "
+                f"{shot.source_start_seconds:.3f}-{shot.source_end_seconds:.3f}s"
+            )
+            render_source_clip(shot, source, clip_path, profile.media)
+            extract_nine_frames(
+                clip_path,
+                run_dir / "frames" / f"shot_{shot.shot_number:03d}",
+                profile.media,
+                duration_seconds=shot.duration_seconds,
+            )
+            metadata = inspect_video(clip_path)
+            metadata_path.parent.mkdir(parents=True, exist_ok=True)
+            metadata_path.write_text(
+                json.dumps(
+                    {
+                        "production_mode": shot.production_mode,
+                        "source_asset": shot.source_asset,
+                        "source_start_seconds": shot.source_start_seconds,
+                        "source_end_seconds": shot.source_end_seconds,
+                        "source_audio": shot.source_audio,
+                        "normalized_output": metadata,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
             completed.append(clip_path)
             continue
         if limit is not None and generated >= limit:
@@ -803,8 +984,8 @@ def concatenate_clips(
         encoding="utf-8",
     )
     destination.parent.mkdir(parents=True, exist_ok=True)
-    total_frames = len(clips) * media.shot_duration_seconds * media.frames_per_second
-    total_duration = len(clips) * media.shot_duration_seconds
+    total_duration = storyboard.total_duration_seconds
+    total_frames = round(total_duration * media.frames_per_second)
     _run_ffmpeg(
         [
             "-f",

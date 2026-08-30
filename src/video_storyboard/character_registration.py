@@ -328,6 +328,7 @@ def character_status(storyboard: Storyboard, registry_dir: Path) -> dict[str, ob
         dict.fromkeys(
             name.strip()
             for shot in storyboard.shots
+            if shot.production_mode == "generated_video"
             for name in shot.characters
             if name.strip()
         )
