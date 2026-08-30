@@ -62,7 +62,7 @@ matching image under the run's `images` directory.
 A local path displayed as a chat link may not launch a desktop application. The
 agent should run `run_storyboard.py reveal-artifact --artifact storyboard` or
 `scripts/reveal_artifact.py --path ...`. This opens the containing folder and
-selects the real file. Double-click the selected file only after the agent has
+prepares the real file. Double-click the exact filename given by the agent only after it has
 shown the correct folder and filename.
 
 ## No Excel or spreadsheet application is installed

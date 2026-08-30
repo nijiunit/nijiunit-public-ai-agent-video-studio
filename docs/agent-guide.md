@@ -100,7 +100,7 @@ When asked for a sample, use `show-sample` to reveal the bundled MP4 first. Reve
 - Do not stop after printing a path or chat link. Open the containing folder and select the actual artifact.
 - Use `run_storyboard.py reveal-artifact` for a production run and `scripts/reveal_artifact.py --path ...` for another exact file.
 - Detect Excel, LibreOffice Calc, or Numbers. If none is installed, select the generated English local HTML review page. Do not require an Excel purchase solely for review.
-- After the folder opens, give exactly one action: “Double-click the selected file. When it opens, reply: Opened.” Wait before explaining sheet tabs, correction fields, saving, or the next stage.
+- Display a still review image directly in the conversation when supported; otherwise open the image itself. For folder handoff, name the exact file rather than its highlight color, for example: “Double-click `storyboard_v001.xlsx`. When it opens, reply: Opened.” Wait before explaining sheet tabs, correction fields, saving, or the next stage.
 - In a remote or headless session, do not claim the folder opened. Give the exact folder, filename, and one manual action.
 - Never overwrite a reviewed workbook. Use `_r002`, `_r003`, and later revisions. If the workbook is locked, ask the user to save and close it, then wait for their reply.
 - After the workbook opens, guide the first sheet, tabs, status, yellow correction field, and saving one action at a time. With HTML, have the user review each card and paste the generated summary into chat.

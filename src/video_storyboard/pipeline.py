@@ -633,7 +633,7 @@ def reveal_artifact_command(
     if language == "en":
         if result.opened:
             action = (
-                "Double-click the selected file. When it opens, reply: Opened."
+                f"Double-click {target.name}. When it opens, reply: Opened."
                 if result.selected
                 else (
                     f"Find {target.name} in that folder and double-click it. "
@@ -651,7 +651,7 @@ def reveal_artifact_command(
         )
     if result.opened:
         action = (
-            "青く選択されたファイルをダブルクリックしてください。"
+            f"表示された「{target.name}」をダブルクリックしてください。"
             "開いたら「開いた」と返してください。"
             if result.selected
             else (
@@ -710,11 +710,11 @@ def show_sample_command(
         if language == "en":
             return (
                 f"Sample folder opened: {target.parent}\n"
-                f"Double-click the selected file: {target.name}"
+                f"Double-click the displayed file: {target.name}"
             )
         return (
             f"サンプルのフォルダーを開きました: {target.parent}\n"
-            f"青く選択された「{target.name}」をダブルクリックしてください。"
+            f"表示された「{target.name}」をダブルクリックしてください。"
         )
     return f"サンプル: {target}"
 

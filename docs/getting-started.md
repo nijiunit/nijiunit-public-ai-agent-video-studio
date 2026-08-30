@@ -193,7 +193,7 @@ First, the AI agent runs:
 
 On macOS or Linux, start the same command with `./.venv/bin/python run_storyboard.py`. Finder selects the target file. If the Linux file manager cannot select it, use the exact filename printed for the already-open folder.
 
-This selects the workbook when Excel, LibreOffice Calc, or Numbers is available; otherwise it selects the English local HTML page in the same `review` folder. The agent gives only one action: “Double-click the selected file. When it opens, reply: Opened.”
+This prepares the workbook when Excel, LibreOffice Calc, or Numbers is available; otherwise it prepares the English local HTML page in the same `review` folder. The agent names the exact file and gives one action, for example: “Double-click `storyboard_v001.xlsx`. When it opens, reply: Opened.” It does not rely on highlight color. A still review image is displayed directly in the conversation first.
 
 After the workbook opens, review every sheet's main image, description, dialogue, sound, action, and nine-frame plan. For a correction, set `レビュー状態` to `修正必要`, write the exact request in the yellow correction field, and save. In HTML, review each card and paste the generated summary into chat. The AI agent applies corrections and creates a new workbook revision for another review.
 

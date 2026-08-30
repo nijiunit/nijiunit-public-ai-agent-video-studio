@@ -336,10 +336,16 @@ artifact and given one concrete action.
    file. These commands open Explorer/Finder/the desktop file manager and select
    the artifact where the OS supports selection. On Linux, give the exact
    filename in the opened folder. They do not open the application automatically.
+   For a still image created only for review, display the actual image in the
+   conversation with the available image-view tool. If the interface cannot
+   attach it, open the image itself with `scripts/reveal_artifact.py`; do not
+   make the beginner navigate a folder merely to preview one image.
 5. When the folder opens, tell the user only the next action, for example:
-   `青く選択されたファイルをダブルクリックしてください。開いたら「開いた」と返してください。`
+   `表示された「storyboard_v001.xlsx」をダブルクリックしてください。開いたら「開いた」と返してください。`
    Wait for that reply before explaining workbook tabs, yellow correction
    fields, saving, or the next stage.
+   Always name the exact file. Never describe its selection color because the
+   highlight differs by operating system, theme, and window focus.
 6. If the desktop cannot be opened, state that plainly, show the exact folder
    and filename, and give one manual action. Do not pretend the folder opened.
 7. Never overwrite an existing review workbook. Create `_r002`, `_r003`, and so

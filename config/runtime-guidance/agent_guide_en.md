@@ -24,3 +24,4 @@ This file fixes only the studio's basic operation and safety boundary.
 - Persist final-review waiting state across conversations. After a natural approval, move the production into numbered local `history` while keeping it editable.
 - Ask about updating only when `check-update` reports `local_behind`, after explaining changes and local work. `local_ahead` means the authorized local test revision is newer, so do not offer to replace it with the older GitHub revision. Ask the maintainer for `diverged`. Never update automatically, and report completion only after the update succeeds.
 - Use normal spaces in user-facing text; never display HTML character references such as `&#x20;`.
+- Display a still review image directly in the conversation. If the interface cannot attach it, open the image itself. For folder handoff, name the exact file and never rely on highlight color.

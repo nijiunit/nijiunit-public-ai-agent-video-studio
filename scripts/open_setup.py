@@ -211,6 +211,15 @@ def handler_factory(state: SetupState, template_path: Path, asset_dir: Path):
             host, port = self.server.server_address
             return origin == f"http://{host}:{port}"
 
+        def _discard_request_body(self) -> None:
+            """Drain a small rejected request so Windows can return the 403 response."""
+            try:
+                content_length = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                return
+            if 0 < content_length <= MAX_REQUEST_BYTES:
+                self.rfile.read(content_length)
+
         def _read_json(self) -> dict[str, object] | None:
             content_type = self.headers.get("Content-Type", "").split(";", 1)[0]
             if content_type.strip().lower() != "application/json":
@@ -242,6 +251,7 @@ def handler_factory(state: SetupState, template_path: Path, asset_dir: Path):
 
         def do_POST(self) -> None:  # noqa: N802
             if not self._authorized():
+                self._discard_request_body()
                 self._send_json(
                     HTTPStatus.FORBIDDEN,
                     {"ok": False, "code": "forbidden"},

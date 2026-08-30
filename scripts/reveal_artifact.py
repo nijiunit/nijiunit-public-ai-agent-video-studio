@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -14,6 +15,17 @@ from video_storyboard.artifacts import (  # noqa: E402
     reveal_in_file_manager,
     spreadsheet_review_artifact,
 )
+
+IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
+
+
+def open_image(path: Path) -> None:
+    if os.name == "nt":
+        os.startfile(path)  # type: ignore[attr-defined]
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", str(path)])
+    else:
+        subprocess.Popen(["xdg-open", str(path)])
 
 
 def main() -> int:
@@ -33,6 +45,37 @@ def main() -> int:
     target = args.path.resolve()
     if target.suffix.lower() == ".xlsx":
         target = spreadsheet_review_artifact(target, args.language)
+    if target.suffix.lower() in IMAGE_EXTENSIONS:
+        if not target.is_file():
+            message = (
+                f"ACTION_REQUIRED: The image does not exist: {target}"
+                if args.language == "en"
+                else f"ACTION_REQUIRED: 画像がありません: {target}"
+            )
+            print(message)
+            return 1
+        if args.dry_run:
+            print(
+                f"DRY RUN: Would open image: {target}"
+                if args.language == "en"
+                else f"確認モード: 開く予定の画像: {target}"
+            )
+            return 0
+        try:
+            open_image(target)
+        except OSError as error:
+            print(
+                f"ACTION_REQUIRED: Could not open the image: {error}"
+                if args.language == "en"
+                else f"ACTION_REQUIRED: 画像を開けませんでした: {error}"
+            )
+            return 2
+        print(
+            f"Image opened: {target.name}"
+            if args.language == "en"
+            else f"確認用の画像を開きました: {target.name}"
+        )
+        return 0
     try:
         result = reveal_in_file_manager(target, dry_run=args.dry_run)
     except FileNotFoundError:
@@ -55,9 +98,9 @@ def main() -> int:
         if result.opened:
             print(f"Folder opened: {target.parent}")
             if result.selected:
-                print(f"Selected file: {target.name}")
+                print(f"File ready for review: {target.name}")
                 print(
-                    "Double-click the selected file. "
+                    f"Double-click the displayed file {target.name}. "
                     "When it opens, reply: Opened."
                 )
             else:
@@ -73,9 +116,9 @@ def main() -> int:
     if result.opened:
         print(f"フォルダを開きました: {target.parent}")
         if result.selected:
-            print(f"青く選択されたファイル: {target.name}")
+            print(f"確認するファイル: {target.name}")
             print(
-                "そのファイルをダブルクリックしてください。"
+                f"表示された「{target.name}」をダブルクリックしてください。"
                 "開いたら「開いた」と返してください。"
             )
         else:
