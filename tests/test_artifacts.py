@@ -5,12 +5,39 @@ from video_storyboard.artifacts import (
     current_storyboard_workbook,
     current_video_review_workbook,
     detect_spreadsheet_viewers,
+    is_directly_viewable,
     next_storyboard_workbook,
     next_video_review_workbook,
+    open_in_default_app,
     reveal_in_file_manager,
     review_html_path,
     spreadsheet_review_artifact,
 )
+
+
+def test_images_html_and_video_open_as_the_artifact_itself(tmp_path: Path) -> None:
+    for name in ("character.png", "character_review.ja.html", "final.mp4"):
+        target = tmp_path / name
+        target.touch()
+
+        result = open_in_default_app(
+            target,
+            dry_run=True,
+            system="Windows",
+            environ={},
+        )
+
+        assert is_directly_viewable(target) is True
+        assert result.opened is True
+        assert result.command == ("startfile", str(target.resolve()))
+        assert result.selected is False
+
+
+def test_workbook_stays_a_named_manual_handoff(tmp_path: Path) -> None:
+    workbook = tmp_path / "storyboard_v001.xlsx"
+    workbook.touch()
+
+    assert is_directly_viewable(workbook) is False
 
 
 def test_storyboard_workbook_revisions_are_never_overwritten(

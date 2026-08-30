@@ -10,8 +10,10 @@ from pathlib import Path
 from .artifacts import (
     artifact_for_reveal,
     current_storyboard_workbook,
+    is_directly_viewable,
     next_storyboard_workbook,
     next_video_review_workbook,
+    open_in_default_app,
     reveal_in_file_manager,
     review_html_path,
 )
@@ -624,6 +626,31 @@ def reveal_artifact_command(
     if not target.is_file():
         raise FileNotFoundError(
             f"表示する成果物がまだありません: {target}"
+        )
+    if is_directly_viewable(target):
+        result = open_in_default_app(target, dry_run=dry_run)
+        if dry_run:
+            if language == "en":
+                return f"DRY RUN: Would open the review artifact itself: {target}"
+            return f"確認モード: 確認するファイルそのものを開く予定です: {target}"
+        if result.opened:
+            if language == "en":
+                return (
+                    f"Opened the review artifact itself: {target.name}\n"
+                    "Review the window that just opened."
+                )
+            return (
+                f"確認するファイルそのものを開きました: {target.name}\n"
+                "いま開いた画面を確認してください。"
+            )
+        if language == "en":
+            return (
+                "ACTION_REQUIRED: This environment could not open the review artifact.\n"
+                f"File: {target}"
+            )
+        return (
+            "ACTION_REQUIRED: この環境から確認するファイルを開けませんでした。\n"
+            f"ファイル: {target}"
         )
     result = reveal_in_file_manager(target, dry_run=dry_run)
     if dry_run:

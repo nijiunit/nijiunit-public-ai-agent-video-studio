@@ -61,16 +61,18 @@ matching image under the run's `images` directory.
 
 A local path displayed as a chat link may not launch a desktop application. The
 agent should run `run_storyboard.py reveal-artifact --artifact storyboard` or
-`scripts/reveal_artifact.py --path ...`. This opens the containing folder and
-prepares the real file. Double-click the exact filename given by the agent only after it has
-shown the correct folder and filename.
+`scripts/reveal_artifact.py --path ...`. A still image, HTML review page, or
+video opens as the artifact itself. Before a still image is shown, the agent
+identifies its purpose and what the user should check. A workbook is revealed
+by exact filename. The agent never relies on highlight color, left/right
+position, or an unexplained “this image.”
 
 ## No Excel or spreadsheet application is installed
 
 Do not buy or install Excel solely to inspect the storyboard. Each workbook has
-Japanese and English offline HTML companions. `reveal-artifact` selects the
-language-matched HTML page automatically when Excel, LibreOffice Calc, or
-Numbers is not found. Review every card and paste the generated summary into
+Japanese and English offline HTML companions. `reveal-artifact` opens the
+language-matched HTML page itself when Excel, LibreOffice Calc, or Numbers is
+not found. Review every card and paste the generated summary into
 chat. The workbook beside it remains the official production record, and the
 agent still waits for explicit approval.
 

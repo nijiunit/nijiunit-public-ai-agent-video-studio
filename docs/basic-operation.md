@@ -22,6 +22,8 @@ For either route, describe the subject naturally and let the agent write `input/
 
 A new named character is reviewed one at a time from rights-cleared image or video references and fixed traits. It stays pending until you approve the character review page. Unnamed background people are not silently registered for reuse. Corrections entered in the yellow Excel field are applied to the storyboard and affected images, then a new `_r002` or later workbook is built without overwriting the earlier review.
 
+For an image review, the agent first says what the photo is for and then displays the image itself. It does not merely add files to a folder and refer to “this image” or “the right image.” HTML review pages and videos also open as the artifacts themselves rather than as items in a file list.
+
 After approved clips are made, the finishing step handles speech, optional rights-cleared music, subtitles, final assembly, and a real nine-frame review. If the result is satisfactory, say so naturally—for example, “Looks good” or “This is finished.” The run then moves to local `history` and remains editable.
 
 ## View the finished sample

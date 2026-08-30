@@ -25,6 +25,22 @@ class RevealResult:
     selected: bool = False
 
 
+DIRECT_VIEW_EXTENSIONS = {
+    ".gif",
+    ".htm",
+    ".html",
+    ".jpeg",
+    ".jpg",
+    ".m4v",
+    ".mov",
+    ".mp4",
+    ".pdf",
+    ".png",
+    ".webm",
+    ".webp",
+}
+
+
 def _revision_number(path: Path, base_stem: str) -> int | None:
     if path.stem == base_stem:
         return 1
@@ -285,6 +301,68 @@ def desktop_session_available(
     if current_system in {"Windows", "Darwin"}:
         return True
     return bool(env.get("DISPLAY") or env.get("WAYLAND_DISPLAY"))
+
+
+def is_directly_viewable(target: Path) -> bool:
+    """Return whether a beginner should see the artifact itself, not its folder."""
+    return target.suffix.lower() in DIRECT_VIEW_EXTENSIONS
+
+
+def open_in_default_app(
+    target: Path,
+    *,
+    dry_run: bool = False,
+    system: str | None = None,
+    environ: dict[str, str] | None = None,
+    startfile: Callable[[str], object] | None = None,
+    popen: Callable[..., subprocess.Popen] = subprocess.Popen,
+) -> RevealResult:
+    """Open the exact review artifact so the visible screen matches the guidance."""
+    resolved = target.resolve()
+    if not resolved.is_file():
+        raise FileNotFoundError(f"Artifact does not exist: {resolved}")
+
+    current_system = system or platform.system()
+    if current_system == "Windows":
+        command = ("startfile", str(resolved))
+        detail = "The artifact itself opened in its default Windows application"
+    elif current_system == "Darwin":
+        command = ("open", str(resolved))
+        detail = "The artifact itself opened in its default macOS application"
+    else:
+        command = ("xdg-open", str(resolved))
+        detail = "The artifact itself opened in the desktop's default application"
+
+    if not desktop_session_available(current_system, environ):
+        return RevealResult(
+            False,
+            resolved,
+            command,
+            "No desktop session is available. Describe the exact artifact without claiming it opened.",
+        )
+    if dry_run:
+        return RevealResult(True, resolved, command, f"DRY RUN: {detail}")
+
+    try:
+        if current_system == "Windows":
+            opener = startfile or getattr(os, "startfile", None)
+            if opener is None:
+                raise OSError("Windows default application launcher is unavailable")
+            opener(str(resolved))
+        else:
+            popen(
+                list(command),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+    except (FileNotFoundError, OSError) as error:
+        return RevealResult(
+            False,
+            resolved,
+            command,
+            f"Could not open the artifact ({type(error).__name__})",
+        )
+    return RevealResult(True, resolved, command, detail)
 
 
 def reveal_in_file_manager(

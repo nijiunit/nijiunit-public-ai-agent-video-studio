@@ -71,6 +71,10 @@ def test_character_is_pending_until_the_user_approves_it(tmp_path: Path) -> None
     assert profile.is_file()
     assert ja.is_file()
     assert en.is_file()
+    japanese_review = ja.read_text(encoding="utf-8")
+    assert "「リっちゃん」として覚える内容の確認" in japanese_review
+    assert "上の写真が「リっちゃん」本人" in japanese_review
+    assert "v001</h1>" not in japanese_review
     assert CharacterRegistry.load_optional(registry_dir) is None or not CharacterRegistry.load(registry_dir).records
     pending = character_status(_storyboard("リっちゃん"), registry_dir)
     assert pending["pending"][0]["name"] == "リっちゃん"

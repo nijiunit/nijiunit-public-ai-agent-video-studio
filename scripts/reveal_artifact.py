@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -12,20 +11,11 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from video_storyboard.artifacts import (  # noqa: E402
+    is_directly_viewable,
+    open_in_default_app,
     reveal_in_file_manager,
     spreadsheet_review_artifact,
 )
-
-IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
-
-
-def open_image(path: Path) -> None:
-    if os.name == "nt":
-        os.startfile(path)  # type: ignore[attr-defined]
-    elif sys.platform == "darwin":
-        subprocess.Popen(["open", str(path)])
-    else:
-        subprocess.Popen(["xdg-open", str(path)])
 
 
 def main() -> int:
@@ -35,7 +25,7 @@ def main() -> int:
             if reconfigure:
                 reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(
-        description="Open an artifact's folder and select the artifact."
+        description="Open the artifact itself when possible, otherwise reveal its exact file."
     )
     parser.add_argument("--path", type=Path, required=True)
     parser.add_argument("--language", choices=("ja", "en"), default="ja")
@@ -45,35 +35,43 @@ def main() -> int:
     target = args.path.resolve()
     if target.suffix.lower() == ".xlsx":
         target = spreadsheet_review_artifact(target, args.language)
-    if target.suffix.lower() in IMAGE_EXTENSIONS:
+    if is_directly_viewable(target):
         if not target.is_file():
             message = (
-                f"ACTION_REQUIRED: The image does not exist: {target}"
+                f"ACTION_REQUIRED: The review artifact does not exist: {target}"
                 if args.language == "en"
-                else f"ACTION_REQUIRED: 画像がありません: {target}"
+                else f"ACTION_REQUIRED: 確認するファイルがありません: {target}"
             )
             print(message)
             return 1
-        if args.dry_run:
+        result = open_in_default_app(target, dry_run=args.dry_run)
+        if not result.opened:
             print(
-                f"DRY RUN: Would open image: {target}"
+                f"ACTION_REQUIRED: Could not open the review artifact: {target}"
                 if args.language == "en"
-                else f"確認モード: 開く予定の画像: {target}"
-            )
-            return 0
-        try:
-            open_image(target)
-        except OSError as error:
-            print(
-                f"ACTION_REQUIRED: Could not open the image: {error}"
-                if args.language == "en"
-                else f"ACTION_REQUIRED: 画像を開けませんでした: {error}"
+                else f"ACTION_REQUIRED: 確認するファイルを開けませんでした: {target}"
             )
             return 2
+        kind = target.suffix.lower()
+        if kind in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+            ja_label, en_label = "確認する画像", "review image"
+        elif kind in {".htm", ".html"}:
+            ja_label, en_label = "確認画面", "review page"
+        elif kind in {".mp4", ".mov", ".m4v", ".webm"}:
+            ja_label, en_label = "確認する動画", "review video"
+        else:
+            ja_label, en_label = "確認するファイル", "review artifact"
+        if args.dry_run:
+            print(
+                f"DRY RUN: Would open the {en_label} itself: {target}"
+                if args.language == "en"
+                else f"確認モード: {ja_label}そのものを開く予定です: {target}"
+            )
+            return 0
         print(
-            f"Image opened: {target.name}"
+            f"Opened the {en_label} itself: {target.name}"
             if args.language == "en"
-            else f"確認用の画像を開きました: {target.name}"
+            else f"{ja_label}そのものを開きました: {target.name}"
         )
         return 0
     try:

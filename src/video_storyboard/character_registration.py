@@ -195,12 +195,12 @@ def _review_html(
 ) -> Path:
     labels = {
         "ja": {
-            "title": "キャラクター確認",
-            "pending": "まだ登録は確定していません",
-            "description": "説明",
-            "fixed": "動画ごとに変えない特徴",
-            "forbidden": "入れない特徴",
-            "action": "画像と特徴を確認し、問題なければAIエージェントへ「このキャラクターでよい」と伝えてください。直したい場合は、普通の言葉で変更点を伝えてください。",
+            "title": f"「{record.name_ja}」として覚える内容の確認",
+            "pending": "まだ登録していません。写真と説明を確認した後に登録します。",
+            "description": "このキャラクターについて",
+            "fixed": "動画でも同じにするところ",
+            "forbidden": "動画で変えない・追加しないこと",
+            "action": f"上の写真が「{record.name_ja}」本人で、説明にも問題がなければ、その旨を普通の言葉でAIエージェントへ伝えてください。違う場合は、どこが違うか教えてください。",
         },
         "en": {
             "title": "Character review",
@@ -228,7 +228,7 @@ def _review_html(
     document = f"""<!doctype html>
 <html lang="{language}"><meta charset="utf-8"><title>{html.escape(labels['title'])}</title>
 <style>body{{font-family:system-ui,sans-serif;background:#f5f8ff;color:#18304f;margin:0}}main{{max-width:1050px;margin:32px auto;background:white;padding:34px;border-radius:22px}}h1{{font-size:36px}}.pending{{background:#fff2b8;border:3px solid #e5b500;padding:18px;border-radius:14px;font-weight:700}}.images{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}}figure{{margin:0}}img{{width:100%;max-height:380px;object-fit:contain;background:#eef2f7;border-radius:12px}}section{{margin-top:26px}}li{{margin:8px 0}}.action{{background:#e7f8f5;border-left:7px solid #009c9b;padding:20px;font-size:20px}}</style>
-<main><p class="pending">{html.escape(labels['pending'])}</p><h1>{html.escape(labels['title'])}: {html.escape(record.name_ja)} {html.escape(record.version)}</h1>
+<main><p class="pending">{html.escape(labels['pending'])}</p><h1>{html.escape(labels['title'])}</h1>
 <div class="images">{''.join(images)}</div>
 <section><h2>{html.escape(labels['description'])}</h2><p>{html.escape(record.description_ja)}</p></section>
 <section><h2>{html.escape(labels['fixed'])}</h2><ul>{fixed}</ul></section>

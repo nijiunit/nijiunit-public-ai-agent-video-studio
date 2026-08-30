@@ -218,7 +218,9 @@ the same reviewed `input/story.md` flow.
    active registry. For each unresolved name, handle one character at a time:
    summarize its description, immutable traits, prohibited traits, reference
    scope, source, and rights; create a pending version with
-   `register-character`; reveal its Japanese or English HTML review; and wait
+   `register-character`; open its Japanese or English HTML review page itself
+   rather than its containing folder; identify in plain language which visible
+   photo and character the user is reviewing; and wait
    for explicit approval before `approve-character`. A changed character must
    become `v002` or later and must not replace the approved active version
    until the new review is approved. Do not register unnamed background people.
@@ -330,22 +332,30 @@ artifact and given one concrete action.
    record; HTML is the no-spreadsheet-app review option.
 3. Detect Excel, LibreOffice Calc, or Numbers. Do not require a user to buy or
    install Excel solely to inspect a storyboard. When no spreadsheet app is
-   found, reveal the language-matched local HTML page instead.
+   found, open the language-matched local HTML page itself instead.
 4. After creating an artifact, use `run_storyboard.py reveal-artifact` for a
    production run or `scripts/reveal_artifact.py --path ...` for another exact
-   file. These commands open Explorer/Finder/the desktop file manager and select
-   the artifact where the OS supports selection. On Linux, give the exact
-   filename in the opened folder. They do not open the application automatically.
+   file. Still images, HTML review pages, and videos open as the artifact itself;
+   they must not be handed off as a folder full of candidates. Files that need
+   a manual desktop-app action, such as an Excel workbook, are revealed by exact
+   filename in Explorer/Finder/the desktop file manager.
    For a still image created only for review, display the actual image in the
-   conversation with the available image-view tool. If the interface cannot
-   attach it, open the image itself with `scripts/reveal_artifact.py`; do not
-   make the beginner navigate a folder merely to preview one image.
+   conversation with the available image-view tool. Immediately before or after
+   it, say what that visible image is for and what the user should check. If the
+   interface cannot attach it, open that exact image itself. Never add multiple
+   images to a folder and then refer to one only as "this image", "the right
+   image", or "the selected image".
 5. When the folder opens, tell the user only the next action, for example:
    `表示された「storyboard_v001.xlsx」をダブルクリックしてください。開いたら「開いた」と返してください。`
    Wait for that reply before explaining workbook tabs, yellow correction
    fields, saving, or the next stage.
    Always name the exact file. Never describe its selection color because the
    highlight differs by operating system, theme, and window focus.
+   If a file manager with several artifacts is already visible, do not assume
+   which item the user is looking at. Open the exact artifact itself, or name it
+   and describe recognizable visible content before asking for a decision.
+   Never claim that an image or page was displayed unless the tool actually
+   opened or attached it.
 6. If the desktop cannot be opened, state that plainly, show the exact folder
    and filename, and give one manual action. Do not pretend the folder opened.
 7. Never overwrite an existing review workbook. Create `_r002`, `_r003`, and so
