@@ -11,6 +11,7 @@ from PIL import Image, ImageStat
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".m4v", ".webm"}
+AUDIO_EXTENSIONS = {".wav", ".mp3", ".m4a", ".aac", ".flac", ".ogg"}
 
 
 @dataclass
@@ -28,15 +29,40 @@ class AssetRecord:
 
 
 def read_story(input_dir: Path) -> tuple[Path, str]:
-    candidates = sorted(input_dir.glob("*.md")) + sorted(input_dir.glob("*.txt"))
+    preferred = (input_dir / "story.md", input_dir / "story.txt")
+    for story_path in preferred:
+        if story_path.is_file():
+            return story_path, story_path.read_text(encoding="utf-8").strip()
+
+    excluded_names = {"readme.md", "readme.txt"}
+    candidates = [
+        path
+        for path in sorted(input_dir.glob("*.md"))
+        + sorted(input_dir.glob("*.txt"))
+        if path.name.casefold() not in excluded_names
+        and not path.stem.casefold().startswith("sample_story")
+    ]
     if not candidates:
-        raise FileNotFoundError(f"{input_dir}にストーリーのmd/txtがありません。")
+        raise FileNotFoundError(
+            f"{input_dir}に本番用のstory.mdまたはstory.txtがありません。"
+        )
+    if len(candidates) > 1:
+        names = "、".join(path.name for path in candidates)
+        raise ValueError(
+            "本番用ストーリーを一つに決められません。"
+            f"story.mdへまとめてください: {names}"
+        )
     story_path = candidates[0]
     return story_path, story_path.read_text(encoding="utf-8").strip()
 
 
 def _role_for_name(name: str, suffix: str) -> tuple[str, str]:
     stem = Path(name).stem
+    if suffix in AUDIO_EXTENSIONS:
+        return (
+            "audio_reference",
+            f"{stem}の声、効果音、音楽、または雰囲気の参照。",
+        )
     if suffix in VIDEO_EXTENSIONS:
         return (
             "video_reference",
@@ -103,7 +129,9 @@ def prepare_assets(input_dir: Path, reference_dir: Path) -> list[AssetRecord]:
     files = sorted(
         path
         for path in input_dir.iterdir()
-        if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS | VIDEO_EXTENSIONS
+        if path.is_file()
+        and path.suffix.lower()
+        in IMAGE_EXTENSIONS | VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
     )
     for index, source in enumerate(files, start=1):
         suffix = source.suffix.lower()
@@ -111,7 +139,13 @@ def prepare_assets(input_dir: Path, reference_dir: Path) -> list[AssetRecord]:
         record = AssetRecord(
             original_name=source.name,
             original_path=str(source.resolve()),
-            kind="video" if suffix in VIDEO_EXTENSIONS else "image",
+            kind=(
+                "video"
+                if suffix in VIDEO_EXTENSIONS
+                else "audio"
+                if suffix in AUDIO_EXTENSIONS
+                else "image"
+            ),
             role=role,
             notes=notes,
         )
@@ -124,11 +158,16 @@ def prepare_assets(input_dir: Path, reference_dir: Path) -> list[AssetRecord]:
             )
             record.prepared_path = str(prepared.resolve())
             record.api_path = str(prepared.resolve())
-        else:
+        elif suffix in VIDEO_EXTENSIONS:
             prepared = reference_dir / f"ref_{index:02d}_video_frame.jpg"
             _extract_video_frame(source, prepared)
             record.prepared_path = str(prepared.resolve())
             api_copy = reference_dir / f"ref_{index:02d}_source_video.mp4"
+            shutil.copy2(source, api_copy)
+            record.api_path = str(api_copy.resolve())
+        else:
+            api_copy = reference_dir / f"ref_{index:02d}_source_audio{suffix}"
+            api_copy.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, api_copy)
             record.api_path = str(api_copy.resolve())
         records.append(record)

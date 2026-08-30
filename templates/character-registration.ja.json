@@ -1,0 +1,33 @@
+{
+  "name_ja": "キャラクター名",
+  "aliases": [],
+  "concept_id": "user_original",
+  "kind": "human",
+  "description_ja": "利用者との会話から整理した外見と役割",
+  "identity_prompt_en": "An original character described without using a known third-party character.",
+  "immutable_traits": [
+    "毎回変えない顔・髪・服・体格など"
+  ],
+  "forbidden_traits": [
+    "追加してはいけない特徴"
+  ],
+  "references": [
+    {
+      "path": "C:/参考素材/character.mov",
+      "role": "identity",
+      "label": "本人が利用できる外見・動きの参考",
+      "triggers": [
+        "走る"
+      ],
+      "motion_name_ja": "走る参考動作",
+      "motion_prompt_en": "Use only the running body mechanics from this rights-cleared reference."
+    }
+  ],
+  "source_notes": [
+    "入手元と、何を参考にしてよいか"
+  ],
+  "source_type": "original",
+  "asset_license": null,
+  "publishable": false,
+  "rights_confirmed": true
+}

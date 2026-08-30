@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+- Clarified the Japanese and English beginner prompts for aspect-ratio and
+  update choices so agents request the choice itself, reserve completion
+  wording for completed operations, avoid raw HTML whitespace entities, and
+  keep replies short with the conclusion or current action first.
+- Added a two-route beginner story intake for NijiUnit tutorials or original
+  productions, explicit disclosure that NijiUnit source character/media assets
+  are not published, safe optional `sample_story.md` creation from verified
+  public tutorial text, natural-language reference-file guidance, and routing
+  from greetings or short requests without requiring a long prompt.
+- Added image, video, and audio intake, plus a beginner character-registration
+  gate that creates reviewable identity references and keeps changed versions
+  pending until the user approves them.
+- Added an `apply-corrections` workflow that reads the Excel correction fields,
+  revises the storyboard, preserves rejected material, and produces a new
+  workbook revision instead of treating extraction as the correction itself.
+- Added integrated speech, soundtrack, subtitle, final-video, and video-review
+  finishing, followed by a natural-language completion check and an editable,
+  checksummed `history/` archive.
+- Bundled a small licensed public video, its approved Excel storyboard, and
+  Japanese and English offline review pages so a beginner can inspect a real
+  finished example before starting a production.
+
 ## 0.7.1 - 2026-08-28
 
 - Simplified the Japanese and English beginner Google API setup into one

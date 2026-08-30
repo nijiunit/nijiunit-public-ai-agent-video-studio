@@ -93,7 +93,7 @@ def main() -> None:
     backup_dir.mkdir(parents=True, exist_ok=True)
 
     for shot in storyboard["shots"]:
-        line = str(shot.get("dialogue") or "").strip()
+        line = str(shot.get("dialogue") or shot.get("narration") or "").strip()
         if not line:
             continue
         number = int(shot["shot_number"])

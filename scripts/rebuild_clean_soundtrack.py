@@ -80,6 +80,9 @@ def rebuild_clip(
     ambience_settings: dict[str, float],
     media: MediaContract,
     audio: AudioInstructions,
+    music: Path | None = None,
+    music_offset_seconds: float = 0.0,
+    music_volume: float = 0.12,
 ) -> dict[str, object]:
     temporary = clip.with_name(f"{clip.stem}.clean-audio.mp4")
     args = [
@@ -130,6 +133,27 @@ def rebuild_clip(
     )
     mix_labels.append(f"[amb{shot_number}]")
     next_input += 1
+
+    if music:
+        args.extend(
+            [
+                "-ss",
+                f"{music_offset_seconds:.3f}",
+                "-i",
+                str(music),
+            ]
+        )
+        fade_out_duration = min(0.2, media.shot_duration_seconds / 4)
+        fade_out_start = media.shot_duration_seconds - fade_out_duration
+        filters.append(
+            f"[{next_input}:a]volume={music_volume:.3f},"
+            f"afade=t=in:st=0:d=0.08,afade=t=out:st={fade_out_start:.2f}:"
+            f"d={fade_out_duration:.2f},apad,"
+            f"atrim=duration={media.shot_duration_seconds},aresample=48000,"
+            "pan=stereo|c0=c0|c1=c0[music]"
+        )
+        mix_labels.append("[music]")
+        next_input += 1
 
     if chime:
         args.extend(
@@ -196,7 +220,9 @@ def rebuild_clip(
         "local_success_chime": chime,
         "ambience_settings": ambience_settings,
         "video_api_audio_used": False,
-        "third_party_music_used": False,
+        "third_party_music_used": music is not None,
+        "music_source": music.name if music else None,
+        "music_volume": music_volume if music else None,
     }
 
 
@@ -213,9 +239,20 @@ def main() -> None:
             "Optional work-specific JSON with default and per-shot ambience settings."
         ),
     )
+    parser.add_argument(
+        "--music-file",
+        type=Path,
+        help="Optional rights-cleared music file mixed locally across the full video.",
+    )
+    parser.add_argument("--music-volume", type=float, default=0.12)
     args = parser.parse_args()
 
     run_dir = args.run_dir.resolve()
+    music = args.music_file.resolve() if args.music_file else None
+    if music and not music.is_file():
+        raise FileNotFoundError(music)
+    if not 0 <= args.music_volume <= 1:
+        raise ValueError("music volume must be between 0 and 1")
     guidance = load_run_guidance(run_dir)
     media = guidance.profile.media
     audio = guidance.profile.audio
@@ -248,7 +285,7 @@ def main() -> None:
         if not backup_clip.exists():
             shutil.copy2(clip, backup_clip)
         speech = run_dir / "audio" / "tts" / f"shot_{number:03d}.wav"
-        if not shot.get("dialogue"):
+        if not shot.get("dialogue") and not shot.get("narration"):
             speech = None
         elif not speech.is_file():
             raise FileNotFoundError(speech)
@@ -267,6 +304,9 @@ def main() -> None:
                 ambience_settings,
                 media,
                 audio,
+                music,
+                (number - 1) * media.shot_duration_seconds,
+                args.music_volume,
             )
         )
         print(f"[clean soundtrack] S{number:03d}")

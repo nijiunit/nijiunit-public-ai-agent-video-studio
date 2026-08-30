@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 from .artifacts import (
@@ -18,11 +21,21 @@ from .assets import (
     read_story,
     save_manifest,
 )
+from .character_registration import (
+    approve_character,
+    character_status,
+    register_character,
+)
 from .character_registry import (
     CharacterRegistry,
     require_resolved_character_names,
 )
 from .gemini_service import GeminiService
+from .history import (
+    archive_production,
+    completion_status,
+    mark_completion_review_pending,
+)
 from .knowledge import (
     ensure_production_allowed,
     load_builtin_guidance,
@@ -34,7 +47,11 @@ from .review_html import create_review_html
 from .schema import Storyboard
 from .settings import CHARACTER_REGISTRY_DIR
 from .video import concatenate_clips, inspect_video, render_video_shots
-from .website_tutorial import fetch_tutorial_page, format_tutorial_page
+from .website_tutorial import (
+    fetch_tutorial_page,
+    format_tutorial_page,
+    write_sample_story,
+)
 from .workbook import (
     approve_workbook,
     create_video_workbook,
@@ -401,6 +418,32 @@ def validate_character_registry_command(registry_dir: Path) -> str:
     return f"characters={len(registry.records)}: {names}; lock={lock_path}"
 
 
+def character_status_command(run_dir: Path, registry_dir: Path) -> str:
+    status = character_status(_load_storyboard(run_dir.resolve()), registry_dir.resolve())
+    return json.dumps(status, ensure_ascii=False, indent=2)
+
+
+def register_character_command(spec_path: Path, registry_dir: Path) -> str:
+    profile, japanese_html, english_html = register_character(
+        spec_path.resolve(), registry_dir.resolve()
+    )
+    return (
+        "キャラクターの確認用資料を作りました。まだ登録は確定していません。\n"
+        f"日本語確認ページ: {japanese_html}\n"
+        f"English review page: {english_html}\n"
+        f"確認待ちプロフィール: {profile}"
+    )
+
+
+def approve_character_command(
+    registry_dir: Path,
+    character_id: str,
+    version: str,
+) -> str:
+    profile = approve_character(registry_dir.resolve(), character_id, version)
+    return f"キャラクターを承認して台帳へ登録しました: {profile}"
+
+
 def prepare_motion_keyframes_command(
     registry_dir: Path,
     overwrite: bool = False,
@@ -444,10 +487,125 @@ def build_video_workbook_command(run_dir: Path) -> str:
         language="en",
         video_frames=True,
     )
+    mark_completion_review_pending(run_dir, destination)
     return (
         f"動画確認用フォルダ: {destination.parent}\n"
         f"正式Excel: {destination.name}\n"
         f"Excelなし用: {japanese_html.name}, {english_html.name}"
+    )
+
+
+def completion_status_command(output_root: Path, history_root: Path) -> str:
+    return json.dumps(
+        completion_status(output_root.resolve(), history_root.resolve()),
+        ensure_ascii=False,
+        indent=2,
+    )
+
+
+def archive_production_command(
+    run_dir: Path,
+    input_dir: Path,
+    history_root: Path,
+    confirmation: str,
+    title: str | None = None,
+) -> str:
+    archive = archive_production(
+        run_dir,
+        input_dir,
+        history_root,
+        confirmation,
+        title,
+    )
+    return (
+        f"制作一式をhistoryへ移しました: {archive}\n"
+        f"修正するときは、この中のrunフォルダーから再開できます: {archive / 'run'}"
+    )
+
+
+def _run_project_script(script_name: str, arguments: list[str]) -> str:
+    script = Path(__file__).resolve().parents[2] / "scripts" / script_name
+    result = subprocess.run(
+        [sys.executable, str(script), *arguments],
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode:
+        detail = "\n".join(result.stderr.splitlines()[-30:]) or result.stdout
+        raise RuntimeError(f"{script_name}に失敗しました。\n{detail}")
+    return result.stdout.strip()
+
+
+def finish_production_command(
+    run_dir: Path,
+    *,
+    generate_speech: bool = False,
+    voice_config: Path | None = None,
+    music_file: Path | None = None,
+    music_rights_confirmed: bool = False,
+    music_volume: float = 0.12,
+    subtitles: bool = True,
+) -> str:
+    """Run the local audio/subtitle/final-review sequence as one guarded step."""
+    run_dir = run_dir.resolve()
+    storyboard = _load_storyboard(run_dir)
+    _load_pinned_guidance(run_dir, storyboard)
+    _require_approved_workbook(storyboard, run_dir)
+    for shot in storyboard.shots:
+        clip = run_dir / "video" / "clips" / f"shot_{shot.shot_number:03d}.mp4"
+        if not clip.is_file():
+            raise FileNotFoundError(f"動画クリップがありません: {clip}")
+
+    has_speech = any(shot.dialogue or shot.narration for shot in storyboard.shots)
+    if has_speech and not generate_speech:
+        raise RuntimeError(
+            "台詞またはナレーションがあります。音声生成にはAPI利用があるため、"
+            "説明と利用者の確認後に--generate-speechを付けてください。"
+        )
+    if music_file and not music_rights_confirmed:
+        raise RuntimeError(
+            "音楽の利用権が未確認です。利用できる音源だと本人が確認した後だけ"
+            "--music-rights-confirmedを付けてください。"
+        )
+    if not 0 <= music_volume <= 1:
+        raise ValueError("music volume must be between 0 and 1")
+
+    if has_speech:
+        arguments = ["--run-dir", str(run_dir)]
+        if voice_config:
+            arguments.extend(["--voice-config", str(voice_config.resolve())])
+        _run_project_script("generate_storyboard_tts.py", arguments)
+
+    soundtrack_arguments = ["--run-dir", str(run_dir)]
+    if music_file:
+        source = music_file.resolve()
+        if not source.is_file():
+            raise FileNotFoundError(source)
+        music_dir = run_dir / "audio" / "source_music"
+        music_dir.mkdir(parents=True, exist_ok=True)
+        copied = music_dir / source.name
+        if copied.exists() and copied.read_bytes() != source.read_bytes():
+            copied = music_dir / f"{source.stem}_{len(list(music_dir.iterdir())) + 1}{source.suffix}"
+        if not copied.exists():
+            shutil.copy2(source, copied)
+        soundtrack_arguments.extend(
+            ["--music-file", str(copied), "--music-volume", str(music_volume)]
+        )
+    _run_project_script("rebuild_clean_soundtrack.py", soundtrack_arguments)
+    if subtitles and has_speech:
+        _run_project_script(
+            "apply_storyboard_subtitles.py",
+            ["--run-dir", str(run_dir)],
+        )
+    final_video = finalize_video_command(run_dir)
+    review_bundle = build_video_workbook_command(run_dir)
+    return (
+        f"完成動画: {final_video}\n"
+        f"確認資料: {review_bundle}\n"
+        "完成確認待ちとして保存しました。会話が終わっても次回再開できます。"
     )
 
 
@@ -530,11 +688,171 @@ def extract_corrections_command(
     return str(destination)
 
 
+def show_sample_command(
+    sample: str = "video",
+    language: str = "ja",
+    dry_run: bool = False,
+) -> str:
+    root = Path(__file__).resolve().parents[2] / "examples" / "space-friends"
+    names = {
+        "video": "demo.mp4",
+        "storyboard": "storyboard_approved.xlsx",
+        "review-html": f"storyboard_approved_review.{language}.html",
+    }
+    target = root / names[sample]
+    if not target.is_file():
+        raise FileNotFoundError(f"公開サンプルがありません: {target}")
+    result = reveal_in_file_manager(target, dry_run=dry_run)
+    if dry_run:
+        return f"確認モード: 選択予定の公開サンプル: {target}"
+    if result.opened:
+        if language == "en":
+            return (
+                f"Sample folder opened: {target.parent}\n"
+                f"Double-click the selected file: {target.name}"
+            )
+        return (
+            f"サンプルのフォルダーを開きました: {target.parent}\n"
+            f"青く選択された「{target.name}」をダブルクリックしてください。"
+        )
+    return f"サンプル: {target}"
+
+
+def _next_storyboard_json_revision(run_dir: Path) -> tuple[int, Path]:
+    revisions = []
+    for path in run_dir.glob("storyboard_r*.json"):
+        match = re.fullmatch(r"storyboard_r(\d{3})\.json", path.name)
+        if match:
+            revisions.append(int(match.group(1)))
+    revision = max(revisions, default=1) + 1
+    return revision, run_dir / f"storyboard_r{revision:03d}.json"
+
+
+def _shot_number_from_sheet(sheet: str) -> int | None:
+    match = re.match(r"S(\d{3})", sheet)
+    return int(match.group(1)) if match else None
+
+
+def apply_corrections_command(
+    run_dir: Path,
+    workbook_path: Path | None = None,
+    story_model: str | None = None,
+    character_registry_dir: Path | None = CHARACTER_REGISTRY_DIR,
+) -> str:
+    """Apply Excel corrections and invalidate only affected review images."""
+    run_dir = run_dir.resolve()
+    storyboard_path = run_dir / "storyboard.json"
+    storyboard = _load_storyboard(run_dir)
+    guidance = _load_pinned_guidance(run_dir, storyboard)
+    workbook_path = (
+        workbook_path.resolve() if workbook_path else _workbook_path(run_dir)
+    )
+    corrections_path = run_dir / f"corrections_{workbook_path.stem}.json"
+    extract_corrections(workbook_path, corrections_path)
+    correction_data = json.loads(corrections_path.read_text(encoding="utf-8"))
+    requested = []
+    missing_instruction = []
+    for item in correction_data["corrections"]:
+        instruction = str(item.get("instruction") or "").strip()
+        status = str(item.get("review_status") or "").strip()
+        if status == "修正必要" and not instruction:
+            missing_instruction.append(str(item.get("sheet") or ""))
+        if instruction:
+            requested.append(item)
+    if missing_instruction:
+        raise RuntimeError(
+            "修正内容が空欄です。黄色い訂正指示欄へ、直したい内容を書いてください: "
+            + ", ".join(missing_instruction)
+        )
+    if not requested:
+        raise RuntimeError("反映する訂正指示がありません。")
+
+    assets = load_manifest(run_dir / "manifest.json")
+    registry = CharacterRegistry.load_optional(character_registry_dir)
+    service = GeminiService(profile=guidance.profile, story_model=story_model)
+    revised = service.revise_storyboard(
+        storyboard,
+        requested,
+        assets,
+        registry,
+    )
+    _require_storyboard_matches_guidance(revised, guidance)
+
+    revision, revision_path = _next_storyboard_json_revision(run_dir)
+    first_revision = run_dir / "storyboard_r001.json"
+    if not first_revision.exists():
+        shutil.copy2(storyboard_path, first_revision)
+    serialized = revised.model_dump_json(indent=2)
+    revision_path.write_text(serialized, encoding="utf-8")
+    storyboard_path.write_text(serialized, encoding="utf-8")
+
+    affected = {
+        number
+        for item in requested
+        if (number := _shot_number_from_sheet(str(item.get("sheet") or "")))
+    }
+    if any(str(item.get("revision_scope")) == "大規模" for item in requested):
+        affected = {shot.shot_number for shot in revised.shots}
+    rejected_dir = run_dir / "rejected" / f"before_storyboard_r{revision:03d}"
+    invalidated: list[str] = []
+    for number in sorted(affected):
+        image = run_dir / "images" / f"shot_{number:03d}.png"
+        if not image.is_file():
+            continue
+        rejected_dir.mkdir(parents=True, exist_ok=True)
+        backup = rejected_dir / image.name
+        shutil.copy2(image, backup)
+        image.unlink()
+        invalidated.append(image.name)
+
+    log_path = run_dir / "revision_log.jsonl"
+    with log_path.open("a", encoding="utf-8") as stream:
+        stream.write(
+            json.dumps(
+                {
+                    "revision": revision,
+                    "source_workbook": workbook_path.name,
+                    "corrections_file": corrections_path.name,
+                    "affected_shots": sorted(affected),
+                    "invalidated_images": invalidated,
+                },
+                ensure_ascii=False,
+            )
+            + "\n"
+        )
+    return (
+        f"訂正をstoryboard_r{revision:03d}.jsonへ反映しました。\n"
+        f"再生成が必要な画像: {', '.join(invalidated) or 'なし'}\n"
+        "次は不足画像を生成してください。全画像が揃うと新版Excelを作成できます。"
+    )
+
+
 def prepare_tutorial_command(
     *,
     youtube_url: str,
     language: str = "ja",
+    sample_story_input_dir: Path | None = None,
 ) -> str:
     if language not in {"ja", "en"}:
         raise ValueError("language must be 'ja' or 'en'")
-    return format_tutorial_page(fetch_tutorial_page(youtube_url, language))
+    page = fetch_tutorial_page(youtube_url, language)
+    result = format_tutorial_page(page)
+    if sample_story_input_dir is None:
+        return result
+
+    destination = write_sample_story(page, sample_story_input_dir)
+    if language == "ja":
+        return (
+            f"{result}\n\n"
+            "INPUT_SAMPLE_STORY: WRITTEN\n"
+            f"参考用サンプルストーリー: {destination.resolve()}\n"
+            "本番用ストーリー: input/story.md（別途作成）\n"
+            "NijiUnitのキャラクター画像・動画・音声: 配布なし"
+        )
+    return (
+        f"{result}\n\n"
+        "INPUT_SAMPLE_STORY: WRITTEN\n"
+        f"Reference sample story: {destination.resolve()}\n"
+        "Production story: input/story.md (create separately)\n"
+        "NijiUnit character images, videos, and audio: not distributed"
+    )

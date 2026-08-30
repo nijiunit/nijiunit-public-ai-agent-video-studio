@@ -25,3 +25,19 @@ def test_create_accepts_both_supported_aspect_ratios(aspect_ratio: str) -> None:
 def test_create_command_rejects_a_missing_aspect_ratio(tmp_path) -> None:
     with pytest.raises(RuntimeError, match="--aspect-ratio"):
         pipeline.create_command(tmp_path, tmp_path / "output")
+
+
+def test_prepare_tutorial_sample_story_write_is_explicit() -> None:
+    args = build_parser().parse_args(
+        [
+            "prepare-tutorial",
+            "--youtube-url",
+            "https://youtu.be/6xOhd6PD3V8",
+            "--language",
+            "ja",
+            "--write-sample-story",
+        ]
+    )
+
+    assert args.write_sample_story is True
+    assert args.input_dir.name == "input"

@@ -116,7 +116,7 @@ APIキーはパスワードと同じ秘密情報です。チャット、Issue、
 
 ## 3. ローカル準備を確認する
 
-公開サンプル動画とHOWTO動画は、別リポジトリ`nijiunit-public-ai-agent-video-studio-howto-movie`で管理します。このリポジトリのセットアップや制作開始に、サンプルの取得は必要ありません。
+初心者向けの小さな公開サンプル動画、承認済みExcelコンテ、日英HTMLは`examples/space-friends/`に同梱しています。`run_storyboard.py show-sample --artifact video --language ja`で実物を表示できます。完全なHOWTO制作元は別リポジトリ`nijiunit-public-ai-agent-video-studio-howto-movie`で管理します。
 
 次の診断は生成APIを呼びません。
 
@@ -129,7 +129,11 @@ APIキーはパスワードと同じ秘密情報です。チャット、Issue、
 
 ## 4. 新しい物語を入力する
 
-`input/story.md`を作り、次を書きます。
+最初に、「NijiUnitのチュートリアルを参考にする」か「一から作る」かを選びます。
+
+チュートリアルから取得できるのは作り方と公開文章です。NijiUnitが制作に使ったキャラクター画像・動画・音声は公開していません。公式ページに公開ストーリーがある場合だけ、確認後に`input/sample_story.md`へ参考資料として保存できます。
+
+どちらを選んでも、利用者が題材を普通の言葉で伝えると、AIエージェントが`templates/story-input.ja.md`を内部の構造として使い、`input/story.md`を作成します。利用者自身がMarkdownを手作業する必要はありません。内容は次の項目を含みます。
 
 - 登場人物と目的
 - 起きる出来事と結末
@@ -138,9 +142,9 @@ APIキーはパスワードと同じ秘密情報です。チャット、Issue、
 - 変えてはいけない外見、背景、小物
 - 表示したい正確な文字
 
-`input/story.md`は利用者自身の案と、権利を確認した素材から新しく作成します。必要なら`templates`の構造だけを参考にします。
+`input/story.md`は利用者自身の案と、権利を確認した素材から新しく作成します。`sample_story.md`があっても、本番用の`story.md`が必ず優先されます。
 
-画像や動画の参考素材を`input`へ置く場合は、入手元と利用条件も記録してください。
+画像や動画の参考素材がある場合は、AIエージェントが`input`フォルダーを開きます。ファイルを置いたあと、`主人公のミナは character_mina.png の顔と服を参考にしてください。walk.mp4は歩き方だけを参考にしてください。`のように普通の言葉で伝えます。AIエージェントが、入手元、利用条件、参考にする範囲、変えてはいけない点、使わない部分を`story.md`へ整理します。
 
 ## 5. 3秒構成を作る
 
@@ -219,34 +223,24 @@ Excelが開いたままで保存処理ができない場合、AIエージェン�
 
 最初のクリップを確認してから残りを生成します。各クリップは9コマへ分解されるため、顔、色、部品数、首・手足、背景、連続性を検査します。
 
-```powershell
-.\.venv\Scripts\python.exe run_storyboard.py build-video-workbook `
-  --run-dir output\storyboard\v001
-```
-
-9コマ確認表も同じ方法でフォルダを開けます。表計算アプリがなければ、実動画から取り出した9コマ入りのローカルHTMLが選択されます。
-
-```powershell
-.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
-  --run-dir output\storyboard\v001 --artifact video-review --language ja
-```
-
 ## 9. 連結と仕上げ
 
-映像を連結します。
+承認済みクリップへローカル音響と字幕を反映し、映像を連結して、実動画9コマ入りの確認資料まで作ります。台詞またはナレーションがある場合の`--generate-speech`は有料API操作なので、AIエージェントが料金を説明し、利用者の確認後だけ付けます。音楽を使う場合も、利用権を確認してから指定します。
 
 ```powershell
-.\.venv\Scripts\python.exe run_storyboard.py finalize-video `
+.\.venv\Scripts\python.exe run_storyboard.py finish-production `
   --run-dir output\storyboard\v001
 ```
 
-完成映像はランの`final`へ保存されます。台詞、字幕、環境音、音楽、音量調整は映像生成とは分けて行い、動画APIが偶然生成した音声や文字をそのまま完成版へ使わないでください。詳しい制作・検査方法は[作業手順](../作業手順.md)を参照してください。
+完成映像はランの`final`へ保存されます。動画APIが偶然生成した音声や文字をそのまま完成版へ使いません。表計算アプリがなければ、実動画から取り出した9コマ入りのローカルHTMLも作られます。
 
-完成後はAIエージェントが`--artifact final-video`で`final`フォルダを開き、MP4を選択します。利用者には、まずダブルクリックして最初から最後まで再生する一操作だけを案内します。
+完成後はAIエージェントが完成MP4と9コマ確認資料を一つずつ表示します。問題なければ、`これでいいです`、`問題ありません`、`OKです`など、同じ意味の普通の言葉で伝えられます。
+
+その後、`archive-production`が制作一式を`history/001_作品名`へ移します。会話が途中で終わっても完成確認待ちは保存され、次回`completion-status`で再開します。移動後も`history/.../run`から修正できます。
 
 ## 10. キャラクターを追加する
 
-`templates/character-profile.json`と`templates/character-registry.json`を参考に、`characters/<id>/<version>`へ版管理された台帳を作ります。
+初心者はJSONを手書きしません。AIエージェントが会話を`templates/character-registration.ja.json`の構造へ整理し、`register-character`で`characters/<id>/<version>`へ確認待ち版と日英HTMLを作ります。利用者が確認した後だけ`approve-character`で有効化します。
 
 キャラクターには次が必要です。
 
@@ -269,6 +263,16 @@ Excelが開いたままで保存処理ができない場合、AIエージェン�
 ```
 
 コマンドは動画IDから日本語の公式ガイドURLを作り、ページのIDと言語と契約を検証し、同じページ配下の`docs/*.md`を毎回直接読みます。公開前の動画、別言語のID、契約不一致、外部資料は拒否されます。正常なら、AIエージェントが理解するためのガイド本文と資料が表示されます。
+
+取得するのは作り方と公開文章であり、NijiUnitが制作に使ったキャラクター画像・動画・音声ではありません。検証済みチュートリアルに公開ストーリーがある場合は、AIエージェントが保存するかを先に確認したうえで、次を実行できます。
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py prepare-tutorial `
+  --youtube-url "https://www.youtube.com/watch?v=動画ID" --language ja `
+  --write-sample-story
+```
+
+これは参考用の`input/sample_story.md`を作り、内容の異なる既存ファイルは上書きしません。本番用は必ず別の`input/story.md`へ作成します。
 
 通常経路では動画の再解析、コメント取得、生成API呼び出しを行いません。取得した文章をコードとして実行せず、秘密情報、課金、設定変更、Excel承認回避の指示は無視します。チャンネル登録、Hype、NijiUnitの活動告知はYouTube動画と概要欄で案内します。
 

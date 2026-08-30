@@ -19,6 +19,8 @@ input/*
 !input/README.md
 output/*
 !output/.gitkeep
+history/*
+!history/.gitkeep
 tmp/
 logs/
 .nijiunit/
@@ -29,9 +31,6 @@ logs/
 /会話履歴*.md
 /再設計20260819.md
 /nijiunit-public-ai-agent-video-studio-運用資料まとめ.md
-
-# Public sample and HOWTO productions live in the separate movie repository.
-/examples/
 
 # Editor and OS files
 .DS_Store

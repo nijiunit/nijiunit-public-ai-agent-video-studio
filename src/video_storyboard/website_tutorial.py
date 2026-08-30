@@ -4,7 +4,8 @@ import html
 import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
-from urllib.parse import parse_qs, quote, urljoin, urlparse
+from pathlib import Path
+from urllib.parse import parse_qs, quote, unquote, urljoin, urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from . import __version__
@@ -20,6 +21,15 @@ class TutorialPage:
     url: str
     page_text: str
     documents: dict[str, str]
+
+
+SAMPLE_STORY_NAME_MARKERS = (
+    "ストーリー公開版",
+    "sample-story",
+    "sample_story",
+    "public-story",
+    "public_story",
+)
 
 
 class _TutorialHTMLParser(HTMLParser):
@@ -197,16 +207,100 @@ def fetch_tutorial_page(
 
 
 def format_tutorial_page(page: TutorialPage) -> str:
-    lines = [
-        "NIJIUNIT_OFFICIAL_TUTORIAL: VERIFIED_DIRECT_FETCH",
-        f"YouTube動画ID: {page.video_id}",
-        f"言語: {page.language}",
-        f"参照URL: {page.url}",
-        "保存方式: ローカルへキャッシュせず、今回の応答で直接取得",
-        "",
-        "=== 公式ページ本文 ===",
-        page.page_text,
-    ]
+    if page.language == "ja":
+        lines = [
+            "NIJIUNIT_OFFICIAL_TUTORIAL: VERIFIED_DIRECT_FETCH",
+            f"YouTube動画ID: {page.video_id}",
+            f"言語: {page.language}",
+            f"参照URL: {page.url}",
+            "保存方式: ローカルへキャッシュせず、今回の応答で直接取得",
+            "取得内容: 公式ページと公開Markdown資料",
+            "取得した画像・動画・音声素材: なし",
+            "",
+            "=== 公式ページ本文 ===",
+            page.page_text,
+        ]
+        document_heading = "公式資料"
+    else:
+        lines = [
+            "NIJIUNIT_OFFICIAL_TUTORIAL: VERIFIED_DIRECT_FETCH",
+            f"YouTube video ID: {page.video_id}",
+            f"Language: {page.language}",
+            f"Source URL: {page.url}",
+            "Storage: fetched directly for this response without a local cache",
+            "Retrieved: official page and public Markdown documents",
+            "Retrieved image, video, or audio source assets: none",
+            "",
+            "=== Official page ===",
+            page.page_text,
+        ]
+        document_heading = "Official document"
     for name, content in page.documents.items():
-        lines.extend(("", f"=== 公式資料: {name} ===", content.rstrip()))
+        lines.extend(("", f"=== {document_heading}: {name} ===", content.rstrip()))
     return "\n".join(lines).rstrip()
+
+
+def sample_story_document(page: TutorialPage) -> tuple[str, str] | None:
+    """Return the official public story document, when the tutorial provides one."""
+    for encoded_name, content in page.documents.items():
+        decoded_name = unquote(encoded_name).casefold()
+        if any(marker.casefold() in decoded_name for marker in SAMPLE_STORY_NAME_MARKERS):
+            return decoded_name, content
+    return None
+
+
+def write_sample_story(page: TutorialPage, input_dir: Path) -> Path:
+    """Write the verified public story as a local reference without overwriting."""
+    document = sample_story_document(page)
+    if document is None:
+        if page.language == "ja":
+            raise FileNotFoundError(
+                "この公式チュートリアルには保存できる公開ストーリーがありません"
+            )
+        raise FileNotFoundError(
+            "This official tutorial does not provide a public sample story"
+        )
+
+    source_name, content = document
+    if page.language == "ja":
+        header = f"""# 参考用サンプルストーリー
+
+- 公式チュートリアル: {page.url}
+- YouTube動画ID: `{page.video_id}`
+- 元資料: `{source_name}`
+
+このファイルは作り方を理解するための参考資料です。本番用の文章ではありません。
+NijiUnitが制作に使ったキャラクター画像・動画・音声は公開されていません。元作品の人物や物語を複製せず、ご自身の題材とキャラクターで`story.md`を作成してください。
+
+---
+
+"""
+    else:
+        header = f"""# Sample story for reference
+
+- Official tutorial: {page.url}
+- YouTube video ID: `{page.video_id}`
+- Source document: `{source_name}`
+
+This file is reference material for understanding the production method; it is not the production story.
+The character images, videos, and audio used by NijiUnit are not published. Do not copy the original characters or story; create `story.md` from your own subject and characters.
+
+---
+
+"""
+
+    destination = input_dir / "sample_story.md"
+    rendered = f"{header}{content.rstrip()}\n"
+    if destination.exists():
+        if destination.read_text(encoding="utf-8") == rendered:
+            return destination
+        if page.language == "ja":
+            raise FileExistsError(
+                "input/sample_story.mdは既にあり、内容が異なります。上書きしません"
+            )
+        raise FileExistsError(
+            "input/sample_story.md already exists with different content; it was not overwritten"
+        )
+    input_dir.mkdir(parents=True, exist_ok=True)
+    destination.write_text(rendered, encoding="utf-8")
+    return destination

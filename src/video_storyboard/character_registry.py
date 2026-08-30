@@ -97,6 +97,7 @@ class CharacterRecord(BaseModel):
     )
     asset_license: str | None = None
     publishable: bool = False
+    review_status: Literal["pending", "approved"] = "approved"
 
     @model_validator(mode="after")
     def publishable_assets_require_a_license(self) -> "CharacterRecord":
@@ -121,6 +122,7 @@ class RegistryFile(BaseModel):
     schema_version: str = "1.0"
     concepts: list[RegistryConcept] = Field(default_factory=list)
     characters: list[RegistryEntry]
+    pending: list[RegistryEntry] = Field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -571,6 +573,8 @@ class CharacterRegistry:
     def validate(self) -> list[str]:
         issues: list[str] = []
         for record in self.records:
+            if record.review_status != "approved":
+                issues.append(f"Character is not approved: {record.id}/{record.version}")
             generation_references = 0
             for reference in record.references:
                 try:

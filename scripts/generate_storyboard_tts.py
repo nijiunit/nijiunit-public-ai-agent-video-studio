@@ -157,7 +157,11 @@ def main() -> None:
     default_style = args.style or audio_profile.default_style
     voice_overrides = load_voice_overrides(args.voice_config)
     storyboard = json.loads((run_dir / "storyboard.json").read_text(encoding="utf-8"))
-    lines = [shot for shot in storyboard["shots"] if shot.get("dialogue")]
+    lines = [
+        shot
+        for shot in storyboard["shots"]
+        if shot.get("dialogue") or shot.get("narration")
+    ]
     raw_dir = run_dir / "audio" / "tts_raw"
     output_dir = run_dir / "audio" / "tts"
     raw_dir.mkdir(parents=True, exist_ok=True)
@@ -167,7 +171,8 @@ def main() -> None:
     report: list[dict[str, object]] = []
     for shot in lines:
         number = int(shot["shot_number"])
-        line = str(shot["dialogue"])
+        speech_type = "dialogue" if shot.get("dialogue") else "narration"
+        line = str(shot.get(speech_type) or "")
         override = voice_overrides.get(str(number), {})
         voice = str(override.get("voice", default_voice))
         speaker = str(override.get("speaker", default_speaker))
@@ -190,6 +195,7 @@ def main() -> None:
             "speaker": speaker,
             "voice": voice,
             "line": line,
+            "speech_type": speech_type,
             "duration_seconds": round(duration(destination), 3),
         }
         report.append(item)

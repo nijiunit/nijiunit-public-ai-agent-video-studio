@@ -16,11 +16,11 @@ The central problem addressed by this repository is continuity across shots, not
 - Nine-frame visual review of every generated clip, followed by local audio and subtitle finishing
 - An episode-level record of every AI model used
 
-Public sample movies, HOWTO movies, and work-specific reproduction code are maintained in the separate `nijiunit-public-ai-agent-video-studio-howto-movie` repository so this reusable engine remains small.
+A small public finished video, approved Excel storyboard, and Japanese/English HTML review pages are bundled under `examples/space-friends/`. Complete HOWTO production sources and work-specific reproduction code remain in the separate `nijiunit-public-ai-agent-video-studio-howto-movie` repository.
 
 ## What the public repository excludes
 
-This is not a direct publication of the private production repository. It excludes real people, family members, pets, previous productions, sample productions, client-specific scripts, private production history, API keys, and private provider metadata.
+This is not a direct publication of the private production repository. It excludes real people, family members, pets, non-public previous productions, client-specific scripts, private production history, API keys, and private provider metadata. The bundled sample is a fictional public production only.
 
 ## Ask an AI agent
 

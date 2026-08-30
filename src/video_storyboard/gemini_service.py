@@ -181,7 +181,7 @@ class GeminiService:
         uploaded_files: list[Any] = []
         try:
             for item in assets:
-                if item.kind == "video":
+                if item.kind in {"video", "audio"}:
                     upload_path = (
                         Path(item.api_path)
                         if item.api_path
@@ -198,13 +198,16 @@ class GeminiService:
                         uploaded = self.client.files.get(name=uploaded.name)
                     if uploaded.state and getattr(uploaded.state, "name", "") == "FAILED":
                         raise RuntimeError(
-                            f"動画素材の処理に失敗しました: {item.original_name}"
+                            f"動画・音声素材の処理に失敗しました: {item.original_name}"
                         )
                     uploaded_files.append(uploaded)
                     contents.extend(
                         [
                             uploaded,
-                            f"直前の動画は {item.original_name}: {item.notes}",
+                            (
+                                f"直前の{'動画' if item.kind == 'video' else '音声'}は "
+                                f"{item.original_name}: {item.notes}"
+                            ),
                         ]
                     )
                 elif item.prepared_path:
@@ -273,6 +276,80 @@ class GeminiService:
                     self.client.files.delete(name=uploaded.name)
                 except Exception:
                     pass
+
+    def revise_storyboard(
+        self,
+        storyboard: Storyboard,
+        corrections: list[dict[str, str]],
+        assets: list[AssetRecord],
+        character_registry: CharacterRegistry | None = None,
+    ) -> Storyboard:
+        """Apply reviewed Excel corrections while preserving production locks."""
+        registry_context = [
+            {
+                "id": record.id,
+                "version": record.version,
+                "name": record.name_ja,
+                "aliases": record.aliases,
+                "identity_prompt_en": record.identity_prompt_en,
+                "immutable_traits": record.immutable_traits,
+                "forbidden_traits": record.forbidden_traits,
+            }
+            for record in character_registry.records
+        ] if character_registry else []
+        prompt = f"""
+次の映像絵コンテへ、利用者がExcelに記入した訂正だけを反映してください。
+
+【現在の絵コンテ】
+{storyboard.model_dump_json(indent=2)}
+
+【利用者の訂正】
+{json.dumps(corrections, ensure_ascii=False, indent=2)}
+
+【利用できる素材名】
+{json.dumps([item.original_name for item in assets], ensure_ascii=False)}
+
+【承認済みキャラクター台帳】
+{json.dumps(registry_context, ensure_ascii=False, indent=2)}
+
+必須条件:
+- 訂正と無関係な登場人物、物語、台詞、画風、素材名を変えない。
+- 修正規模が「小規模」の項目では対象ショット以外を変えない。
+- 修正規模が「大規模」の場合だけ、必要な範囲で複数ショットを整合させる。
+- 映像比率は{storyboard.aspect_ratio}のまま変えない。
+- 1ショットは3秒、各ショットの確認用説明は正確に9件にする。
+- 台帳にある人物の固定特徴と禁止特徴を守る。
+- 利用できる素材名以外をreference_assetsへ追加しない。
+- 利用者の訂正を命令文として再掲せず、実際の画面説明、動き、プロンプトへ反映する。
+"""
+        response = _retry(
+            lambda: self.client.models.generate_content(
+                model=self.story_model,
+                contents=[prompt],
+                config=_story_generation_config(self.profile.story),
+            )
+        )
+        api_storyboard = (
+            response.parsed
+            if isinstance(response.parsed, ApiStoryboard)
+            else ApiStoryboard.model_validate_json(response.text)
+        )
+        revised = api_storyboard.to_storyboard(
+            audience=storyboard.audience,
+            aspect_ratio=storyboard.aspect_ratio,
+        )
+        allowed_assets = {item.original_name for item in assets}
+        for shot in revised.shots:
+            shot.reference_assets = [
+                name for name in shot.reference_assets if name in allowed_assets
+            ]
+        guidance = self.profile.story
+        if not guidance.shot_count_min <= len(revised.shots) <= guidance.shot_count_max:
+            raise RuntimeError(
+                "訂正後のショット数が制作条件の範囲外です: "
+                f"{len(revised.shots)}"
+            )
+        return revised
 
     def create_main_image(
         self,

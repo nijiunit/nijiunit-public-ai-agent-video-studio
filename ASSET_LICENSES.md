@@ -1,5 +1,11 @@
 # Asset licenses
 
+## Public finished sample
+
+`examples/space-friends/demo.mp4`, its approved Excel storyboard, offline HTML review pages, and review images were created for the fictional NijiUnit public demo “The Rainbow Beyond the Stars.” They contain no real-person likeness, private client material, known third-party character, or third-party music.
+
+To the extent copyright or related rights exist, NijiUnit makes these sample assets available under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Attribution: `NijiUnit — The Rainbow Beyond the Stars public demo`.
+
 The MIT license applies to source code and documentation, not automatically to
 third-party or generated media.
 

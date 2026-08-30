@@ -1,0 +1,33 @@
+{
+  "name_ja": "Character name",
+  "aliases": [],
+  "concept_id": "user_original",
+  "kind": "human",
+  "description_ja": "Appearance and role summarized from the user's own words",
+  "identity_prompt_en": "An original character described without using a known third-party character.",
+  "immutable_traits": [
+    "Face, hair, clothing, and body traits that must stay consistent"
+  ],
+  "forbidden_traits": [
+    "Traits that must never be added"
+  ],
+  "references": [
+    {
+      "path": "C:/reference-media/character.mov",
+      "role": "identity",
+      "label": "Rights-cleared appearance and motion reference",
+      "triggers": [
+        "run"
+      ],
+      "motion_name_ja": "Running reference",
+      "motion_prompt_en": "Use only the running body mechanics from this rights-cleared reference."
+    }
+  ],
+  "source_notes": [
+    "Source and permitted reference scope"
+  ],
+  "source_type": "original",
+  "asset_license": null,
+  "publishable": false,
+  "rights_confirmed": true
+}

@@ -112,7 +112,7 @@ For a new key, press **Save on this PC and check connection** on the same local 
 
 ## 3. Check local readiness
 
-Public sample movies and HOWTO movies are maintained in the separate `nijiunit-public-ai-agent-video-studio-howto-movie` repository. This engine does not require those samples for setup or production.
+A small public finished video, approved Excel storyboard, and Japanese/English HTML pages are bundled under `examples/space-friends/`. Use `run_storyboard.py show-sample --artifact video --language en` to reveal the actual file. The complete HOWTO production source remains in the separate `nijiunit-public-ai-agent-video-studio-howto-movie` repository.
 
 The following diagnostics call no generation API:
 
@@ -125,7 +125,9 @@ Resolve only the reported issue, one action at a time. The diagnostic distinguis
 
 ## 4. Enter a new story
 
-Create `input/story.md` and describe:
+First choose whether to use a NijiUnit tutorial or start from scratch. A tutorial provides production guidance and public text only; NijiUnit's production character images, source videos, and audio are not published. When an official public story is available, the agent may save it—with your confirmation—as reference-only `input/sample_story.md`.
+
+For either route, describe the subject naturally. The AI agent uses `templates/story-input.md` as internal structure and writes `input/story.md` for you. You do not need to author Markdown manually. The story includes:
 
 - the characters and their goal
 - the events and ending
@@ -134,9 +136,9 @@ Create `input/story.md` and describe:
 - appearance, background, and prop details that must not change
 - exact text that must appear on screen
 
-Create `input/story.md` from the user's own idea and rights-cleared materials. Use only the structure under `templates` when a starting format is needed.
+Create `input/story.md` from the user's own idea and rights-cleared materials. Even when `sample_story.md` exists, the production always uses `story.md`.
 
-For every reference image or video placed in `input`, record its source and usage rights.
+When reference images or videos exist, the agent opens the actual `input` folder. Place the files there and describe their use naturally, such as: "Use the face and clothing in `character_mina.png` for Mina. Use only the walking motion from `walk.mp4`, not its background or audio." The agent records the filename, reference scope, fixed details, prohibited uses, source, and usage rights in `story.md`.
 
 ## 5. Create the three-second storyboard
 
@@ -215,32 +217,20 @@ If the workbook is locked because it is still open, the agent asks for one actio
 
 Review the first clip before generating the rest. Each clip is extracted into nine frames; inspect faces, colors, part counts, necks, hands, feet, backgrounds, framing, and continuity.
 
-```powershell
-.\.venv\Scripts\python.exe run_storyboard.py build-video-workbook `
-  --run-dir output\storyboard\v001
-```
-
-Reveal the generated-video review in the same way. Without a spreadsheet app, the command selects local HTML containing the nine real frames from every clip.
-
-```powershell
-.\.venv\Scripts\python.exe run_storyboard.py reveal-artifact `
-  --run-dir output\storyboard\v001 --artifact video-review --language en
-```
-
 ## 9. Assemble and finish
 
 ```powershell
-.\.venv\Scripts\python.exe run_storyboard.py finalize-video `
+.\.venv\Scripts\python.exe run_storyboard.py finish-production `
   --run-dir output\storyboard\v001
 ```
 
-The final video is written below the run's `final` directory. Keep dialogue, subtitles, ambience, music, and level control separate from video generation. Do not accept accidental generated speech or on-screen text as a final asset. See the detailed [production workflow](../WORKFLOW.md).
+This applies the local soundtrack and subtitles, assembles the MP4, and builds the real nine-frame review bundle. `--generate-speech` is a paid API action and is added only after the agent explains it and the user confirms. A music file also requires a rights confirmation. Accidental video-model speech or on-screen text is not accepted as a final asset.
 
-At completion, the agent uses `--artifact final-video` to open the `final` folder and select the MP4, then gives one action: double-click it and watch from beginning to end.
+The agent reveals the final MP4 and nine-frame review one at a time. The user may approve naturally with “Looks good,” “OK,” or another unambiguous equivalent. `archive-production` then moves the run into `history/001_title`; the final-review state survives a closed conversation and `completion-status` resumes it later. The archived `run` remains editable.
 
 ## 10. Add a reusable character
 
-Use `templates/character-profile.json` and `templates/character-registry.json` to build a versioned registry under `characters/<id>/<version>`.
+A beginner does not hand-author registry JSON. The AI agent organizes the conversation using `templates/character-registration.json`, runs `register-character` to create a pending version and Japanese/English review pages, and activates it with `approve-character` only after the user approves it.
 
 Each reusable character needs:
 
@@ -263,6 +253,16 @@ When a user wants to follow a nijiunit video, the AI agent asks for one YouTube 
 ```
 
 The command constructs the English official-guide URL from the video ID, validates the page ID, language, and contract, and directly reads same-page `docs/*.md` references every time. It rejects unpublished videos, a language mismatch, a contract mismatch, and external documents. On success it prints the guide and documents for the AI agent to understand.
+
+The command retrieves instructions and public text, not NijiUnit's production character images, source videos, or audio. If the verified tutorial includes a public sample story, the agent first asks whether to save it, then may run:
+
+```powershell
+.\.venv\Scripts\python.exe run_storyboard.py prepare-tutorial `
+  --youtube-url "https://www.youtube.com/watch?v=VIDEO_ID" --language en `
+  --write-sample-story
+```
+
+This writes reference-only `input/sample_story.md` without overwriting a different existing file. The user's production is always written separately to `input/story.md`.
 
 The normal path does not reanalyse the video, read comments, or call a generation API. Downloaded prose is never executed as code; instructions to disclose secrets, change billing or settings, or bypass Excel approval are ignored. Subscription, Hype, and NijiUnit activity messages are delivered through the YouTube video and description.
 
