@@ -198,8 +198,12 @@ the same reviewed `input/story.md` flow.
    needed for the current production decision; do not turn intake into a long
    questionnaire.
 5. Before asking the user to place files, ask whether they have reference
-   images, videos, or audio. If yes, open the actual `input` folder and ask for that
-   one placement action. The user may explain the intended use naturally, for
+   images, videos, or audio. If the user has already supplied an existing local
+   file or folder and explicitly authorized its use, inventory it read-only and
+   run `import-input` yourself. Do not ask them to copy the same material again.
+   The command never overwrites a different same-named file. Only when no local
+   source was supplied, open the actual `input` folder and ask for that one
+   placement action. The user may explain the intended use naturally, for
    example: `主人公のミナは character_mina.png の顔と服を参考にしてください。walk.mp4は歩き方だけを参考にしてください。`
    Record each filename, what to reference, what must stay fixed, what must not
    be copied, its source, and its usage rights in `story.md`. Do not ask the

@@ -16,6 +16,7 @@ from .artifacts import (
     review_html_path,
 )
 from .assets import (
+    import_assets,
     load_manifest,
     prepare_assets,
     read_story,
@@ -716,6 +717,14 @@ def show_sample_command(
             f"青く選択された「{target.name}」をダブルクリックしてください。"
         )
     return f"サンプル: {target}"
+
+
+def import_input_assets_command(source: Path, input_dir: Path) -> str:
+    copied, unchanged = import_assets(source, input_dir)
+    lines = ["素材をinputへ安全に取り込みました。"]
+    lines.extend(f"追加: {path.name}" for path in copied)
+    lines.extend(f"既に同じ内容: {path.name}" for path in unchanged)
+    return "\n".join(lines)
 
 
 def _next_storyboard_json_revision(run_dir: Path) -> tuple[int, Path]:

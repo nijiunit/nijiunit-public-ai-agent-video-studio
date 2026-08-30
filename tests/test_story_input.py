@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from video_storyboard.assets import prepare_assets, read_story
+from video_storyboard.assets import import_assets, prepare_assets, read_story
 
 
 def test_read_story_prefers_production_story_over_sample(tmp_path: Path) -> None:
@@ -43,3 +43,39 @@ def test_audio_reference_is_copied_into_the_private_run(tmp_path: Path) -> None:
     assert records[0].kind == "audio"
     assert records[0].role == "audio_reference"
     assert Path(records[0].api_path).read_bytes() == b"rights-cleared test audio"
+
+
+def test_import_assets_copies_authorized_folder_without_user_recopy(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "provided"
+    input_dir = tmp_path / "input"
+    source.mkdir()
+    (source / "reference.MOV").write_bytes(b"owned reference")
+    (source / "notes.docx").write_bytes(b"unsupported")
+
+    copied, unchanged = import_assets(source, input_dir)
+    copied_again, unchanged_again = import_assets(source, input_dir)
+
+    assert [path.name for path in copied] == ["reference.MOV"]
+    assert not unchanged
+    assert not copied_again
+    assert [path.name for path in unchanged_again] == ["reference.MOV"]
+    assert (input_dir / "reference.MOV").read_bytes() == b"owned reference"
+
+
+def test_import_assets_never_overwrites_different_same_named_file(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "provided"
+    input_dir = tmp_path / "input"
+    source.mkdir()
+    input_dir.mkdir()
+    (source / "reference.mov").write_bytes(b"new")
+    existing = input_dir / "reference.mov"
+    existing.write_bytes(b"keep")
+
+    with pytest.raises(FileExistsError, match="上書きしていません"):
+        import_assets(source, input_dir)
+
+    assert existing.read_bytes() == b"keep"

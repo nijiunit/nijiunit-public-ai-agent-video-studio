@@ -24,6 +24,7 @@ from video_storyboard.pipeline import (  # noqa: E402
     extract_corrections_command,
     finalize_video_command,
     finish_production_command,
+    import_input_assets_command,
     prepare_motion_keyframes_command,
     prepare_tutorial_command,
     register_character_command,
@@ -75,6 +76,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="GitHubと現在版を比較する（更新は行わない）",
     )
     update.add_argument("--language", choices=("ja", "en"), default="ja")
+
+    import_input = subparsers.add_parser(
+        "import-input",
+        help="利用者が指定した画像・動画・音声を上書きせずinputへ取り込む",
+    )
+    import_input.add_argument("--source", type=Path, required=True)
+    import_input.add_argument("--input-dir", type=Path, default=ROOT / "input")
 
     create = subparsers.add_parser("create", help="素材を解析して3秒構成JSONを作成")
     create.add_argument("--input-dir", type=Path, default=ROOT / "input")
@@ -305,6 +313,8 @@ def _dispatch(args: argparse.Namespace) -> str:
         )
     elif args.command == "check-update":
         result = format_update_status(check_for_updates(ROOT), args.language)
+    elif args.command == "import-input":
+        result = import_input_assets_command(args.source, args.input_dir)
     elif args.command == "create":
         result = create_command(
             input_dir=args.input_dir,

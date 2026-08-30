@@ -138,7 +138,7 @@ For either route, describe the subject naturally. The AI agent uses `templates/s
 
 Create `input/story.md` from the user's own idea and rights-cleared materials. Even when `sample_story.md` exists, the production always uses `story.md`.
 
-When reference images or videos exist, the agent opens the actual `input` folder. Place the files there and describe their use naturally, such as: "Use the face and clothing in `character_mina.png` for Mina. Use only the walking motion from `walk.mp4`, not its background or audio." The agent records the filename, reference scope, fixed details, prohibited uses, source, and usage rights in `story.md`.
+When reference images, videos, or audio exist, provide their local location and usage permission. If you already supplied a location, the agent safely imports it with `import-input`; you do not need to copy the same files manually. The agent opens the actual `input` folder only when no location was supplied. Describe the intended use naturally, such as: "Use the face and clothing in `character_mina.png` for Mina. Use only the walking motion from `walk.mp4`, not its background or audio." The agent records the filename, reference scope, fixed details, prohibited uses, source, and usage rights in `story.md`.
 
 ## 5. Create the three-second storyboard
 

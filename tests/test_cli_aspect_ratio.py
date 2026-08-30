@@ -47,3 +47,11 @@ def test_completion_status_accepts_language_for_consistent_agent_usage() -> None
     args = build_parser().parse_args(["completion-status", "--language", "ja"])
 
     assert args.language == "ja"
+
+
+def test_import_input_accepts_a_user_supplied_source_folder() -> None:
+    args = build_parser().parse_args(
+        ["import-input", "--source", "C:/materials"]
+    )
+
+    assert str(args.source).replace("\\", "/") == "C:/materials"

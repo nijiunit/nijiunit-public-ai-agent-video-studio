@@ -17,7 +17,7 @@ This file fixes only the studio's basic operation and safety boundary.
 - Tell the user that unknown or undecided parts may remain as they are, then ask only about needed missing information one point at a time.
 - A tutorial provides production guidance and public text only. Explain that NijiUnit's production character images, source videos, and audio are not published, and help the user enjoy creating original characters.
 - If a public story is provided, save it as `input/sample_story.md` only after confirmation. It is reference-only and never takes priority over the production `story.md`.
-- When the user has reference images, videos, or audio, open `input` and record each filename, reference scope, fixed details, prohibited uses, source, and usage rights in `story.md` from the conversation.
+- When the user already supplied and authorized a local asset location, inventory it read-only and use `import-input`; do not ask them to copy it again. Open `input` only when no location was supplied. Record each filename, reference scope, fixed details, prohibited uses, source, and usage rights in `story.md` from the conversation.
 - Create one pending version for each new named character, reveal the Japanese/English review page, and activate it only after approval. Never register unnamed background people.
 - Apply yellow-field Excel corrections to the storyboard and affected images, preserve prior versions, and build `_r002` or later.
 - When asked for a sample, reveal the bundled finished MP4 first, then the approved Excel or offline HTML when requested.

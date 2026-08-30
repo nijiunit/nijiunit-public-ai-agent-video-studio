@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import subprocess
@@ -12,6 +13,58 @@ from PIL import Image, ImageStat
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".m4v", ".webm"}
 AUDIO_EXTENSIONS = {".wav", ".mp3", ".m4a", ".aac", ".flac", ".ogg"}
+SUPPORTED_ASSET_EXTENSIONS = IMAGE_EXTENSIONS | VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def import_assets(source: Path, input_dir: Path) -> tuple[list[Path], list[Path]]:
+    source = source.resolve()
+    input_dir = input_dir.resolve()
+    if source.is_file():
+        candidates = [source]
+    elif source.is_dir():
+        candidates = sorted(
+            path
+            for path in source.rglob("*")
+            if path.is_file() and path.suffix.lower() in SUPPORTED_ASSET_EXTENSIONS
+        )
+    else:
+        raise FileNotFoundError(f"素材が見つかりません: {source}")
+    if not candidates:
+        raise RuntimeError("指定場所に対応する画像・動画・音声素材がありません。")
+
+    input_dir.mkdir(parents=True, exist_ok=True)
+    copied: list[Path] = []
+    unchanged: list[Path] = []
+    reserved_names: dict[str, Path] = {}
+    for candidate in candidates:
+        folded = candidate.name.casefold()
+        previous = reserved_names.get(folded)
+        if previous is not None and previous != candidate:
+            raise RuntimeError(
+                "同じファイル名の素材が複数あります。名前を変えてから再試行してください: "
+                f"{candidate.name}"
+            )
+        reserved_names[folded] = candidate
+        destination = input_dir / candidate.name
+        if destination.exists():
+            if not destination.is_file() or _sha256(destination) != _sha256(candidate):
+                raise FileExistsError(
+                    "inputに同名の別ファイルがあります。上書きしていません: "
+                    f"{destination.name}"
+                )
+            unchanged.append(destination)
+            continue
+        shutil.copy2(candidate, destination)
+        copied.append(destination)
+    return copied, unchanged
 
 
 @dataclass
@@ -131,7 +184,7 @@ def prepare_assets(input_dir: Path, reference_dir: Path) -> list[AssetRecord]:
         for path in input_dir.iterdir()
         if path.is_file()
         and path.suffix.lower()
-        in IMAGE_EXTENSIONS | VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
+        in SUPPORTED_ASSET_EXTENSIONS
     )
     for index, source in enumerate(files, start=1):
         suffix = source.suffix.lower()
