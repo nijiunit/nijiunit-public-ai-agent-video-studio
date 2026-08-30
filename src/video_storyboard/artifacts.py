@@ -25,22 +25,6 @@ class RevealResult:
     selected: bool = False
 
 
-DIRECT_VIEW_EXTENSIONS = {
-    ".gif",
-    ".htm",
-    ".html",
-    ".jpeg",
-    ".jpg",
-    ".m4v",
-    ".mov",
-    ".mp4",
-    ".pdf",
-    ".png",
-    ".webm",
-    ".webp",
-}
-
-
 def _revision_number(path: Path, base_stem: str) -> int | None:
     if path.stem == base_stem:
         return 1
@@ -138,7 +122,9 @@ def next_video_review_workbook(run_dir: Path) -> Path:
 
 def current_final_video(run_dir: Path) -> Path:
     final_dir = run_dir.resolve() / "final"
-    candidates = list(final_dir.glob("*.mp4")) if final_dir.is_dir() else []
+    candidates = list(final_dir.glob("story_video_*.mp4")) if final_dir.is_dir() else []
+    if not candidates and final_dir.is_dir():
+        candidates = list(final_dir.glob("*.mp4"))
     if not candidates:
         return final_dir / f"story_video_{run_dir.name}.mp4"
     return max(candidates, key=lambda path: (path.stat().st_mtime_ns, path.name))
@@ -303,66 +289,148 @@ def desktop_session_available(
     return bool(env.get("DISPLAY") or env.get("WAYLAND_DISPLAY"))
 
 
-def is_directly_viewable(target: Path) -> bool:
-    """Return whether a beginner should see the artifact itself, not its folder."""
-    return target.suffix.lower() in DIRECT_VIEW_EXTENSIONS
+def _files_match(first: Path, second: Path) -> bool:
+    if first.stat().st_size != second.stat().st_size:
+        return False
+    with first.open("rb") as first_stream, second.open("rb") as second_stream:
+        while True:
+            first_chunk = first_stream.read(1024 * 1024)
+            second_chunk = second_stream.read(1024 * 1024)
+            if first_chunk != second_chunk:
+                return False
+            if not first_chunk:
+                return True
 
 
-def open_in_default_app(
-    target: Path,
-    *,
-    dry_run: bool = False,
-    system: str | None = None,
-    environ: dict[str, str] | None = None,
-    startfile: Callable[[str], object] | None = None,
-    popen: Callable[..., subprocess.Popen] = subprocess.Popen,
-) -> RevealResult:
-    """Open the exact review artifact so the visible screen matches the guidance."""
-    resolved = target.resolve()
+def review_copy_path(
+    source: Path,
+    display_name: str,
+    destination_dir: Path | None = None,
+) -> Path:
+    """Plan a short review-copy path without changing the filesystem."""
+    resolved = source.resolve()
     if not resolved.is_file():
         raise FileNotFoundError(f"Artifact does not exist: {resolved}")
+    if not display_name or len(display_name) > 120:
+        raise ValueError("display_name must be between 1 and 120 characters")
+    requested = Path(display_name)
+    if requested.name != display_name or display_name in {".", ".."}:
+        raise ValueError("display_name must be a filename without a folder")
+    if requested.suffix.lower() != resolved.suffix.lower():
+        raise ValueError("display_name must keep the original file extension")
 
-    current_system = system or platform.system()
-    if current_system == "Windows":
-        command = ("startfile", str(resolved))
-        detail = "The artifact itself opened in its default Windows application"
-    elif current_system == "Darwin":
-        command = ("open", str(resolved))
-        detail = "The artifact itself opened in its default macOS application"
-    else:
-        command = ("xdg-open", str(resolved))
-        detail = "The artifact itself opened in the desktop's default application"
+    directory = destination_dir.resolve() if destination_dir else resolved.parent
+    destination = directory / display_name
+    if destination == resolved:
+        return resolved
+    if not destination.exists():
+        return destination
+    if destination.is_file() and _files_match(destination, resolved):
+        return destination
 
-    if not desktop_session_available(current_system, environ):
-        return RevealResult(
-            False,
-            resolved,
-            command,
-            "No desktop session is available. Describe the exact artifact without claiming it opened.",
+    revision = 2
+    while True:
+        candidate = destination.with_name(
+            f"{destination.stem}_r{revision:03d}{destination.suffix}"
         )
-    if dry_run:
-        return RevealResult(True, resolved, command, f"DRY RUN: {detail}")
+        if not candidate.exists():
+            return candidate
+        if candidate.is_file() and _files_match(candidate, resolved):
+            return candidate
+        revision += 1
 
+
+def prepare_review_copy(
+    source: Path,
+    display_name: str,
+    destination_dir: Path | None = None,
+) -> Path:
+    """Create a short, non-overwriting user-facing copy of an artifact."""
+    resolved = source.resolve()
+    destination = review_copy_path(resolved, display_name, destination_dir)
+    if destination != resolved and not destination.exists():
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(resolved, destination)
+    return destination
+
+
+def artifact_display_name(kind: str, suffix: str, language: str) -> str:
+    """Return a stable beginner-facing filename for every production artifact."""
+    labels = {
+        "ja": {
+            "storyboard": "確認_絵コンテ",
+            "review-html": "確認_絵コンテ",
+            "final-video": "確認_完成動画",
+            "video-review": "確認_生成動画の9コマ",
+            "ai-record": "確認_AIモデル使用記録",
+        },
+        "en": {
+            "storyboard": "Review_storyboard",
+            "review-html": "Review_storyboard",
+            "final-video": "Review_final_video",
+            "video-review": "Review_generated_video_frames",
+            "ai-record": "Review_AI_model_usage",
+        },
+    }
+    if language not in labels:
+        raise ValueError("language must be 'ja' or 'en'")
     try:
-        if current_system == "Windows":
-            opener = startfile or getattr(os, "startfile", None)
-            if opener is None:
-                raise OSError("Windows default application launcher is unavailable")
-            opener(str(resolved))
-        else:
-            popen(
-                list(command),
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+        label = labels[language][kind]
+    except KeyError as error:
+        raise ValueError(f"Unknown artifact kind: {kind}") from error
+    return f"{label}{suffix.lower()}"
+
+
+def reveal_handoff_message(
+    target: Path,
+    result: RevealResult | None,
+    *,
+    language: str,
+    dry_run: bool = False,
+) -> str:
+    """Return an exact filename handoff for the agent to verify on screen."""
+    resolved = target.resolve()
+    if dry_run:
+        if language == "en":
+            return (
+                "DRY RUN: The folder was not opened.\n"
+                f"Folder: {resolved.parent}\n"
+                f"Exact filename: {resolved.name}"
             )
-    except (FileNotFoundError, OSError) as error:
-        return RevealResult(
-            False,
-            resolved,
-            command,
-            f"Could not open the artifact ({type(error).__name__})",
+        return (
+            "確認モード: フォルダーは実際には開いていません。\n"
+            f"フォルダー: {resolved.parent}\n"
+            f"対象ファイル名: {resolved.name}"
         )
-    return RevealResult(True, resolved, command, detail)
+
+    if result is not None and result.opened:
+        if language == "en":
+            return (
+                "FOLDER_OPEN_REQUESTED\n"
+                f"Folder: {resolved.parent}\n"
+                f"Exact filename: {resolved.name}\n"
+                "The agent must verify the File Explorer/Finder window and this "
+                "filename on screen before asking the user to double-click it."
+            )
+        return (
+            "FOLDER_OPEN_REQUESTED\n"
+            f"フォルダー: {resolved.parent}\n"
+            f"正確なファイル名: {resolved.name}\n"
+            "AIは、エクスプローラー等の画面とこのファイル名を自分で確認してから、"
+            "利用者へダブルクリックを案内してください。"
+        )
+
+    if language == "en":
+        return (
+            "ACTION_REQUIRED: This environment could not open the folder.\n"
+            f"Folder: {resolved.parent}\n"
+            f"Exact filename: {resolved.name}"
+        )
+    return (
+        "ACTION_REQUIRED: この環境からフォルダーを開けませんでした。\n"
+        f"フォルダー: {resolved.parent}\n"
+        f"正確なファイル名: {resolved.name}"
+    )
 
 
 def reveal_in_file_manager(

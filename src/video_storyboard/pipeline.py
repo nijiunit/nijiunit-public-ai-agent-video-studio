@@ -8,13 +8,15 @@ import sys
 from pathlib import Path
 
 from .artifacts import (
+    artifact_display_name,
     artifact_for_reveal,
     current_storyboard_workbook,
-    is_directly_viewable,
     next_storyboard_workbook,
     next_video_review_workbook,
-    open_in_default_app,
+    prepare_review_copy,
+    reveal_handoff_message,
     reveal_in_file_manager,
+    review_copy_path,
     review_html_path,
 )
 from .assets import (
@@ -617,6 +619,7 @@ def reveal_artifact_command(
     artifact: str,
     language: str = "ja",
     dry_run: bool = False,
+    display_name: str | None = None,
 ) -> str:
     target = artifact_for_reveal(
         run_dir,
@@ -627,74 +630,22 @@ def reveal_artifact_command(
         raise FileNotFoundError(
             f"表示する成果物がまだありません: {target}"
         )
-    if is_directly_viewable(target):
-        result = open_in_default_app(target, dry_run=dry_run)
-        if dry_run:
-            if language == "en":
-                return f"DRY RUN: Would open the review artifact itself: {target}"
-            return f"確認モード: 確認するファイルそのものを開く予定です: {target}"
-        if result.opened:
-            if language == "en":
-                return (
-                    f"Opened the review artifact itself: {target.name}\n"
-                    "Review the window that just opened."
-                )
-            return (
-                f"確認するファイルそのものを開きました: {target.name}\n"
-                "いま開いた画面を確認してください。"
-            )
-        if language == "en":
-            return (
-                "ACTION_REQUIRED: This environment could not open the review artifact.\n"
-                f"File: {target}"
-            )
-        return (
-            "ACTION_REQUIRED: この環境から確認するファイルを開けませんでした。\n"
-            f"ファイル: {target}"
-        )
-    result = reveal_in_file_manager(target, dry_run=dry_run)
-    if dry_run:
-        if language == "en":
-            return f"DRY RUN: The folder was not opened. Would select: {target}"
-        return f"確認モード: フォルダは開いていません。選択予定: {target}"
-    if language == "en":
-        if result.opened:
-            action = (
-                f"Double-click {target.name}. When it opens, reply: Opened."
-                if result.selected
-                else (
-                    f"Find {target.name} in that folder and double-click it. "
-                    "When it opens, reply: Opened."
-                )
-            )
-            return (
-                f"Folder opened: {target.parent}\n"
-                f"File: {target.name}\n{action}"
-            )
-        return (
-            "ACTION_REQUIRED: This environment could not open the folder.\n"
-            f"Folder: {target.parent}\nFile: {target.name}\n"
-            "Open that folder, then double-click the named file."
-        )
-    if result.opened:
-        action = (
-            f"表示された「{target.name}」をダブルクリックしてください。"
-            "開いたら「開いた」と返してください。"
-            if result.selected
-            else (
-                f"フォルダ内の「{target.name}」をダブルクリックしてください。"
-                "開いたら「開いた」と返してください。"
-            )
-        )
-        return (
-            f"フォルダを開きました: {target.parent}\n"
-            f"ファイル: {target.name}\n{action}"
-        )
-    return (
-        "ACTION_REQUIRED: この環境からフォルダを開けませんでした。\n"
-        f"フォルダ: {target.parent}\nファイル: {target.name}\n"
-        "そのフォルダを開き、同じ名前のファイルをダブルクリックしてください。"
+    beginner_name = display_name or artifact_display_name(
+        artifact,
+        target.suffix,
+        language,
     )
+    if dry_run:
+        target = review_copy_path(target, beginner_name)
+        return reveal_handoff_message(
+            target,
+            None,
+            language=language,
+            dry_run=True,
+        )
+    target = prepare_review_copy(target, beginner_name)
+    result = reveal_in_file_manager(target)
+    return reveal_handoff_message(target, result, language=language)
 
 
 def extract_corrections_command(
@@ -730,20 +681,15 @@ def show_sample_command(
     target = root / names[sample]
     if not target.is_file():
         raise FileNotFoundError(f"公開サンプルがありません: {target}")
-    result = reveal_in_file_manager(target, dry_run=dry_run)
     if dry_run:
-        return f"確認モード: 選択予定の公開サンプル: {target}"
-    if result.opened:
-        if language == "en":
-            return (
-                f"Sample folder opened: {target.parent}\n"
-                f"Double-click the displayed file: {target.name}"
-            )
-        return (
-            f"サンプルのフォルダーを開きました: {target.parent}\n"
-            f"表示された「{target.name}」をダブルクリックしてください。"
+        return reveal_handoff_message(
+            target,
+            None,
+            language=language,
+            dry_run=True,
         )
-    return f"サンプル: {target}"
+    result = reveal_in_file_manager(target)
+    return reveal_handoff_message(target, result, language=language)
 
 
 def import_input_assets_command(source: Path, input_dir: Path) -> str:

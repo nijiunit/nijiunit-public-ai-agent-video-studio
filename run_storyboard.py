@@ -266,6 +266,10 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
     )
     reveal.add_argument("--language", choices=("ja", "en"), default="ja")
+    reveal.add_argument(
+        "--display-name",
+        help="初心者へ案内する短いファイル名。元ファイルは上書きしない",
+    )
     reveal.add_argument("--dry-run", action="store_true")
 
     completion = subparsers.add_parser(
@@ -397,6 +401,7 @@ def _dispatch(args: argparse.Namespace) -> str:
             artifact=args.artifact,
             language=args.language,
             dry_run=args.dry_run,
+            display_name=args.display_name,
         )
     elif args.command == "completion-status":
         result = completion_status_command(args.output_root, args.history_root)

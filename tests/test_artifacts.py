@@ -1,43 +1,97 @@
 from pathlib import Path
 
 from video_storyboard.artifacts import (
+    artifact_display_name,
     artifact_for_reveal,
     current_storyboard_workbook,
     current_video_review_workbook,
     detect_spreadsheet_viewers,
-    is_directly_viewable,
     next_storyboard_workbook,
     next_video_review_workbook,
-    open_in_default_app,
+    prepare_review_copy,
+    reveal_handoff_message,
     reveal_in_file_manager,
+    review_copy_path,
     review_html_path,
     spreadsheet_review_artifact,
 )
 
 
-def test_images_html_and_video_open_as_the_artifact_itself(tmp_path: Path) -> None:
-    for name in ("character.png", "character_review.ja.html", "final.mp4"):
-        target = tmp_path / name
-        target.touch()
+def test_review_copy_uses_short_name_without_overwriting(tmp_path: Path) -> None:
+    source = tmp_path / "transition_IMG_3055_00-00-16.300_16x9.png"
+    source.write_bytes(b"first")
 
-        result = open_in_default_app(
-            target,
-            dry_run=True,
-            system="Windows",
-            environ={},
-        )
+    friendly = prepare_review_copy(source, "確認03_横長の見え方.png")
 
-        assert is_directly_viewable(target) is True
-        assert result.opened is True
-        assert result.command == ("startfile", str(target.resolve()))
-        assert result.selected is False
+    assert friendly.name == "確認03_横長の見え方.png"
+    assert friendly.read_bytes() == b"first"
+    assert source.read_bytes() == b"first"
+
+    source.write_bytes(b"revised")
+    revision = prepare_review_copy(source, "確認03_横長の見え方.png")
+    assert revision.name == "確認03_横長の見え方_r002.png"
+    assert revision.read_bytes() == b"revised"
+    assert friendly.read_bytes() == b"first"
 
 
-def test_workbook_stays_a_named_manual_handoff(tmp_path: Path) -> None:
-    workbook = tmp_path / "storyboard_v001.xlsx"
-    workbook.touch()
+def test_review_copy_rejects_folder_or_extension_change(tmp_path: Path) -> None:
+    source = tmp_path / "image.png"
+    source.touch()
 
-    assert is_directly_viewable(workbook) is False
+    for invalid in ("sub/image.png", "image.jpg"):
+        try:
+            prepare_review_copy(source, invalid)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"invalid review name accepted: {invalid}")
+
+
+def test_review_copy_can_be_placed_in_review_folder(tmp_path: Path) -> None:
+    source = tmp_path / "references" / "long_technical_name.png"
+    source.parent.mkdir()
+    source.write_bytes(b"preview")
+    review_dir = tmp_path / "review"
+
+    planned = review_copy_path(source, "確認03_横長の見え方.png", review_dir)
+
+    assert planned == review_dir / "確認03_横長の見え方.png"
+    assert not review_dir.exists()
+
+    copied = prepare_review_copy(source, "確認03_横長の見え方.png", review_dir)
+    assert copied == planned
+    assert copied.read_bytes() == b"preview"
+
+
+def test_every_production_artifact_has_a_beginner_filename() -> None:
+    expected = {
+        "storyboard": "確認_絵コンテ.xlsx",
+        "review-html": "確認_絵コンテ.html",
+        "final-video": "確認_完成動画.mp4",
+        "video-review": "確認_生成動画の9コマ.xlsx",
+        "ai-record": "確認_AIモデル使用記録.md",
+    }
+
+    for kind, filename in expected.items():
+        assert artifact_display_name(kind, Path(filename).suffix, "ja") == filename
+
+
+def test_handoff_requires_agent_screen_verification(tmp_path: Path) -> None:
+    target = tmp_path / "確認03_横長の見え方.png"
+    target.touch()
+    result = reveal_in_file_manager(
+        target,
+        dry_run=True,
+        system="Windows",
+        environ={},
+    )
+
+    message = reveal_handoff_message(target, result, language="ja")
+
+    assert "確認03_横長の見え方.png" in message
+    assert "AIは、エクスプローラー等の画面" in message
+    assert "開いたことを教えて" not in message
+    assert "青く" not in message
 
 
 def test_storyboard_workbook_revisions_are_never_overwritten(

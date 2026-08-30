@@ -218,10 +218,11 @@ the same reviewed `input/story.md` flow.
    active registry. For each unresolved name, handle one character at a time:
    summarize its description, immutable traits, prohibited traits, reference
    scope, source, and rights; create a pending version with
-   `register-character`; open its Japanese or English HTML review page itself
-   rather than its containing folder; identify in plain language which visible
-   photo and character the user is reviewing; and wait
-   for explicit approval before `approve-character`. A changed character must
+   `register-character`; reveal its containing folder and state the exact HTML
+   filename to double-click. Verify the file-manager window yourself before
+   giving that instruction; do not ask the user to report that the folder
+   opened. Identify in plain language which photo and character they are
+   reviewing, and wait for explicit approval before `approve-character`. A changed character must
    become `v002` or later and must not replace the approved active version
    until the new review is approved. Do not register unnamed background people.
    When no reference media exists, help the user define an original character
@@ -332,41 +333,45 @@ artifact and given one concrete action.
    record; HTML is the no-spreadsheet-app review option.
 3. Detect Excel, LibreOffice Calc, or Numbers. Do not require a user to buy or
    install Excel solely to inspect a storyboard. When no spreadsheet app is
-   found, open the language-matched local HTML page itself instead.
+   found, reveal the language-matched local HTML page by exact filename instead.
 4. After creating an artifact, use `run_storyboard.py reveal-artifact` for a
    production run or `scripts/reveal_artifact.py --path ...` for another exact
-   file. Still images, HTML review pages, and videos open as the artifact itself;
-   they must not be handed off as a folder full of candidates. Files that need
-   a manual desktop-app action, such as an Excel workbook, are revealed by exact
-   filename in Explorer/Finder/the desktop file manager.
-   For a still image created only for review, display the actual image in the
-   conversation with the available image-view tool. Immediately before or after
-   it, say what that visible image is for and what the user should check. If the
-   interface cannot attach it, open that exact image itself. Never add multiple
-   images to a folder and then refer to one only as "this image", "the right
-   image", or "the selected image".
-5. When the folder opens, tell the user only the next action, for example:
-   `表示された「storyboard_v001.xlsx」をダブルクリックしてください。開いたら「開いた」と返してください。`
-   Wait for that reply before explaining workbook tabs, yellow correction
-   fields, saving, or the next stage.
+   file. These commands reveal the containing folder and the exact artifact in
+   Explorer/Finder/the desktop file manager. For a beginner review, first copy
+   a technical or ambiguous review-only filename to a short descriptive name,
+   such as `確認03_横長の見え方.png`, without overwriting an existing file.
+   State that exact filename and ask the user to double-click it. Do not assume
+   that an image attached by the chat interface is visible to the user.
+   Never refer to one of several files only as "this image", "the right image",
+   or "the selected image".
+5. After sending the OS open request, use available desktop/window inspection
+   to verify that Explorer/Finder is open at the intended folder and that the
+   exact filename is present. This verification is the AI agent's work. Never
+   ask the user whether the folder opened. If verification fails, retry the
+   reveal once; if it still fails, state that plainly instead of claiming the
+   folder opened.
+6. Once the folder and filename are verified, tell the user only the next
+   action, for example: `「確認_絵コンテ.xlsx」をダブルクリックしてください。`
+   Do not demand an intermediate `開いた` / `Opened` reply. The next requested
+   response should concern the artifact's actual content, correction, or
+   approval—not whether a window appeared.
    Always name the exact file. Never describe its selection color because the
    highlight differs by operating system, theme, and window focus.
    If a file manager with several artifacts is already visible, do not assume
-   which item the user is looking at. Open the exact artifact itself, or name it
-   and describe recognizable visible content before asking for a decision.
-   Never claim that an image or page was displayed unless the tool actually
-   opened or attached it.
-6. If the desktop cannot be opened, state that plainly, show the exact folder
+   which item the user is looking at. Verify the exact filename on screen and
+   state it explicitly. A successful process launch or chat attachment alone
+   does not prove that the intended folder is visible.
+7. If the desktop cannot be opened, state that plainly, show the exact folder
    and filename, and give one manual action. Do not pretend the folder opened.
-7. Never overwrite an existing review workbook. Create `_r002`, `_r003`, and so
+8. Never overwrite an existing review workbook. Create `_r002`, `_r003`, and so
    on. If Excel has locked a workbook, ask the user to save and close it, then
    wait for `閉じた` or the language-equivalent reply.
-8. After the user opens an Excel storyboard, guide them through one sheet tab,
+9. For an Excel storyboard, guide the user through one sheet tab,
    the review status, the yellow correction field, and saving, one action at a
    time. When HTML is used, have them review each card and paste its generated
    summary into chat. Explicit approval in chat still authorizes
    `approve-workbook`; HTML never bypasses the Excel approval gate.
-9. Apply the same reveal-and-one-action handoff to the final video, generated
+10. Apply the same reveal-and-one-action handoff to the final video, generated
    video review, and AI model-use record. In completion reports, lead with what
    the user can now open or review; keep implementation and test details
    secondary.
