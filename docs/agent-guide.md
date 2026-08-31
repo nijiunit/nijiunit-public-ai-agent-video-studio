@@ -4,6 +4,8 @@ English | [日本語](agent-guide.ja.md)
 
 This repository implements the public "NIJIUNIT Video Generation Tool." It takes over after an upstream guide has installed the AI agent and Git, cloned the repository, and opened this folder. Its responsibilities are preparing Python, FFmpeg, and the Google Generative AI API, then operating the three-second video-production workflow.
 
+This detailed guide is shared by Codex, Claude Code, and Gemini CLI. Their root entries are `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md`; the three entries are equal, and none of those entry files is the parent of another.
+
 ## Read first
 
 Read the material relevant to the request:
@@ -63,7 +65,7 @@ Assume the user may be a computer beginner. Do not reinstall the AI agent or Git
 #### B. Prepare the Google Generative AI API
 
 1. Read the complete [Google API setup guide](google-api-setup.md).
-2. As soon as local setup reaches `LOCAL READY`, run `open_setup.py --language en` and open the illustrated “NijiUnit First-time Setup” page. Do this before asking about a Google account, pricing, or billing. Do not send a beginner to a terminal.
+2. When local setup reaches `LOCAL READY`, check the API-key configuration without displaying its value and run the non-generation connection check. If the key is configured, unchanged, and the check succeeds, do not open the first-time setup page or repeat setup; continue the current task. Only when the key is missing, the user wants to replace it, or the check fails, run `open_setup.py --language en` and open the illustrated “NijiUnit First-time Setup” page before asking about a Google account, pricing, or billing. Do not launch it while `check-update` is stopped on `local_behind` or `diverged`. Do not send a beginner to a terminal.
 3. Have the user follow the visible page. Do not operate Google AI Studio for them or replace the page's flow with a chat-only walkthrough.
 4. Only when the live Google screen requires a contract, pricing, billing, or project decision, verify current official Google information and help one action at a time. Then return the user to the still-open setup page.
 5. If the user declines billing, stop and report: "The public demo and local tools are available; Google video generation is not configured."

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+ENTRY_FILES = ("AGENTS.md", "CLAUDE.md", "GEMINI.md")
 LANGUAGE_PAIRS = (
     ("README.md", "README.ja.md"),
     ("docs/getting-started.md", "docs/getting-started.ja.md"),
@@ -33,35 +34,55 @@ def test_required_language_pairs_exist_and_link_to_each_other() -> None:
         )
 
 
-def test_agent_router_preserves_the_selected_language() -> None:
+def _shared_entry(text: str) -> str:
+    start = "<!-- NIJIUNIT_SHARED_ENTRY_START -->"
+    end = "<!-- NIJIUNIT_SHARED_ENTRY_END -->"
+    return text.split(start, 1)[1].split(end, 1)[0]
+
+
+def test_three_agents_have_equal_entries_and_one_shared_guide() -> None:
+    entries = {
+        relative: (ROOT / relative).read_text(encoding="utf-8")
+        for relative in ENTRY_FILES
+    }
+    shared = [_shared_entry(text) for text in entries.values()]
+    assert shared[0] == shared[1] == shared[2]
+
+    for instructions in entries.values():
+        assert "docs/agent-guide.md" in instructions
+        assert "docs/agent-guide.ja.md" in instructions
+        assert "complete PC beginners" in instructions
+        assert "このアプリの利用者はパソコン初心者であることを最大限に考慮" in instructions
+        assert "日本語とEnglishのどちらで進めますか？" in instructions
+        assert "approve-workbook" in instructions
+        assert "AGENTS.md" in instructions
+        assert "CLAUDE.md" in instructions
+        assert "GEMINI.md" in instructions
+
+    japanese_guide = (ROOT / "docs/agent-guide.ja.md").read_text(encoding="utf-8")
+    english_guide = (ROOT / "docs/agent-guide.md").read_text(encoding="utf-8")
+    assert "3つの入口は対等" in japanese_guide
+    assert "none of those entry files is the parent" in english_guide
+
+
+def test_beginner_setup_page_runs_only_when_configuration_needs_it() -> None:
     instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    assert "If it is configured" in instructions
+    assert "do not launch the" in instructions
 
-    assert "docs/agent-guide.md" in instructions
-    assert "docs/agent-guide.ja.md" in instructions
-    assert "Preserve the user's language" in instructions
-    assert "日本語とEnglishのどちらで進めますか？" in instructions
-    assert "Mandatory Excel storyboard gate" in instructions
-    assert "approve-workbook" in instructions
-
-
-def test_beginner_setup_page_starts_google_setup() -> None:
-    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    japanese_handoff = (ROOT / "config/agent-handoff/ja/codex-handoff.md").read_text(
-        encoding="utf-8"
-    )
-    english_handoff = (ROOT / "config/agent-handoff/en/codex-handoff.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "Immediately after the local runtime reaches `LOCAL READY`" in instructions
-    assert "まずリポジトリの手順に従ってローカルの「NijiUnit 初回設定」画面を起動" in japanese_handoff
-    assert "次のURLをコピーし、普段お使いのブラウザのアドレス欄へ貼り付けて" in japanese_handoff
-    assert "次のURLをクリックしてください" not in japanese_handoff
-    assert "「開いた」というチャット返信を求めず" in japanese_handoff
-    assert "First follow the repository instructions to launch" in english_handoff
-    assert "Copy the following URL and paste it into the address bar" in english_handoff
-    assert "Click the following URL" not in english_handoff
-    assert "Do not ask me to reply that it opened" in english_handoff
+    for route in ("codex", "claude-code", "gemini-cli"):
+        japanese_handoff = (
+            ROOT / f"config/agent-handoff/ja/{route}-handoff.md"
+        ).read_text(encoding="utf-8")
+        english_handoff = (
+            ROOT / f"config/agent-handoff/en/{route}-handoff.md"
+        ).read_text(encoding="utf-8")
+        assert "APIキーが設定済み" in japanese_handoff
+        assert "普段使っているブラウザのアドレス欄" in japanese_handoff
+        assert "「開いた」というチャット返信を求め" in japanese_handoff
+        assert "API key" in english_handoff
+        assert "address bar of the browser you normally use" in english_handoff
+        assert "ask me to reply that it opened" in english_handoff
 
 
 def test_beginner_choices_do_not_masquerade_as_completed_operations() -> None:

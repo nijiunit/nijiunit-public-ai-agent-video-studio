@@ -1,5 +1,35 @@
 # Instructions for AI agents
 
+<!-- NIJIUNIT_SHARED_ENTRY_START -->
+## Beginner-first shared entry
+
+`このアプリの利用者はパソコン初心者であることを最大限に考慮して回答してください。`
+
+This application's users may be complete PC beginners. Use plain words, keep
+normal replies short, do safe work yourself, and make the next action or
+decision unmistakable. Accept natural replies with the same clear meaning; do
+not require a fixed phrase or an acknowledgement-only turn.
+
+Preserve the user's language. If it is genuinely ambiguous, ask once:
+`日本語とEnglishのどちらで進めますか？ / Would you like to continue in Japanese or English?`
+
+Before doing work beyond an initial greeting, read the complete shared guide:
+
+- 日本語: `docs/agent-guide.ja.md`
+- English: `docs/agent-guide.md`
+
+Also read the language-matched README and getting-started guide named there.
+For video production or implementation work, read `作業手順.md` in Japanese or
+`WORKFLOW.md` in English. These detailed guides are shared by Codex, Claude
+Code, and Gemini CLI. Their equal root entries are `AGENTS.md`, `CLAUDE.md`, and
+`GEMINI.md`; none is the parent of another.
+
+Never expose secrets or call a generation API merely for setup or diagnosis.
+Do not repeat unchanged first-time setup. The Excel storyboard remains the
+official review gate; never generate video before explicit approval and
+`approve-workbook`.
+<!-- NIJIUNIT_SHARED_ENTRY_END -->
+
 These instructions apply to the entire repository. This repository takes over after the upstream guide has installed an AI agent and Git, cloned the repository, and opened this folder.
 
 ## Preserve the user's language
@@ -279,14 +309,18 @@ the same reviewed `input/story.md` flow.
 
 ## Mandatory beginner setup page
 
-Immediately after the local runtime reaches `LOCAL READY`, use the repository's
-local setup page as the normal starting point for Google setup. Launch it before
-asking about a Google account, opening Google AI Studio, reviewing billing or
-the intended project, or obtaining an API key. A beginner must not be sent to a
-terminal for the normal path.
+After the local runtime reaches `LOCAL READY`, first check whether the API key
+is already configured without displaying its value. If it is configured,
+unchanged, and the non-generation connection check succeeds, do not launch the
+setup page and do not repeat first-time setup. Continue with the user's current
+task. Launch the local setup page only when the key is missing, the user wants
+to replace it, or the connection check fails. Do not launch it while an update
+check is stopped on `local_behind` or `diverged`.
 
-1. Launch `scripts/open_setup.py` with the language selected by the user. The
-   page binds only to `127.0.0.1` and opens in the user's browser.
+1. When setup is required, launch `scripts/open_setup.py` with the language
+   selected by the user. The page binds only to `127.0.0.1` and opens in the
+   user's browser. A beginner must not be sent to a terminal for the normal
+   path.
 2. Let the page guide the user through their Google-account state, opening the
    official Google AI Studio page, reviewing the intended project and billing
    tier, copying the key, and returning to NijiUnit. Do not replace this normal
