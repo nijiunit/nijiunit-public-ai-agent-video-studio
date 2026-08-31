@@ -34,7 +34,7 @@ def test_readiness_distinguishes_warning_from_failure() -> None:
         "LOCAL READY (Google API setup required)"
     )
     assert readiness([Check("Python", "PASS", "3.11")]) == (
-        "LOCAL READY (online verification required)"
+        "LOCAL READY (Google API configured; online verification not run)"
     )
     assert (
         readiness(
@@ -161,4 +161,6 @@ def test_missing_spreadsheet_application_is_nonblocking(
 
     assert result.status == "WARN"
     assert "HTML" in result.detail
-    assert readiness([result]) == "LOCAL READY (online verification required)"
+    assert readiness([result]) == (
+        "LOCAL READY (Google API configured; online verification not run)"
+    )

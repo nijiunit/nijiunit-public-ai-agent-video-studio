@@ -70,4 +70,4 @@ echo "[5/6] Checking the bundled production defaults"
 echo "[6/6] Running local diagnostics (no generation API calls)"
 ./.venv/bin/python scripts/doctor.py
 
-echo "Base installation finished. Open the beginner setup page with scripts/open_setup.py now; its screens guide the Google setup."
+echo "Base installation finished. Open scripts/open_setup.py only if diagnostics say Google API setup is required. An existing unchanged API setup does not need to be repeated."

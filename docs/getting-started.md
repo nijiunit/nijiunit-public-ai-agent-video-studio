@@ -14,7 +14,7 @@ After cloning the repository and opening it in an AI agent, ask:
 Please make this application ready to use.
 ```
 
-Following `AGENTS.md`, the agent prepares and diagnoses Python, the virtual environment, dependencies, the `.env` template, FFmpeg, and bundled production defaults. It then guides you through Google Generative AI API prices, billing, API-key storage, and connection verification one action at a time. Installation does not call a generation API.
+The agent starts from its own root entry (`AGENTS.md` for Codex, `CLAUDE.md` for Claude Code, or `GEMINI.md` for Gemini CLI), then reads the shared English guide and prepares and diagnoses Python, the virtual environment, dependencies, the `.env` template, FFmpeg, and bundled production defaults. It then guides you through Google Generative AI API prices, billing, API-key storage, and connection verification. Installation does not call a generation API.
 
 For an explanation only, ask:
 
@@ -55,7 +55,7 @@ If `.env` is missing, setup copies `.env.example`. It never overwrites an existi
 Diagnostic states have precise meanings:
 
 - `LOCAL READY (Google API setup required)`: the local runtime and bundled defaults are ready; Google API is not configured
-- `LOCAL READY (online verification required)`: an API key is stored; online verification is still required
+- `LOCAL READY (Google API configured; online verification not run)`: an API key is stored; first-time setup does not need to be repeated, and the agent can run a non-generation connection check when production needs it
 - `READY FOR GENERATION (paid generation not tested)`: authentication and configured model identifiers were verified; no paid generation was attempted
 - `NOT READY`: at least one problem must be resolved
 
@@ -67,11 +67,11 @@ Setup verifies `config/runtime-guidance/manifest.json` and every file's SHA-256.
 
 ## 2. Prepare the Google Generative AI API
 
-This first-time process follows the [Google API setup guide](google-api-setup.md). The AI agent must guide the user one action at a time rather than presenting all screens at once.
+This process is needed only when no API key is configured, the key must be replaced or set up again, or the unchanged saved setup fails connection verification. It is not repeated when setup is already complete and unchanged. When needed, follow the [Google API setup guide](google-api-setup.md).
 
 ### 2.1 Open the local setup page first
 
-As soon as the local environment reaches `LOCAL READY`, the AI agent opens “NijiUnit First-time Setup.” It does not first question the beginner in chat about a Google account, pricing, project, or API key. This page is the normal starting point, and the beginner does not operate a terminal.
+The AI agent opens “NijiUnit First-time Setup” only when diagnostics report `Google API setup required`. If an API key is already stored and unchanged, do not open the page and do not ask whether to repeat setup. When production needs a connection check, the agent runs the non-generation online verification itself. The beginner does not operate a terminal.
 
 On Windows, the agent runs:
 
@@ -109,7 +109,7 @@ The page listens only on `127.0.0.1`. It does not place the key in command argum
 
 ### 2.5 Verify authentication and configured models
 
-For a new key, press **Save on this PC and check connection** on the same local page. For an existing key, press **Check the saved connection**. This checks Google authentication and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not generate media or perform a billable generation request. It does not guarantee account balance, quota, regional access, preview eligibility, or a successful paid generation. Confirm possible charges before the first user-approved generation. Use `doctor.py --require-api-key --verify-api-key-online` only as a recovery path if the page cannot run.
+For a new or intentionally replaced key, press **Save on this PC and check connection** on the same local page. For an unchanged saved key, the AI agent may run `doctor.py --require-api-key --verify-api-key-online` itself without reopening the page. This checks Google authentication and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not generate media or perform a billable generation request. It does not guarantee account balance, quota, regional access, preview eligibility, or a successful paid generation. Confirm possible charges before the first user-approved generation.
 
 ## 3. Check local readiness
 

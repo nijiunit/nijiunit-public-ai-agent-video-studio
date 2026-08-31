@@ -3,9 +3,10 @@
 ```text
 guide-AI handoff after clone
         |
-        v
-     AGENTS.md
-        |
+        +---- Codex ------> AGENTS.md ---+
+        +---- Claude Code -> CLAUDE.md ---+--> shared language guide
+        +---- Gemini CLI --> GEMINI.md ---+    agent-guide.ja.md / agent-guide.md
+                                                     |
         +---- setup intent ----> Python preflight ----> setup.ps1 / setup.sh
         |                                      |
         |                                      v
@@ -31,9 +32,10 @@ guide-AI handoff after clone
                             fetched directly for that request
 ```
 
-`AGENTS.md` starts after an upstream guide AI has installed the agent, prepared
-Git, cloned the repository, and opened this folder. It routes user intent and
-requires one user action at a time. The setup scripts perform idempotent local
+The three equal root entry files start after an upstream guide AI has installed
+the selected agent, prepared Git, cloned the repository, and opened this folder.
+They preserve the beginner-first first-message route and point to one shared
+language-matched guide. The setup scripts perform idempotent local
 installation. `doctor.py` verifies local dependencies, authentication, and the
 configured model catalog without calling a generation API or exposing an API
 key. A metadata check is not proof that paid media generation will succeed.

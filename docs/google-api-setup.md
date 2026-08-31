@@ -30,7 +30,9 @@ Official references:
 
 ## G1: Open NijiUnit First-time Setup
 
-As soon as the local environment reaches `LOCAL READY`, the AI agent does not first ask about a Google account or pricing in chat. It runs the command for the user's platform and opens the illustrated local setup page. A beginner does not operate a terminal.
+First check whether an API key is stored without displaying its value. If it is stored and the user has not changed it, do not open this page and do not ask whether to repeat setup. When production needs a connection check, the AI agent runs the non-generation online verification itself.
+
+Only when the API key is missing, the user asks to replace or redo it, or the unchanged saved setup fails connection verification does the AI agent run the command for the user's platform and open the illustrated local setup page. A beginner does not operate a terminal. Do not launch it while another blocking gate such as update `diverged` remains unresolved.
 
 Windows:
 
@@ -91,14 +93,14 @@ The page binds only to `127.0.0.1`. It does not put the key in a URL, log, or br
 
 ## G7: Verify authentication and model configuration
 
-For a new key, the user presses **Save on this PC and check connection** on the same page. For an existing key, the user presses **Check the saved connection**. This check generates no media. It authenticates the key and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not perform paid generation. Use `doctor.py --require-api-key --verify-api-key-online` only as a recovery path if the page cannot run.
+For a new or intentionally replaced key, the user presses **Save on this PC and check connection** on the same page. For an unchanged saved key, do not reopen the page; the AI agent may run `doctor.py --require-api-key --verify-api-key-online` itself. This check generates no media. It authenticates the key and verifies that the configured story, image, video, TTS, and speech-review model identifiers appear in the model catalog. It does not perform paid generation.
 
 A model-catalog check cannot guarantee sufficient balance, regional support, quota, preview eligibility, or successful generation. Report the result as "paid generation not tested." Before the first image or video request, tell the user that charges may apply and confirm the generation request.
 
 ## Completion states
 
 - `LOCAL READY (Google API setup required)`: the local runtime and bundled defaults are ready; Google API is not configured
-- `LOCAL READY (online verification required)`: key stored, Google connection not verified
+- `LOCAL READY (Google API configured; online verification not run)`: key stored; first-time setup does not need to be repeated, and the agent performs a connection check when needed
 - `READY FOR GENERATION (paid generation not tested)`: authentication and configured model identifiers verified; paid generation not run
 - `NOT READY`: at least one issue remains
 

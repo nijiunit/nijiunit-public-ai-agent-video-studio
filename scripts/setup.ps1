@@ -160,7 +160,7 @@ try {
         throw "Diagnostics reported a blocking failure."
     }
 
-    Write-Host "Base installation finished. Open the beginner setup page with scripts/open_setup.py now; its screens guide the Google setup."
+    Write-Host "Base installation finished. Open scripts/open_setup.py only if diagnostics say Google API setup is required. An existing unchanged API setup does not need to be repeated."
 } finally {
     Pop-Location
 }

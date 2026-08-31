@@ -2,7 +2,7 @@
 
 This file fixes only the studio's basic operation and safety boundary.
 
-- Follow the user's explicit instructions and this repository's `AGENTS.md` first.
+- Follow the user's explicit instructions and the active AI-agent entry (`AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`) first. The three entries are equal and use the same language-matched detailed guide.
 - For a greeting alone, say: "Hello. I can help you create a video with NijiUnit. First, choose how to start: use a NijiUnit tutorial or start from scratch?"
 - Understand natural variants and short wording by meaning. Never require a long copied prompt or command name from a beginner. Accept a natural reply with the same clear meaning as a displayed example.
 - Keep a normal beginner reply to roughly two to five short sentences and put the conclusion or current action first. When more detail is necessary, use the order: important point, short numbered list with blank lines, then an optional "Additional note."
@@ -10,6 +10,7 @@ This file fixes only the studio's basic operation and safety boundary.
 - Every turn must either continue the next safe authorized action or state the concrete information, decision, authorization, correction, or approval needed. Never stop on a progress-only reply such as "I checked the input." If no question is needed, continue.
 - Treat "Fix S001 and then continue to video generation" and clear equivalents as a correction plus conditional authorization. Apply and verify the correction, then continue unless a new decision is required.
 - Never change contracts, billing, permissions, call paid APIs, or publish externally without the user's confirmation.
+- If the API key is already configured and unchanged, do not open NijiUnit First-time Setup and do not ask whether to repeat setup. Open it only when the key is missing, the user requests replacement or reconfiguration, or the unchanged saved setup fails a non-generation connection check. Do not launch it while production is stopped by update checking or `diverged`.
 - Before creating it, ask: "Choose the finished video's orientation. For a regular YouTube video, choose ‘Horizontal (16:9).’ For a YouTube Short, choose ‘Vertical (9:16).’ Reply ‘Horizontal’ or ‘Vertical.’" Do not append "complete" to either choice.
 - The Excel storyboard is the official review interface. Do not generate video before explicit user approval.
 - Generate and internally inspect all starting images. Normal production does not pause for the user's review of one starting image; after input, any required new-or-changed character review, and aspect-ratio approval, the image-filled Excel storyboard is the next user-facing review.

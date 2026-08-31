@@ -30,7 +30,7 @@ Open the cloned repository in Codex or another compatible AI agent and ask:
 Please make this application ready to use.
 ```
 
-Following [AGENTS.md](AGENTS.md), the agent runs the dedicated setup script and checks the virtual environment, dependencies, bundled production defaults, `.env`, and FFmpeg. If an API key is missing, it opens an illustrated local setup page for Google AI Studio, masked secret entry, and connection verification. A beginner does not normally paste the key into a terminal. Setup never calls a generation API and never overwrites an existing `.env` without permission.
+Codex starts from [AGENTS.md](AGENTS.md), Claude Code from [CLAUDE.md](CLAUDE.md), and Gemini CLI from [GEMINI.md](GEMINI.md); each then reads the same English detailed guide. The agent runs the dedicated setup script and checks the virtual environment, dependencies, bundled production defaults, `.env`, and FFmpeg. If an API key is missing, it opens an illustrated local setup page for Google AI Studio, masked secret entry, and connection verification. A beginner does not normally paste the key into a terminal. Setup never calls a generation API and never overwrites an existing `.env` without permission.
 
 This request assumes that the upstream guide has already helped the user install an AI agent and Git, clone the repository, and open this folder. From that point, this repository is responsible for Python, FFmpeg, Google Generative AI API pricing and billing guidance, secure API-key setup, and connection checks. A greeting alone routes directly to the tutorial-or-from-scratch choice. The agent asks only for meaningful decisions and does not stop on progress-only messages; routine actions that form one review task stay together.
 
@@ -67,9 +67,9 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .\.venv\Scripts\python.exe scripts\doctor.py
 ```
 
-After local setup, the agent follows the [first-time Google Generative AI API guide](docs/google-api-setup.md), one user action at a time. The user must verify the paid-access requirement, current prices, selected project, and billing terms for every configured model before production use.
+After local setup, the agent follows the [first-time Google Generative AI API guide](docs/google-api-setup.md) only when no key is configured. If setup is already complete and unchanged, it does not open the page or ask to repeat setup. The user must verify the paid-access requirement, current prices, selected project, and billing terms for every configured model before production use.
 
-After obtaining a key, do not paste it into chat. The agent opens the dedicated local browser page, and the user pastes the key into its masked field.
+When obtaining or replacing a key, do not paste it into chat. The agent opens the dedicated local browser page, and the user pastes the key into its masked field.
 
 Windows:
 
@@ -157,7 +157,7 @@ tests/       Offline automated tests
 
 Older production runs may contain a pinned remote-guidance snapshot for audit compatibility. New runs use the SHA-256-verified production defaults committed under `config/runtime-guidance/` and do not depend on a daily website cache.
 
-The root `AGENTS.md` tells AI agents how to route setup, usage, production, and release requests in the user's selected language.
+The root `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` files are equal entry points for Codex, Claude Code, and Gemini CLI. Detailed common setup, usage, production, and release rules live in `docs/agent-guide.md`.
 
 There is no permanent `temp` directory. Use the Git-ignored `tmp/` for temporary data. Public `input` and `output` contain only documentation or placeholders; user content remains local.
 

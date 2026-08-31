@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Reworked the ChatGPT-to-Codex beginner handoff around six visible stages.
+  Copilot now leaves changing ChatGPT onboarding screens to the app itself,
+  keeps a short progress marker until the app is ready, and displays the Codex
+  handoff immediately without separate show, copy, paste, or send acknowledgements.
+- Stopped repeating first-time Google setup for an already configured,
+  unchanged API key. Agents now open the setup page only for a missing key,
+  an explicit replacement/reconfiguration request, or a failed non-generation
+  connection check, and never while an update-divergence gate is blocking work.
+- Added equal, beginner-first root entries for Codex (`AGENTS.md`), Claude Code
+  (`CLAUDE.md`), and Gemini CLI (`GEMINI.md`). All three now route to the same
+  language-matched detailed guide without making one agent's file the parent.
+- Made the first-message route an explicit top-of-file gate, including the
+  common `こんにちわ` spelling, and prohibited generic greeting replies that
+  fail to offer the tutorial or from-scratch choice.
 - Prevented private character registries and reference media from becoming
   publishable files, made small storyboard corrections reject unknown sheets
   and out-of-scope model changes, expanded video revisions through dependent

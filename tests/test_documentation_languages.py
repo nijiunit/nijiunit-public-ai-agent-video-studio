@@ -16,6 +16,16 @@ LANGUAGE_PAIRS = (
 )
 
 
+def _text(relative: str) -> str:
+    return (ROOT / relative).read_text(encoding="utf-8")
+
+
+def _shared_entry(text: str) -> str:
+    start = "<!-- NIJIUNIT_SHARED_ENTRY_START -->"
+    end = "<!-- NIJIUNIT_SHARED_ENTRY_END -->"
+    return text.split(start, 1)[1].split(end, 1)[0]
+
+
 def test_required_language_pairs_exist_and_link_to_each_other() -> None:
     for english_relative, japanese_relative in LANGUAGE_PAIRS:
         english = ROOT / english_relative
@@ -26,85 +36,130 @@ def test_required_language_pairs_exist_and_link_to_each_other() -> None:
 
         english_text = english.read_text(encoding="utf-8")
         japanese_text = japanese.read_text(encoding="utf-8")
-        assert japanese.name in english_text, (
-            f"{english_relative} does not link to {japanese_relative}"
-        )
-        assert english.name in japanese_text, (
-            f"{japanese_relative} does not link to {english_relative}"
-        )
+        assert japanese.name in english_text
+        assert english.name in japanese_text
 
 
-def _shared_entry(text: str) -> str:
-    start = "<!-- NIJIUNIT_SHARED_ENTRY_START -->"
-    end = "<!-- NIJIUNIT_SHARED_ENTRY_END -->"
-    return text.split(start, 1)[1].split(end, 1)[0]
-
-
-def test_three_agents_have_equal_entries_and_one_shared_guide() -> None:
-    entries = {
-        relative: (ROOT / relative).read_text(encoding="utf-8")
-        for relative in ENTRY_FILES
-    }
+def test_three_agents_have_equal_short_entries_and_one_shared_guide() -> None:
+    entries = {relative: _text(relative) for relative in ENTRY_FILES}
     shared = [_shared_entry(text) for text in entries.values()]
-    assert shared[0] == shared[1] == shared[2]
 
-    for instructions in entries.values():
+    assert shared[0] == shared[1] == shared[2]
+    for relative, instructions in entries.items():
+        assert len(instructions.encode("utf-8")) <= 32 * 1024
+        assert len(instructions.splitlines()) < 200
         assert "docs/agent-guide.md" in instructions
         assert "docs/agent-guide.ja.md" in instructions
         assert "complete PC beginners" in instructions
         assert "このアプリの利用者はパソコン初心者であることを最大限に考慮" in instructions
         assert "日本語とEnglishのどちらで進めますか？" in instructions
         assert "approve-workbook" in instructions
-        assert "AGENTS.md" in instructions
         assert "CLAUDE.md" in instructions
         assert "GEMINI.md" in instructions
+        assert "AGENTS.md" in instructions
+        assert "parent of" in instructions
+        assert "@AGENTS.md" not in instructions, relative
 
-    japanese_guide = (ROOT / "docs/agent-guide.ja.md").read_text(encoding="utf-8")
-    english_guide = (ROOT / "docs/agent-guide.md").read_text(encoding="utf-8")
+    japanese_guide = _text("docs/agent-guide.ja.md")
+    english_guide = _text("docs/agent-guide.md")
+    for filename in ENTRY_FILES:
+        assert filename in japanese_guide
+        assert filename in english_guide
     assert "3つの入口は対等" in japanese_guide
-    assert "none of those entry files is the parent" in english_guide
+    assert "None of those entry files is the parent" in english_guide
 
 
-def test_beginner_setup_page_runs_only_when_configuration_needs_it() -> None:
-    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    assert "If it is configured" in instructions
-    assert "do not launch the" in instructions
+def test_agent_handoffs_use_the_matching_root_entry() -> None:
+    expected = {
+        "config/agent-handoff/ja/codex-handoff.md": "AGENTS.md",
+        "config/agent-handoff/en/codex-handoff.md": "AGENTS.md",
+        "config/agent-handoff/ja/claude-code-handoff.md": "CLAUDE.md",
+        "config/agent-handoff/en/claude-code-handoff.md": "CLAUDE.md",
+        "config/agent-handoff/ja/gemini-cli-handoff.md": "GEMINI.md",
+        "config/agent-handoff/en/gemini-cli-handoff.md": "GEMINI.md",
+    }
+    for relative, entry in expected.items():
+        assert entry in _text(relative)
 
-    for route in ("codex", "claude-code", "gemini-cli"):
-        japanese_handoff = (
-            ROOT / f"config/agent-handoff/ja/{route}-handoff.md"
-        ).read_text(encoding="utf-8")
-        english_handoff = (
-            ROOT / f"config/agent-handoff/en/{route}-handoff.md"
-        ).read_text(encoding="utf-8")
-        assert "APIキーが設定済み" in japanese_handoff
-        assert "普段使っているブラウザのアドレス欄" in japanese_handoff
-        assert "「開いた」というチャット返信を求め" in japanese_handoff
-        assert "API key" in english_handoff
-        assert "address bar of the browser you normally use" in english_handoff
-        assert "ask me to reply that it opened" in english_handoff
-
-
-def test_beginner_choices_do_not_masquerade_as_completed_operations() -> None:
-    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    japanese_guide = (ROOT / "docs/basic-operation.ja.md").read_text(
-        encoding="utf-8"
+    assert "`AGENTS.md`をClaude Codeの入口として使いません" in _text(
+        "config/agent-handoff/ja/claude-code-handoff.md"
     )
-    english_guide = (ROOT / "docs/basic-operation.md").read_text(encoding="utf-8")
+    assert "`AGENTS.md`をGemini CLIの入口として使いません" in _text(
+        "config/agent-handoff/ja/gemini-cli-handoff.md"
+    )
 
-    assert "「横長」または「縦長」と返信してください" in instructions
-    assert "「更新する」または「今回は更新しない」と返信してください" in instructions
-    assert "Reply “Horizontal” or “Vertical.”" in instructions
-    assert "Reply “Update” or “Continue without updating.”" in instructions
-    assert "選択肢そのものを返信します" in japanese_guide
-    assert 'reply with the choice itself; do not add "complete."' in english_guide
-    assert "通常の回答は短く、最初に結論または今すること" in japanese_guide
-    assert "two to five short sentences" in instructions
-    assert "a final `補足` / `Additional note` section" in instructions
-    assert "Put the most important conclusion or current action" in instructions
 
-    checked_files = (
-        "AGENTS.md",
+def test_short_first_messages_route_into_nijiunit_without_a_long_prompt() -> None:
+    for relative in ENTRY_FILES:
+        instructions = _text(relative)
+        assert instructions.index("First-message routing") < instructions.index(
+            "Language and shared detailed instructions"
+        )
+        assert "こんにちわ" in instructions
+        assert "こんにちは。NijiUnitで動画作りをお手伝いします" in instructions
+        assert "「NijiUnitのチュートリアルを参考にする」か「一から作る」" in instructions
+        assert "今日は何を一緒に進めましょうか" in instructions
+        assert "Never replace it with generic small talk" in instructions
+        assert "動画を作りたい" in instructions
+        assert "use a NijiUnit tutorial or start from scratch" in instructions
+
+    assert "特別なコマンドや長い依頼文は不要です" in _text(
+        "docs/basic-operation.ja.md"
+    )
+    assert "No special command or long copied prompt is required" in _text(
+        "docs/basic-operation.md"
+    )
+
+
+def test_beginner_setup_page_starts_only_when_configuration_needs_it() -> None:
+    japanese_guide = _text("docs/agent-guide.ja.md")
+    english_guide = _text("docs/agent-guide.md")
+    japanese_handoff = _text("config/agent-handoff/ja/codex-handoff.md")
+    english_handoff = _text("config/agent-handoff/en/codex-handoff.md")
+
+    assert "open_setup.py --language ja" in japanese_guide
+    assert "open_setup.py --language en" in english_guide
+    assert "設定済みで私が変更していなければ" in japanese_handoff
+    assert "初回設定」を起動せず" in japanese_handoff
+    assert "If it is configured and I have not changed it" in english_handoff
+    assert "do not launch “NijiUnit First-time Setup" in english_handoff
+    assert "次のURLをコピーし、普段お使いのブラウザのアドレス欄へ貼り付けて" in japanese_handoff
+    assert "次のURLをクリックしてください" not in japanese_handoff
+    assert "「開いた」というチャット返信を求めず" in japanese_handoff
+    assert "Copy the following URL and paste it into the address bar" in english_handoff
+    assert "Click the following URL" not in english_handoff
+    assert "Do not ask me to reply that it opened" in english_handoff
+
+    for relative in ENTRY_FILES:
+        instructions = _text(relative)
+        assert "If the key is already configured and the user has" in instructions
+        assert "do not open the page or ask about setup again" in instructions
+        assert "update/divergence gate" in instructions
+
+    assert "保存済みで利用者が変更していなければ、初回設定画面を開かず" in japanese_guide
+    assert "do not open the first-time setup page" in english_guide
+    assert "An existing unchanged API setup does not need to be repeated" in _text(
+        "scripts/setup.ps1"
+    )
+    assert "An existing unchanged API setup does not need to be repeated" in _text(
+        "scripts/setup.sh"
+    )
+
+
+def test_beginner_choices_and_response_wording_are_clear() -> None:
+    japanese_workflow = _text("作業手順.md")
+    english_workflow = _text("WORKFLOW.md")
+    entries = "\n".join(_text(relative) for relative in ENTRY_FILES)
+
+    assert "「横長」または「縦長」と返信してください" in japanese_workflow
+    assert "「更新する」または「今回は更新しない」と返信してください" in japanese_workflow
+    assert "Reply ‘Horizontal’ or ‘Vertical.’" in english_workflow
+    assert "Reply ‘Update’ or ‘Continue without updating.’" in english_workflow
+    assert "two to five short sentences" in entries
+    assert "final `補足` / `Additional note` section" in entries
+    assert "Put the conclusion or current action" in entries
+
+    checked_files = ENTRY_FILES + (
         "docs/basic-operation.ja.md",
         "docs/basic-operation.md",
         "作業手順.md",
@@ -114,144 +169,83 @@ def test_beginner_choices_do_not_masquerade_as_completed_operations() -> None:
         "config/runtime-guidance/agent_guide_ja.md",
         "config/runtime-guidance/agent_guide_en.md",
     )
-    forbidden_prompts = ("16:9で完了", "9:16で完了", "更新して完了")
     for relative in checked_files:
-        text = (ROOT / relative).read_text(encoding="utf-8")
-        for forbidden in forbidden_prompts:
+        text = _text(relative)
+        for forbidden in ("16:9で完了", "9:16で完了", "更新して完了"):
             assert forbidden not in text, f"forbidden prompt in {relative}: {forbidden}"
 
 
 def test_beginner_story_intake_has_two_routes_and_private_asset_disclosure() -> None:
-    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    japanese_guide = (ROOT / "docs/basic-operation.ja.md").read_text(
-        encoding="utf-8"
-    )
-    input_readme = (ROOT / "input/README.md").read_text(encoding="utf-8")
+    japanese_guide = _text("docs/agent-guide.ja.md")
+    input_readme = _text("input/README.md")
 
-    assert "NijiUnitのチュートリアルを参考にする" in instructions
-    assert "一から作る" in instructions
-    assert "input/sample_story.md" in instructions
-    assert "キャラクター画像・動画・音声は公開していません" in instructions
-    assert "題材を普通の言葉で伝える" in japanese_guide
+    assert "NijiUnitのチュートリアルを参考にする" in japanese_guide
+    assert "一から作る" in japanese_guide
+    assert "input/sample_story.md" in japanese_guide
+    assert "キャラクター画像・動画・音声は公開していません" in japanese_guide
+    assert "説明が足りないところは、AIエージェントから一つずつ確認します" in japanese_guide
     assert "利用者がMarkdownを手作業で書く必要はありません" in input_readme
-    assert "説明が足りないところは、AIエージェントから一つずつ確認します" in instructions
-    assert "sample_story.md" in input_readme
     assert "本番用には使いません" in input_readme
 
 
-def test_short_first_messages_route_into_nijiunit_without_a_long_prompt() -> None:
-    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    japanese_guide = (ROOT / "docs/basic-operation.ja.md").read_text(
-        encoding="utf-8"
-    )
-    english_guide = (ROOT / "docs/basic-operation.md").read_text(encoding="utf-8")
-
-    assert "Mandatory first-message routing" in instructions
-    assert "こんにちは。NijiUnitで動画作りをお手伝いします" in instructions
-    assert "「NijiUnitのチュートリアルを参考にする」か「一から作る」" in instructions
-    assert "動画を作りたい" in instructions
-    assert "Use a NijiUnit tutorial" in instructions
-    assert "特別なコマンドや長い依頼文は不要です" in japanese_guide
-    assert "No special command or long copied prompt is required" in english_guide
-
-
 def test_conversation_turns_have_a_decision_or_continue_work() -> None:
-    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    japanese_workflow = (ROOT / "作業手順.md").read_text(encoding="utf-8")
-    runtime_ja = (ROOT / "config/runtime-guidance/agent_guide_ja.md").read_text(
-        encoding="utf-8"
-    )
+    english_guide = _text("docs/agent-guide.md")
+    japanese_guide = _text("docs/agent-guide.ja.md")
+    runtime_ja = _text("config/runtime-guidance/agent_guide_ja.md")
 
-    assert "Every user-facing turn must have a clear purpose" in instructions
-    assert "質問がなければ先へ進み" in japanese_workflow
-    assert "途中報告だけでターンを終えません" in japanese_workflow
+    assert "Every user-facing turn must either continue" in english_guide
+    assert "conditional authorization" in english_guide
+    assert "制作に必要な情報は揃っています" in japanese_guide
+    assert "途中報告だけでターンを終えません" in runtime_ja
     assert "質問がなければ先へ進みます" in runtime_ja
-    assert "制作に必要な情報は揃っています" in instructions
-    assert "conditional authorization" in instructions
 
 
 def test_new_revisions_use_whole_run_versions() -> None:
-    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    architecture = (ROOT / "docs/architecture.md").read_text(encoding="utf-8")
-    troubleshooting = (ROOT / "docs/troubleshooting.md").read_text(
-        encoding="utf-8"
-    )
+    english_guide = _text("docs/agent-guide.md")
+    japanese_workflow = _text("作業手順.md")
+    architecture = _text("docs/architecture.md")
+    troubleshooting = _text("docs/troubleshooting.md")
 
-    assert "whole `vNNN` run" in instructions
+    assert "whole `vNNN` run" in english_guide
+    assert "Legacy `_r002`" in english_guide
+    assert "`v002`" in japanese_workflow
     assert "complete production run" in architecture
     assert "next whole run" in troubleshooting
-    assert "Legacy `_r002`" in instructions
-    assert "Legacy `_r002`" in architecture
-    assert "Legacy `_r002`" in troubleshooting
-    assert "v002" in instructions
-    assert "v002" in architecture
-    assert "v002" in troubleshooting
     assert "`storyboard_vNNN.xlsx`" in architecture
     assert "not created for new productions" in architecture
 
 
-def test_normal_production_moves_from_assets_to_excel_without_single_image_gate(
-) -> None:
-    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    japanese_workflow = (ROOT / "作業手順.md").read_text(encoding="utf-8")
-    english_workflow = (ROOT / "WORKFLOW.md").read_text(encoding="utf-8")
-    japanese_guide = (ROOT / "docs/getting-started.ja.md").read_text(
-        encoding="utf-8"
-    )
-    english_guide = (ROOT / "docs/getting-started.md").read_text(
-        encoding="utf-8"
-    )
-    profile = (ROOT / "config/runtime-guidance/production_profile.json").read_text(
-        encoding="utf-8"
-    )
+def test_normal_production_moves_from_assets_to_excel_without_single_image_gate() -> None:
+    japanese_workflow = _text("作業手順.md")
+    english_workflow = _text("WORKFLOW.md")
+    japanese_guide = _text("docs/getting-started.ja.md")
+    english_guide = _text("docs/getting-started.md")
+    profile = _text("config/runtime-guidance/production_profile.json")
 
-    assert "user-facing review is the official Excel storyboard" in instructions
     assert "次に利用者へ見せる正式な確認物はExcelコンテ" in japanese_workflow
     assert "the workbook is the next user-facing review" in english_workflow
-    assert (
-        "通常制作では画像1枚だけを利用者へ見せて返答を待ちません"
-        in japanese_guide
-    )
-    assert (
-        "Normal production does not pause for the user's approval of one"
-        in english_guide
-    )
+    assert "通常制作では画像1枚だけを利用者へ見せて返答を待ちません" in japanese_guide
+    assert "Normal production does not pause for the user's approval of one" in english_guide
 
-    forbidden = (
-        "Generate and review only the first starting image",
-        "Review the first generated keyframe with the user",
-        "最初の開始画像を1枚だけ生成し",
-        "最初から全画像を生成せず、まず1枚だけ確認します",
-    )
-    checked = (
-        instructions,
-        japanese_workflow,
-        english_workflow,
-        japanese_guide,
-        english_guide,
-        profile,
-    )
+    checked = (japanese_workflow, english_workflow, japanese_guide, english_guide, profile)
     for text in checked:
-        for phrase in forbidden:
+        for phrase in (
+            "Generate and review only the first starting image",
+            "Review the first generated keyframe with the user",
+            "最初の開始画像を1枚だけ生成し",
+            "最初から全画像を生成せず、まず1枚だけ確認します",
+        ):
             assert phrase not in text
 
 
 def test_artifact_review_does_not_pause_for_opened_acknowledgement() -> None:
-    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    japanese_workflow = (ROOT / "作業手順.md").read_text(encoding="utf-8")
-    english_workflow = (ROOT / "WORKFLOW.md").read_text(encoding="utf-8")
-    japanese_guide = (ROOT / "docs/agent-guide.ja.md").read_text(
-        encoding="utf-8"
-    )
-    english_guide = (ROOT / "docs/agent-guide.md").read_text(encoding="utf-8")
-    runtime_ja = (ROOT / "config/runtime-guidance/agent_guide_ja.md").read_text(
-        encoding="utf-8"
-    )
-    runtime_en = (ROOT / "config/runtime-guidance/agent_guide_en.md").read_text(
-        encoding="utf-8"
-    )
+    japanese_workflow = _text("作業手順.md")
+    english_workflow = _text("WORKFLOW.md")
+    japanese_guide = _text("docs/agent-guide.ja.md")
+    english_guide = _text("docs/agent-guide.md")
+    runtime_ja = _text("config/runtime-guidance/agent_guide_ja.md")
+    runtime_en = _text("config/runtime-guidance/agent_guide_en.md")
 
-    assert "Do not pause for an opening acknowledgement" in instructions
     assert "「開いた」という中間報告では止めない" in japanese_workflow
     assert "intermediate “Opened” acknowledgement" in english_workflow
     assert "通常操作ごとの完了報告は求めません" in japanese_guide
@@ -259,14 +253,7 @@ def test_artifact_review_does_not_pause_for_opened_acknowledgement() -> None:
     assert "Excelなら、開く、全シートを確認する" in runtime_ja
     assert "For Excel, include opening it, reviewing every sheet" in runtime_en
 
-    forbidden = (
-        "利用者へ一操作だけ伝えて待つ",
-        "Reveal the artifact and give the beginner one action, then wait.",
-        "Excelが開いたら、開いたことを教えてください",
-        "After the workbook opens, guide the first sheet",
-    )
     checked = (
-        instructions,
         japanese_workflow,
         english_workflow,
         japanese_guide,
@@ -275,5 +262,10 @@ def test_artifact_review_does_not_pause_for_opened_acknowledgement() -> None:
         runtime_en,
     )
     for text in checked:
-        for phrase in forbidden:
+        for phrase in (
+            "利用者へ一操作だけ伝えて待つ",
+            "Reveal the artifact and give the beginner one action, then wait.",
+            "Excelが開いたら、開いたことを教えてください",
+            "After the workbook opens, guide the first sheet",
+        ):
             assert phrase not in text

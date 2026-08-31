@@ -20,7 +20,7 @@
 このアプリを使えるようにしてください。
 ```
 
-AIエージェントは`AGENTS.md`に従い、Python、仮想環境、依存パッケージ、`.env`の雛形、FFmpeg、同梱された制作既定値を準備・診断します。その後、Google生成AI APIの料金・課金・APIキー・接続確認を一操作ずつ案内します。インストール中に生成APIは呼びません。
+AIエージェントは自分用のルート入口（Codexは`AGENTS.md`、Claude Codeは`CLAUDE.md`、Gemini CLIは`GEMINI.md`）から共通の日本語ガイドを読み、Python、仮想環境、依存パッケージ、`.env`の雛形、FFmpeg、同梱された制作既定値を準備・診断します。その後、Google生成AI APIの料金・課金・APIキー・接続確認を案内します。インストール中に生成APIは呼びません。
 
 使い方の説明だけが必要なら、次のように依頼します。
 
@@ -59,7 +59,7 @@ bash scripts/setup.sh
 診断状態の意味は次のとおりです。
 
 - `LOCAL READY (Google API setup required)`: ローカル環境と同梱既定値は準備済み。Google APIは未設定
-- `LOCAL READY (online verification required)`: APIキーは保存済み。オンライン確認が必要
+- `LOCAL READY (Google API configured; online verification not run)`: APIキーは保存済み。初回設定のやり直しは不要。制作時に必要ならAIエージェントが非生成の接続確認を行う
 - `READY FOR GENERATION (paid generation not tested)`: 認証と設定モデル一覧は確認済み。有料生成は未実行
 - `NOT READY`: 解決が必要な問題あり
 
@@ -71,11 +71,11 @@ bash scripts/setup.sh
 
 ## 2. Google生成AI APIを準備する
 
-ここは初回だけ必要です。[Google生成AI APIの初回準備](google-api-setup.ja.md)を正として、AIエージェントが一操作ずつ案内します。全手順を一度に進めないでください。
+ここはAPIキーが未設定の初回、キーを交換・再設定するとき、または保存済み設定の接続確認に失敗したときだけ必要です。設定済みで変更がなければ繰り返しません。[Google生成AI APIの初回準備](google-api-setup.ja.md)を正として、必要な場合だけAIエージェントが案内します。
 
 ### 2.1 最初にローカル設定画面を開く
 
-ローカル環境が`LOCAL READY`になったら、AIエージェントが「NijiUnit 初回設定」を開きます。Googleアカウント、料金、プロジェクト、APIキーについてチャットで先に質問せず、この画面を通常経路の出発点にします。初心者本人がターミナルを操作する必要はありません。
+ローカル診断が`Google API setup required`の場合だけ、AIエージェントが「NijiUnit 初回設定」を開きます。APIキーが保存済みで利用者が変更していなければ、画面を開かず、初回設定をやり直すかも質問しません。制作前に接続確認が必要なら、AIエージェント自身が非生成のオンライン確認を行います。初心者本人がターミナルを操作する必要はありません。
 
 WindowsではAIエージェントが次を実行します。
 
@@ -117,7 +117,7 @@ APIキーはパスワードと同じ秘密情報です。チャット、Issue、
 
 新しいキーでは、同じローカル設定画面の「このPCに保存して、接続を確認する」を押します。保存済みキーでは「保存済みのキーで接続を確認する」を押します。Google側の認証と、同梱プロファイルまたは`.env`で設定した物語・画像・動画・TTS・音声確認モデルがモデル一覧に存在することだけを確認します。画像、動画、音声は生成せず、有料の生成処理は行いません。
 
-画面を利用できない場合だけ、復旧用として`doctor.py --require-api-key --verify-api-key-online`を使用します。
+保存済みキーの非生成オンライン確認には、AIエージェントが`doctor.py --require-api-key --verify-api-key-online`を使用できます。利用者にコマンド入力を頼みません。
 
 最後が`READY FOR GENERATION (paid generation not tested)`なら、最初のユーザー承認済み生成へ進めます。ただし、有料生成の成功、残高、地域、利用上限はまだ保証されていません。最初の生成前に料金が発生することを確認してください。
 

@@ -331,7 +331,7 @@ def readiness(checks: list[Check], online_verification_requested: bool = False) 
     if api_key_missing:
         return "LOCAL READY (Google API setup required)"
     if not online_verification_requested:
-        return "LOCAL READY (online verification required)"
+        return "LOCAL READY (Google API configured; online verification not run)"
     required_online_checks = {"Gemini authentication", "configured Gemini models"}
     passed_online_checks = {
         item.name
