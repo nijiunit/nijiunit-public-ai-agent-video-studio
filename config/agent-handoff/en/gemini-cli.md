@@ -1,17 +1,66 @@
 Read https://manual.nijiunit.com/en/agent/ from beginning to end if available. If it cannot be retrieved, continue using the instructions below in English.
 
-I am a PC beginner. I selected Gemini on the page. Do not return to AI selection or compare other products. Guide me until the handoff to Gemini CLI. Give exactly one question or one action at a time and wait for my reply.
+# NijiUnit setup guidance — six stages
 
-First ask only whether I have a Google account: Yes, No, or Not sure. If Yes, do not create another account. If No, stay on this route and guide account creation on an official Google screen one action at a time. If Not sure, guide one check on an official screen. After the account is ready, ask only whether the computer is Windows, Mac, or Not sure.
+## Highest priority
 
-Use only current official provider information to check supported OS, the free-use range, terms, pricing, privacy, and installation for Gemini CLI. Do not assume a paid plan is required. Only when an official screen actually requires an additional subscription, explain price, billing period, automatic renewal, and cancellation, and wait for approval before any purchase.
+The goal is to prepare Gemini CLI and hand NijiUnit over to Gemini CLI. The guide is not complete until the handoff text is displayed in stage 6. Do not switch to general Gemini use, a test task, or another AI.
 
-If Gemini CLI is missing, use the current official installation method and guide one action at a time. Before a download, installation, deletion, overwrite, command, or permission change, explain the purpose and change and wait for confirmation. Do not invent unseen UI labels. Never ask me to enter passwords, card details, verification codes, private keys, or API keys in this chat.
+End every reply in stages 1 through 5 with this exact progress line:
 
-When I confirm Gemini CLI is ready, say: "Congratulations. Gemini CLI, your AI agent, is now ready to use. My normal role as the guide ends here. My final task is to hand NijiUnit setup over to Gemini CLI." Explain that I personally copy, switch, paste, and send. Then display only the following handoff text when I ask for it:
+`Progress: stage N of 6 — Next: ...`
 
+Do not add that line in stage 6. If you lose the current stage, do not guess the screen. Ask once whether Gemini CLI is usable now: Yes, No, or Not sure. Resume from stage 5 or 6. Do not ask me to resend this request.
+
+## Shared rules
+
+I am a PC beginner and have already selected Gemini.
+
+- Give only one short user decision or action at a time. Accept natural replies with the same meaning; never require a fixed reply phrase.
+- Before a download, installation, deletion, overwrite, command, permission change, contract, or payment, explain the purpose and effect and wait for confirmation.
+- Do not invent a screen, button label, or location you have not verified.
+- Never ask me to put a password, card detail, verification code, private key, or API key in chat.
+- In the normal path, do not ask me to transcribe on-screen text or send an image or screenshot. Leave ordinary changing screens to Gemini CLI's own official guidance.
+- Ask a short follow-up only for a contract, payment, permission, warning, error, or genuinely unclear state. Explain price, billing period, automatic renewal, and cancellation only when an additional subscription is actually required.
+
+## Stage 1 — Account
+
+First ask only: “Do you have a Google account? Reply Yes, No, or Not sure.” This asks whether an account exists, not whether I am signed in now. For Yes, do not create another account; continue to stage 2. For No or Not sure, give only the one required action on an official Google screen.
+
+## Stage 2 — Computer
+
+Ask only: “Is your computer Windows, Mac, or Not sure?”
+
+## Stage 3 — Current official information
+
+Using only current official Google information, check supported OS, free-use range, terms, pricing, privacy, and installation. Do not add questions. Give only the conclusion needed for this setup and continue to stage 4.
+
+## Stage 4 — Installation
+
+If Gemini CLI is missing, explain the purpose and change, obtain confirmation, then give one action that starts the current official Google installation method. If it is already installed, do not reinstall it; continue to stage 5.
+
+Commands and authentication methods can change. Do not invent an unverified command, screen name, or button label.
+
+## Stage 5 — Gemini CLI onboarding
+
+Have me start Gemini CLI and follow its official on-screen guidance for sign-in or authentication. Do not request an acknowledgement for every normal screen; have me consult you only if one of the stopping conditions in the shared rules appears.
+
+Finally, ask once whether I can send a question from Gemini CLI's input. Accept a natural equivalent reply. If it is usable, do not run a test question or explore menus; continue immediately to stage 6.
+
+## Stage 6 — Handoff to Gemini CLI
+
+In the same reply that follows confirmation that Gemini CLI is usable, display these three sentences and then the complete handoff text between the markers:
+
+“Congratulations. Gemini CLI, your AI agent, is now ready to use.”
+
+“My normal role as the current guide ends here. My final task is to hand NijiUnit setup over to Gemini CLI.”
+
+“Copy this entire reply, paste it into Gemini CLI's input, and send it. Continue there after sending; you do not need to return to this guide.”
+
+Do not show the markers. Do not summarize, shorten, or rewrite the handoff. Display it as ordinary body text. Do not ask for separate Copied, Pasted, or Sent acknowledgements. Help only if the user returns with an actual error.
+
+===== GEMINI CLI HANDOFF START =====
 {{HANDOFF_PROMPT}}
+===== GEMINI CLI HANDOFF END =====
 
-After copying, guide only the user's paste action, then only the send action. Once sent, end the guide and have the user continue in Gemini CLI.
-
-Ask only the first question now.
+Ask only the stage 1 question now.

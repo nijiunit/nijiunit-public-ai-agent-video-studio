@@ -7,8 +7,15 @@ from pathlib import Path
 from scripts.sync_agent_handoff_prompts import ROOT, rendered_prompts
 
 
-def test_only_verified_routes_are_publishable() -> None:
-    assert set(rendered_prompts()) == {("ja", "chatgpt-codex")}
+def test_all_six_verified_routes_are_publishable() -> None:
+    assert set(rendered_prompts()) == {
+        ("ja", "chatgpt-codex"),
+        ("ja", "claude-code"),
+        ("ja", "gemini-cli"),
+        ("en", "chatgpt-codex"),
+        ("en", "claude-code"),
+        ("en", "gemini-cli"),
+    }
 
 
 def test_six_agent_language_routes_are_independent() -> None:
@@ -46,15 +53,47 @@ def test_codex_source_change_does_not_change_other_routes(tmp_path: Path) -> Non
     assert changed == {("ja", "chatgpt-codex")}
 
 
-def test_chatgpt_route_never_requires_screen_transcription_or_images() -> None:
+def test_every_route_never_requires_screen_transcription_or_images() -> None:
     prompts = rendered_prompts(include_unverified=True)
-    japanese = prompts[("ja", "chatgpt-codex")]
-    english = prompts[("en", "chatgpt-codex")]
+    for language, route in prompts:
+        text = prompts[(language, route)]
+        if language == "ja":
+            assert "画面の文章を転記させたり" in text
+            assert "画像やスクリーンショットを送らせたりしない" in text
+        else:
+            assert "do not ask me to transcribe on-screen text" in text
+            assert "send an image or screenshot" in text
 
-    assert "画面の文章を転記させたり" in japanese
-    assert "画像やスクリーンショットを送らせたりしない" in japanese
-    assert "do not ask me to transcribe on-screen text" in english
-    assert "send an image or screenshot" in english
+
+def test_every_route_tracks_six_stage_progress_without_guessing_screens() -> None:
+    prompts = rendered_prompts(include_unverified=True)
+    for language, route in prompts:
+        text = prompts[(language, route)]
+        if language == "ja":
+            assert "全6段階" in text
+            assert "進行状況：段階◯／全6" in text
+            assert "段階6" in text
+        else:
+            assert "six stages" in text
+            assert "Progress: stage N of 6" in text
+            assert "stage 6" in text
+
+
+def test_every_route_hands_off_immediately_without_acknowledgement_turns() -> None:
+    prompts = rendered_prompts(include_unverified=True)
+    for language, route in prompts:
+        text = prompts[(language, route)]
+        if language == "ja":
+            assert "この返信をすべてコピーし" in text
+            assert "コピー、貼り付け、送信ごとの完了報告を求めません" in text
+            assert "引き継ぎ文章を表示してください" not in text
+            assert "コピーしました」と返したら" not in text
+            assert "貼り付けました」と返ったら" not in text
+        else:
+            assert "Copy this entire reply" in text
+            assert "Do not ask for separate Copied, Pasted, or Sent acknowledgements" in text
+            assert "Show the handoff text" not in text
+            assert 'After I reply "Copied"' not in text
 
 
 def test_manifest_forbids_cross_agent_names() -> None:
@@ -82,3 +121,22 @@ def test_every_handoff_uses_a_fixed_documents_root_and_scoped_env() -> None:
         assert expected_roots[route] in text
         assert ".env" in text
         assert "workspace" in text
+
+
+def test_every_handoff_skips_unchanged_setup_and_uses_the_local_page_when_needed() -> None:
+    prompts = rendered_prompts(include_unverified=True)
+    for language, route in prompts:
+        text = prompts[(language, route)]
+        if language == "ja":
+            assert "APIキーが設定済み" in text
+            assert (
+                "初回設定画面を起動せず" in text
+                or "「NijiUnit 初回設定」を起動せず" in text
+            )
+            assert "普段使っているブラウザのアドレス欄へ貼り付けて" in text
+            assert "「開いた」というチャット返信を求め" in text
+        else:
+            assert "API key is" in text
+            assert "do not launch" in text or "do not open first-time setup" in text
+            assert "address bar of the browser you normally use" in text
+            assert "ask me to reply that it opened" in text

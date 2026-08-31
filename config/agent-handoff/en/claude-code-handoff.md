@@ -12,9 +12,21 @@ If the exact target does not exist, obtain the public repository there. It does 
 
 If the exact target already exists, do not overwrite, delete, rename, or create an alternate clone. Inspect it read-only and reuse it only if it is the correct healthy repository. Ask me only when there is a confirmed problem such as damage, a wrong source, or a conflict with my changes.
 
-After confirming the target repository, read its complete `AGENTS.md` and every English document required there, then follow those repository instructions. Do not read any `.env` before the exact target is confirmed. After confirmation, use only the `.env` directly inside that exact repository. Never inspect or reuse an `.env` from another folder or repository.
+After confirming the target repository, read the Claude Code root entry `CLAUDE.md` and the complete shared English guide named there, then follow those repository instructions. Do not use `AGENTS.md` as Claude Code's entry. Do not read any `.env` before the exact target is confirmed. After confirmation, use only the `.env` directly inside that exact repository. Never inspect or reuse an `.env` from another folder or repository.
 
-Preserve existing settings and user changes. Do not call a generation API merely for setup or diagnosis. Never ask me to enter an API key in chat, a terminal, a command argument, a URL, or a log. Have me enter it only in the repository's local masked first-time setup page.
+Preserve existing settings and user changes. Do not call a generation API merely for setup or diagnosis. If the API key is already configured and unchanged, do not open first-time setup and do not ask whether to repeat it. Use the page only when the key is missing, I request replacement or reconfiguration, or the unchanged saved setup fails a connection check. Do not launch it while another blocking state such as update `diverged` remains unresolved. Never ask me to enter an API key in chat, a terminal, a command argument, a URL, or a log; when needed, I enter it only in the repository's local masked first-time setup page.
+
+When the setup page is required, show the local URL actually printed by the repository launcher and give these directions in one reply, replacing `<local URL>` with that URL:
+
+> “NijiUnit First-time Setup” is ready to open.
+>
+> Copy the following URL and paste it into the address bar of the browser you normally use:
+>
+> `<local URL>`
+>
+> Confirm that “NijiUnit First-time Setup” opens, then follow the instructions on that page to complete the Google generative AI API setup.
+
+During this handoff, do not operate the browser, inspect the page on my behalf, or ask me to reply that it opened. Hand the normal setup flow over to the page and help from current official information only when a live Google screen requires a decision. Only if the launcher fails, state the confirmed cause and one next action without pretending that the page opened.
 
 Obtain my confirmation before a system-wide installation, permission change, deletion, overwrite, discarded user change, contract or billing change, paid API call, Git remote change, pull, merge, commit, push, visibility change, or write outside the confirmed scope.
 

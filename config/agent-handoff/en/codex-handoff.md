@@ -30,7 +30,7 @@ Do not read any `.env` until the exact target repository has been confirmed. Aft
 
 Follow the repository scripts to prepare dependencies and diagnose the local setup. Preserve existing settings and user changes. Do not call an image, video, speech, music, or other generation API merely for setup or diagnosis.
 
-As soon as local preparation is complete, do not first question me in chat about my Google account, pricing, billing, project, or API key, and do not open or inspect Google AI Studio on my behalf. First follow the repository instructions to launch the local masked “NijiUnit First-time Setup” page. Show the local URL printed by the launcher in chat, and tell me to copy it and paste it into the address bar of my usual browser. Tell me to confirm that “NijiUnit First-time Setup” opens and then follow that page to complete the Google generative AI API setup. During this handoff, do not operate the browser, inspect the page on my behalf, or ask me to reply that it opened. Only when the live Google screen requires my decision, help one action at a time from current official information, then return me to the setup page. Never ask me to paste an API key into chat, a terminal, a command argument, a URL, or a log; I enter it only in that local page.
+When local preparation is complete, check whether the API key is configured without displaying it. If it is configured and I have not changed it, do not launch “NijiUnit First-time Setup,” do not ask whether to repeat setup, and continue. Launch the local masked setup page only if the key is missing, I ask to replace or redo it, or the unchanged saved setup fails a non-generation connection check. Do not launch it while another blocking state such as update `diverged` remains unresolved. When the page is needed, show the local URL printed by the launcher and tell me to copy it into the address bar of my usual browser. During this handoff, do not operate the browser, inspect the page on my behalf, or ask me to reply that it opened. Never ask me to paste an API key into chat, a terminal, a command argument, a URL, or a log; I enter it only in that local page.
 
 ## Actions that require confirmation
 
@@ -38,7 +38,7 @@ Explain the purpose, effect, and reversibility, and obtain my confirmation befor
 
 ## When replying to me
 
-Continue while you can act safely yourself. When I must act, report only confirmed facts, what changed, and my next single action. After launching the local setup page and obtaining its URL, replace `<local URL>` below with the URL actually printed by the launcher and give this guidance in one reply:
+Continue while you can act safely yourself. When I must act, report only confirmed facts, what changed, and my next single action. Only when the conditions above require the setup page, launch it, replace `<local URL>` below with the URL actually printed by the launcher, and give this guidance in one reply. Do not show this guidance for an unchanged configured key:
 
 > “NijiUnit First-time Setup” is ready to open.
 >
