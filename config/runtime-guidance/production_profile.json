@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "knowledge_version": "0.6.0-local.2",
+  "knowledge_version": "0.6.0-local.5",
   "profile_id": "standard-social-video",
   "models": {
     "story": "gemini-3.6-flash",
@@ -46,7 +46,7 @@
       "Show only the characters required by the current shot, even when a reference image contains additional subjects.",
       "Preserve the shot's specified camera, subject positions, lighting, environment, and space for later subtitles.",
       "Do not reproduce text, captions, interfaces, logos, watermarks, or unrelated franchise elements found in references.",
-      "Review the first generated keyframe with the user before generating the remaining storyboard images."
+      "Keep identity, environment, camera axis, props, and lighting consistent with adjacent storyboard shots."
     ],
     "reference_limit": 4,
     "image_size": "1K"

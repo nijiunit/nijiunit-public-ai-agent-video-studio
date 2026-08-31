@@ -127,8 +127,132 @@ def test_short_first_messages_route_into_nijiunit_without_a_long_prompt() -> Non
 
     assert "Mandatory first-message routing" in instructions
     assert "こんにちは。NijiUnitで動画作りをお手伝いします" in instructions
-    assert "「動画を作る」または「使い方を知る」" in instructions
+    assert "「NijiUnitのチュートリアルを参考にする」か「一から作る」" in instructions
     assert "動画を作りたい" in instructions
-    assert "whether they want to create a video" in instructions
+    assert "Use a NijiUnit tutorial" in instructions
     assert "特別なコマンドや長い依頼文は不要です" in japanese_guide
     assert "No special command or long copied prompt is required" in english_guide
+
+
+def test_conversation_turns_have_a_decision_or_continue_work() -> None:
+    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    japanese_workflow = (ROOT / "作業手順.md").read_text(encoding="utf-8")
+    runtime_ja = (ROOT / "config/runtime-guidance/agent_guide_ja.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Every user-facing turn must have a clear purpose" in instructions
+    assert "質問がなければ先へ進み" in japanese_workflow
+    assert "途中報告だけでターンを終えません" in japanese_workflow
+    assert "質問がなければ先へ進みます" in runtime_ja
+    assert "制作に必要な情報は揃っています" in instructions
+    assert "conditional authorization" in instructions
+
+
+def test_new_revisions_use_whole_run_versions() -> None:
+    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    architecture = (ROOT / "docs/architecture.md").read_text(encoding="utf-8")
+    troubleshooting = (ROOT / "docs/troubleshooting.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "whole `vNNN` run" in instructions
+    assert "complete production run" in architecture
+    assert "next whole run" in troubleshooting
+    assert "Legacy `_r002`" in instructions
+    assert "Legacy `_r002`" in architecture
+    assert "Legacy `_r002`" in troubleshooting
+    assert "v002" in instructions
+    assert "v002" in architecture
+    assert "v002" in troubleshooting
+    assert "`storyboard_vNNN.xlsx`" in architecture
+    assert "not created for new productions" in architecture
+
+
+def test_normal_production_moves_from_assets_to_excel_without_single_image_gate(
+) -> None:
+    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    japanese_workflow = (ROOT / "作業手順.md").read_text(encoding="utf-8")
+    english_workflow = (ROOT / "WORKFLOW.md").read_text(encoding="utf-8")
+    japanese_guide = (ROOT / "docs/getting-started.ja.md").read_text(
+        encoding="utf-8"
+    )
+    english_guide = (ROOT / "docs/getting-started.md").read_text(
+        encoding="utf-8"
+    )
+    profile = (ROOT / "config/runtime-guidance/production_profile.json").read_text(
+        encoding="utf-8"
+    )
+
+    assert "user-facing review is the official Excel storyboard" in instructions
+    assert "次に利用者へ見せる正式な確認物はExcelコンテ" in japanese_workflow
+    assert "the workbook is the next user-facing review" in english_workflow
+    assert (
+        "通常制作では画像1枚だけを利用者へ見せて返答を待ちません"
+        in japanese_guide
+    )
+    assert (
+        "Normal production does not pause for the user's approval of one"
+        in english_guide
+    )
+
+    forbidden = (
+        "Generate and review only the first starting image",
+        "Review the first generated keyframe with the user",
+        "最初の開始画像を1枚だけ生成し",
+        "最初から全画像を生成せず、まず1枚だけ確認します",
+    )
+    checked = (
+        instructions,
+        japanese_workflow,
+        english_workflow,
+        japanese_guide,
+        english_guide,
+        profile,
+    )
+    for text in checked:
+        for phrase in forbidden:
+            assert phrase not in text
+
+
+def test_artifact_review_does_not_pause_for_opened_acknowledgement() -> None:
+    instructions = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    japanese_workflow = (ROOT / "作業手順.md").read_text(encoding="utf-8")
+    english_workflow = (ROOT / "WORKFLOW.md").read_text(encoding="utf-8")
+    japanese_guide = (ROOT / "docs/agent-guide.ja.md").read_text(
+        encoding="utf-8"
+    )
+    english_guide = (ROOT / "docs/agent-guide.md").read_text(encoding="utf-8")
+    runtime_ja = (ROOT / "config/runtime-guidance/agent_guide_ja.md").read_text(
+        encoding="utf-8"
+    )
+    runtime_en = (ROOT / "config/runtime-guidance/agent_guide_en.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Do not pause for an opening acknowledgement" in instructions
+    assert "「開いた」という中間報告では止めない" in japanese_workflow
+    assert "intermediate “Opened” acknowledgement" in english_workflow
+    assert "通常操作ごとの完了報告は求めません" in japanese_guide
+    assert "do not wait for acknowledgements merely for opening" in english_guide
+    assert "Excelなら、開く、全シートを確認する" in runtime_ja
+    assert "For Excel, include opening it, reviewing every sheet" in runtime_en
+
+    forbidden = (
+        "利用者へ一操作だけ伝えて待つ",
+        "Reveal the artifact and give the beginner one action, then wait.",
+        "Excelが開いたら、開いたことを教えてください",
+        "After the workbook opens, guide the first sheet",
+    )
+    checked = (
+        instructions,
+        japanese_workflow,
+        english_workflow,
+        japanese_guide,
+        english_guide,
+        runtime_ja,
+        runtime_en,
+    )
+    for text in checked:
+        for phrase in forbidden:
+            assert phrase not in text

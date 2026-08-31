@@ -114,9 +114,12 @@ and contains no unapplied correction.
 User-facing artifacts are separated from processing files. Storyboard review
 workbooks and their local HTML companions live in `review/`; finished MP4s,
 video-frame reviews, and model-use records live in `final/`; rejected material
-lives in `rejected/`. Existing review files are immutable: later builds use
-`_r002`, `_r003`, and later suffixes. Legacy workbooks in a run root remain
-readable.
+lives in `rejected/`. The version unit is the complete production run. Reviewed
+`v001` remains immutable; storyboard, image, video, or audio corrections create
+`v002` or later, with replaced material kept under the new run's `rejected/`
+folder. Names stay aligned as `storyboard_vNNN.xlsx`,
+`story_video_vNNN.mp4`, and `storyboard_vNNN_video.xlsx`. Legacy `_r002`
+workbooks remain readable but are not created for new productions.
 
 The artifact handoff layer detects Excel, LibreOffice Calc, and Numbers. It
 selects Excel when a spreadsheet application exists and otherwise selects the

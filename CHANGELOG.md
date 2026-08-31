@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+- Prevented private character registries and reference media from becoming
+  publishable files, made small storyboard corrections reject unknown sheets
+  and out-of-scope model changes, expanded video revisions through dependent
+  continuity shots, and preserved every replaced clip artifact under
+  `rejected/`.
+- Made completion recovery discover custom project folders and accept common
+  natural Japanese approvals such as `問題がありません` without confusing them
+  with correction requests.
+- Made every user-facing turn purposeful: the agent now continues routine work
+  without acknowledgement-only stops, asks only concrete production decisions,
+  accepts natural-language equivalents, and honors unambiguous conditional
+  authorization such as correcting a shot and then continuing to generation.
+- Changed post-review revisioning from workbook-only `_rNNN` files to immutable
+  whole-run versions. Storyboard, image, video, or audio corrections now create
+  the next `vNNN`, keep artifact names aligned, preserve provenance, and retain
+  replaced material under the new run's `rejected/` folder. Legacy `_rNNN`
+  workbooks remain readable.
+- Removed routine “Opened” acknowledgement turns from artifact handoffs.
+  Workbook handoff now includes opening the exact file, reviewing every sheet,
+  recording yellow-field corrections and saving, or reporting approval in one
+  concise instruction.
+- Restored the established beginner production handoff: after story, assets,
+  any required new-character identity approval, and aspect ratio, the agent
+  generates and inspects all starting images internally and presents the
+  image-filled Excel storyboard as the next normal user review instead of
+  pausing for a standalone first-image approval.
 - Clarified the Japanese and English beginner prompts for aspect-ratio and
   update choices so agents request the choice itself, reserve completion
   wording for completed operations, avoid raw HTML whitespace entities, and

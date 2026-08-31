@@ -88,8 +88,9 @@ the reveal command from the local agent session.
 
 Save the workbook in the spreadsheet application, close its window, and tell
 the agent that it is closed. The agent then retries. Do not delete a lock file
-or overwrite the reviewed workbook. Corrected builds create `_r002`, `_r003`,
-and later revisions.
+or overwrite the reviewed workbook. A correction creates the next whole run,
+such as `v002`, and writes `storyboard_v002.xlsx` there. Legacy `_r002`
+workbooks remain readable but are not created for new productions.
 
 ## Character color or face drifts
 

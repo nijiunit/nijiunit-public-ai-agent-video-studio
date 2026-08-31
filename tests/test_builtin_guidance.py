@@ -8,7 +8,7 @@ from video_storyboard.knowledge import load_builtin_guidance
 def test_bundled_guidance_is_hash_verified() -> None:
     bundle = load_builtin_guidance()
 
-    assert bundle.manifest.knowledge_version == "0.6.0-local.2"
+    assert bundle.manifest.knowledge_version == "0.6.0-local.5"
     assert bundle.profile.profile_id == "standard-social-video"
     assert bundle.guide_path("ja").read_text(encoding="utf-8").strip()
     assert bundle.guide_path("en").read_text(encoding="utf-8").strip()

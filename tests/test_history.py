@@ -15,7 +15,14 @@ from video_storyboard.history import (
 
 @pytest.mark.parametrize(
     "value",
-    ["この内容で完成です", "これでいいです", "問題ありません", "OKです"],
+    [
+        "この内容で完成です",
+        "これでいいです",
+        "問題ありません",
+        "問題がありません",
+        "問題がないです",
+        "OKです",
+    ],
 )
 def test_completion_accepts_natural_equivalents(value: str) -> None:
     assert is_completion_confirmation(value)
@@ -60,3 +67,20 @@ def test_archive_moves_run_and_keeps_it_editable(tmp_path: Path) -> None:
     assert completion_status(tmp_path / "output" / "storyboard", history_root)[
         "history"
     ] == [str(archive.resolve())]
+
+
+def test_completion_status_finds_pending_runs_under_custom_projects(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "output" / "custom_project" / "v003"
+    run_dir.mkdir(parents=True)
+    review = run_dir / "final" / "storyboard_v003_video.xlsx"
+    review.parent.mkdir()
+    review.write_bytes(b"review")
+    mark_completion_review_pending(run_dir, review)
+
+    status = completion_status(tmp_path / "output", tmp_path / "history")
+
+    assert [item["run_dir"] for item in status["awaiting_user_review"]] == [
+        str(run_dir.resolve())
+    ]

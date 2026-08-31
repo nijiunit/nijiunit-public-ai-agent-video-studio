@@ -9,6 +9,7 @@ from scripts.check_public_repo import (
     scan_publishable_files,
     validate_local_secret_ignores,
     validate_no_tracked_local_env,
+    validate_no_tracked_private_characters,
 )
 
 
@@ -63,6 +64,23 @@ def test_tracked_local_env_fails_even_when_ignored(tmp_path: Path) -> None:
 
     assert validate_no_tracked_local_env(tmp_path) == [
         ".env: local environment file must not be tracked"
+    ]
+
+
+def test_tracked_private_character_data_fails_even_when_forced(tmp_path: Path) -> None:
+    init_git_repository(tmp_path)
+    character = tmp_path / "characters" / "ritchan" / "reference.png"
+    character.parent.mkdir(parents=True)
+    character.write_bytes(b"private test image")
+    subprocess.run(
+        ["git", "add", "--force", "characters/ritchan/reference.png"],
+        cwd=tmp_path,
+        capture_output=True,
+        check=True,
+    )
+
+    assert validate_no_tracked_private_characters(tmp_path) == [
+        "characters/ritchan/reference.png: private character data must not be tracked"
     ]
 
 

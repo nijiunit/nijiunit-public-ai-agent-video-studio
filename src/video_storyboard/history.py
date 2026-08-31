@@ -55,7 +55,9 @@ def is_completion_confirmation(value: str) -> bool:
         "だめ",
         "ダメ",
         "違う",
-        "問題が",
+        "問題がある",
+        "問題があります",
+        "問題有り",
         "notok",
         "notgood",
         "revise",
@@ -71,7 +73,9 @@ def is_completion_confirmation(value: str) -> bool:
         "これでいい",
         "これでよい",
         "問題ない",
+        "問題がない",
         "問題ありません",
+        "問題がありません",
         "大丈夫",
         "承認",
         "ok",
@@ -183,7 +187,7 @@ def archive_production(
 def completion_status(output_root: Path, history_root: Path) -> dict[str, object]:
     pending = []
     if output_root.is_dir():
-        for state_path in sorted(output_root.glob("*/completion_state.json")):
+        for state_path in sorted(output_root.rglob("completion_state.json")):
             state = json.loads(state_path.read_text(encoding="utf-8"))
             if state.get("status") == "awaiting_user_review":
                 pending.append(

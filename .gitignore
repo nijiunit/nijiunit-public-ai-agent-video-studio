@@ -21,6 +21,8 @@ output/*
 !output/.gitkeep
 history/*
 !history/.gitkeep
+characters/*
+!characters/README.md
 tmp/
 logs/
 .nijiunit/

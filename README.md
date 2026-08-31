@@ -32,7 +32,7 @@ Please make this application ready to use.
 
 Following [AGENTS.md](AGENTS.md), the agent runs the dedicated setup script and checks the virtual environment, dependencies, bundled production defaults, `.env`, and FFmpeg. If an API key is missing, it opens an illustrated local setup page for Google AI Studio, masked secret entry, and connection verification. A beginner does not normally paste the key into a terminal. Setup never calls a generation API and never overwrites an existing `.env` without permission.
 
-This request assumes that the upstream guide has already helped the user install an AI agent and Git, clone the repository, and open this folder. From that point, this repository is responsible for Python, FFmpeg, Google Generative AI API pricing and billing guidance, secure API-key setup, and connection checks. When a beginner must operate a screen, the agent explains only one action at a time.
+This request assumes that the upstream guide has already helped the user install an AI agent and Git, clone the repository, and open this folder. From that point, this repository is responsible for Python, FFmpeg, Google Generative AI API pricing and billing guidance, secure API-key setup, and connection checks. A greeting alone routes directly to the tutorial-or-from-scratch choice. The agent asks only for meaningful decisions and does not stop on progress-only messages; routine actions that form one review task stay together.
 
 To receive an explanation without installing or changing anything, ask:
 
@@ -107,7 +107,6 @@ Check the local environment and available commands without calling a generation 
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py create --aspect-ratio 9:16
-.\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001 --limit 1
 .\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001
 # Open the folder and select Excel, or English local HTML if no spreadsheet app exists.
 .\.venv\Scripts\python.exe run_storyboard.py reveal-artifact --run-dir output\storyboard\v001 --artifact storyboard --language en
@@ -162,7 +161,9 @@ The root `AGENTS.md` tells AI agents how to route setup, usage, production, and 
 
 There is no permanent `temp` directory. Use the Git-ignored `tmp/` for temporary data. Public `input` and `output` contain only documentation or placeholders; user content remains local.
 
-Within a production run, user review workbooks and HTML pages live in `review/`, finished MP4s and final records in `final/`, and rejected material in `rejected/`. After processing, the agent opens the relevant folder, selects the artifact, and gives only one user action at a time.
+Within a production run, user review workbooks and HTML pages live in `review/`, finished MP4s and final records in `final/`, and rejected material in `rejected/`. After processing, the agent opens the relevant folder, selects the artifact, and gives the complete current review task without extra opening acknowledgements.
+
+Versions apply to the whole production run, not an individual workbook. The first run is `v001`; any reviewed storyboard, image, video, or audio correction creates `v002` or later while keeping the prior run unchanged. Filenames stay aligned as `storyboard_vNNN.xlsx`, `story_video_vNNN.mp4`, and `storyboard_vNNN_video.xlsx`. Legacy `_r002` workbooks remain readable but are not created for new work.
 
 ## Important limitations
 

@@ -34,7 +34,9 @@ AIエージェントと生成AIを使い、3秒単位の短い動画を、キャ
 
 AIエージェントは[AGENTS.md](AGENTS.md)に従い、専用セットアップスクリプトを実行して、仮想環境、依存関係、`.env`、FFmpeg、同梱された制作基本設定を診断します。APIキーが未設定なら、画像付きのローカル設定画面を開き、Google AI Studioでの取得、秘密入力、接続確認まで案内します。初心者が通常の手順でターミナルへAPIキーを貼る必要はありません。セットアップ中に生成APIは呼ばず、既存の`.env`も無断で上書きしません。
 
-この依頼は、案内AIによってAIエージェントの導入、Gitの準備、リポジトリのクローン、このフォルダを開くところまで終わった後に行います。以降はこのリポジトリ側が、Python、FFmpeg、Google生成AI APIの料金・課金・APIキー・接続確認を担当します。初心者本人の操作が必要な場面では、一度に一つだけ案内します。
+この依頼は、案内AIによってAIエージェントの導入、Gitの準備、リポジトリのクローン、このフォルダを開くところまで終わった後に行います。以降はこのリポジトリ側が、Python、FFmpeg、Google生成AI APIの料金・課金・APIキー・接続確認を担当します。初心者本人の判断が必要な場面では、現在必要な判断だけを明確に案内します。一つの確認作業に属する通常操作は細切れにしません。
+
+`こんにちは`だけでも、AIエージェントは「NijiUnitのチュートリアルを参考にする」か「一から作る」かを短く確認します。途中報告だけで会話を止めず、利用者の判断が不要なら次の安全な作業へ進みます。
 
 ```text
 このアプリの使い方を教えてください。
@@ -107,7 +109,6 @@ macOS / Linux:
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py create --aspect-ratio 9:16
-.\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001 --limit 1
 .\.venv\Scripts\python.exe run_storyboard.py render-images --run-dir output\storyboard\v001
 # Excelがなければ日本語HTMLを選び、該当フォルダを開く
 .\.venv\Scripts\python.exe run_storyboard.py reveal-artifact --run-dir output\storyboard\v001 --artifact storyboard --language ja
@@ -163,6 +164,8 @@ tests/       APIを使わない自動テスト
 `temp`は正式フォルダにしません。一時データが必要ならGit管理外の`tmp/`を使います。`input`と`output`は公開時には説明ファイルとプレースホルダーだけで、利用者自身の内容は空です。
 
 制作ランの中では、利用者が確認するExcelとHTMLを`review/`、完成MP4と最終記録を`final/`、不採用素材を`rejected/`へ分けます。AIエージェントは処理後に該当フォルダを開き、成果物を選択して、一度に一つだけ操作を案内します。
+
+制作版はExcel単体ではなくラン全体で管理します。最初は`v001`、絵コンテ・画像・動画・音声の修正後は`v002`以降です。確認済みの旧版は上書きせず、`storyboard_vNNN.xlsx`、`story_video_vNNN.mp4`、`storyboard_vNNN_video.xlsx`の版名を揃えます。旧`_r002`形式は読み取り互換だけに残します。
 
 ## 重要な制約
 

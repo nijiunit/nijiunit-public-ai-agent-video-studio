@@ -4,7 +4,9 @@
 
 Open this repository in your AI agent and choose one of two starting routes:
 
-Your first message may be as short as "Hello" or "I want to create a video." No special command or long copied prompt is required. For a greeting alone, the agent says: "Hello. I can help you create a video with NijiUnit. Reply ‘Create a video’ or ‘Learn how to use it.’" When production intent is already clear, it does not ask that question again; it checks readiness and proceeds to the tutorial-or-from-scratch choice.
+Your first message may be as short as "Hello" or "I want to create a video." No special command or long copied prompt is required. For a greeting alone, the agent says: "Hello. I can help you create a video with NijiUnit. First, choose how to start: use a NijiUnit tutorial or start from scratch?"
+
+Every agent reply either continues the next safe authorized action or clearly explains why an answer is needed. It does not stop on a progress-only message such as "I checked the input" or "I will organize it." If no decision is needed, it continues working.
 
 ```text
 Choose how to start: reply “Use a NijiUnit tutorial” or “Start from scratch.”
@@ -18,11 +20,17 @@ Replies stay short and put the conclusion or current action first. When more det
 
 It is fine to leave parts unknown or undecided. The agent asks about any missing information one point at a time.
 
-For either route, describe the subject naturally and let the agent write `input/story.md`. If you have rights-cleared reference images, videos, or audio, provide their local location and usage permission. The agent safely imports an already supplied location, so you do not need to copy the same files again; it opens `input` only when no location was supplied. It records what each file should and should not be used for. You do not need to author Markdown manually. The agent then asks: "Choose the finished video's orientation. For a regular YouTube video, choose ‘Horizontal (16:9).’ For a YouTube Short, choose ‘Vertical (9:16).’ Reply ‘Horizontal’ or ‘Vertical.’" Review the first generated image and then the official Excel storyboard. Paid video generation remains blocked until you explicitly approve that workbook. An offline HTML page is available when no spreadsheet application is installed.
+When a tutorial sample story is saved, use `input/sample_story.md` as a reference and write the desired production in ordinary prose in `input/story.md`. Name every reference image, video, or audio file and state what to use from it. You may instead describe the idea naturally and ask the agent to organize `story.md`; no Markdown syntax or long form is required. The agent safely imports an already supplied rights-cleared location, so you do not need to copy the same files again.
 
-A new named character is reviewed one at a time from rights-cleared image or video references and fixed traits. It stays pending until you approve the character review page. Unnamed background people are not silently registered for reuse. Corrections entered in the yellow Excel field are applied to the storyboard and affected images, then a new `_r002` or later workbook is built without overwriting the earlier review.
+After you say the input is ready, the agent reads it and reports the actual story meaning, exact filenames, and role of every asset. It does not stop with only a generic acknowledgement. After rights, named characters, and the aspect ratio are ready, it asks whether to generate the paid starting images and create the Excel storyboard. On approval, it completes both without intermediate progress-only turns. Paid video generation remains blocked until you explicitly approve the workbook. An offline HTML page is available when no spreadsheet application is installed.
 
-For an image review, the agent opens the containing folder and verifies the File Explorer/Finder window and exact filename itself. It then gives a short, descriptive, exact filename to double-click. It does not ask for an intermediate “Opened” reply; the next response concerns the content, correction, or approval. It never relies on “this image,” “the right image,” a process launch, or a chat attachment as proof that the intended folder is visible. HTML review pages and videos use the same verified handoff.
+A new named character is reviewed one at a time from rights-cleared image or video references and fixed traits. It stays pending until you approve the character review page. Unnamed background people are not silently registered for reuse. Corrections may be written naturally in chat or entered in the yellow Excel field. The reviewed `v001` remains unchanged; the correction creates a whole `v002` run with `storyboard_v002.xlsx`. Video and audio corrections use later whole-run versions too.
+
+If one message says, for example, "Fix S001 and then continue to video generation," the correction and continuation are treated as conditional authorization. The agent applies and verifies the correction and does not ask for the same approval again unless a new choice, cost, rights issue, or ambiguity appears.
+
+The identity reference for a new or changed named character is the only normal image review before the workbook. Already approved characters and ordinary storyboard starting images do not add separate user checkpoints.
+
+For an artifact review, the agent opens the containing folder and verifies the File Explorer/Finder window and exact filename itself. It then gives the exact filename and the complete review task in one concise message. For an Excel storyboard, that means open it, review every sheet, write corrections in the yellow fields and save, or report approval. It does not ask for an intermediate “Opened” reply; the next response concerns the content, correction, or approval. It never relies on “this image,” “the right image,” a process launch, or a chat attachment as proof that the intended folder is visible. Images, HTML review pages, and videos use the same verified handoff.
 
 After approved clips are made, the finishing step handles speech, optional rights-cleared music, subtitles, final assembly, and a real nine-frame review. If the result is satisfactory, say so naturally—for example, “Looks good” or “This is finished.” The run then moves to local `history` and remains editable.
 
@@ -36,7 +44,7 @@ Ask “Is there a sample?” and the agent reveals the bundled 30-second MP4. Th
 
 The sample demonstrates the finished form and workbook quality. Its characters are not silently reused in a user's production.
 
-For a NijiUnit tutorial, the agent converts the exact YouTube ID to the matching official website guide and reads it directly each time. It does not keep using an old local tutorial cache. It can retrieve production guidance and public text, not NijiUnit's character images, source videos, or audio. Enjoy creating your own characters instead of copying unpublished NijiUnit assets. When the tutorial provides a public story, the agent can save it—with your confirmation—as reference-only `input/sample_story.md`; the production always uses a separate `input/story.md`.
+For a NijiUnit tutorial, the agent asks for one YouTube URL. If you do not know it, simply say so and the agent helps locate the relevant NijiUnit tutorial URL. It reads the matching official website guide directly each time and does not keep an old local tutorial cache. It can retrieve production guidance and public text, not NijiUnit's character images, source videos, or audio. When the tutorial provides a public story, the agent can save it—with your confirmation—as reference-only `input/sample_story.md`; use it to write the separate production `input/story.md` and place any named reference files beside it.
 
 Before starting a new video production, the AI agent checks GitHub without updating:
 

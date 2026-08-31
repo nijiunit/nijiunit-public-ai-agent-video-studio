@@ -31,6 +31,7 @@ from video_storyboard.pipeline import (  # noqa: E402
     render_images_command,
     render_videos_command,
     reveal_artifact_command,
+    revise_run_command,
     show_sample_command,
     validate_character_registry_command,
 )
@@ -242,11 +243,32 @@ def build_parser() -> argparse.ArgumentParser:
     )
     apply_corrections.add_argument("--run-dir", type=Path, required=True)
     apply_corrections.add_argument("--workbook", type=Path, default=None)
+    apply_corrections.add_argument(
+        "--corrections-file",
+        type=Path,
+        default=None,
+        help="チャットで受けた訂正を同じcorrections形式のJSONで渡す",
+    )
     apply_corrections.add_argument("--story-model", default=None)
     apply_corrections.add_argument(
         "--character-registry-dir",
         type=Path,
         default=ROOT / "characters",
+    )
+
+    revise_run = subparsers.add_parser(
+        "revise-run",
+        help="動画または音声の訂正を次のvNNN制作版として開始する",
+    )
+    revise_run.add_argument("--run-dir", type=Path, required=True)
+    revise_run.add_argument("--scope", choices=("video", "audio"), required=True)
+    revise_run.add_argument("--reason", required=True)
+    revise_run.add_argument(
+        "--shot",
+        type=int,
+        action="append",
+        default=[],
+        help="video訂正で作り直すショット番号。省略時は全クリップ",
     )
 
     reveal = subparsers.add_parser(
@@ -277,7 +299,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="前回会話が終わっても残る完成確認待ちとhistoryを確認する",
     )
     completion.add_argument(
-        "--output-root", type=Path, default=ROOT / "output" / "storyboard"
+        "--output-root", type=Path, default=ROOT / "output"
     )
     completion.add_argument("--history-root", type=Path, default=ROOT / "history")
     completion.add_argument(
@@ -392,8 +414,16 @@ def _dispatch(args: argparse.Namespace) -> str:
         result = apply_corrections_command(
             run_dir=args.run_dir,
             workbook_path=args.workbook,
+            corrections_file=args.corrections_file,
             story_model=args.story_model,
             character_registry_dir=args.character_registry_dir,
+        )
+    elif args.command == "revise-run":
+        result = revise_run_command(
+            args.run_dir,
+            scope=args.scope,
+            reason=args.reason,
+            affected_shots=tuple(args.shot),
         )
     elif args.command == "reveal-artifact":
         result = reveal_artifact_command(

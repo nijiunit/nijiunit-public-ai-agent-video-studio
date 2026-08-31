@@ -4,6 +4,8 @@ English | [日本語](getting-started.ja.md)
 
 This command-line application turns a story and character references into three-second video clips, then supports assembly, voices, subtitles, sound, and final review. It is designed to be operated through natural-language requests to an AI agent rather than through a browser interface.
 
+A first message may be only `Hello`. The agent begins with: `Hello. I can help you create a video with NijiUnit. First, choose how to start: use a NijiUnit tutorial or start from scratch?`
+
 ## Requests you can give an AI agent
 
 After cloning the repository and opening it in an AI agent, ask:
@@ -24,8 +26,7 @@ For a new production, requests can be as specific as:
 
 ```text
 Review the story and images in input and create a three-second storyboard.
-Generate only the first starting image, then stop for my review.
-Build the Excel storyboard with every starting image and stop for my approval.
+Inspect all starting images internally, build the image-filled Excel storyboard, and stop for my approval.
 After approval, generate three-second shots and inspect each one as nine frames.
 ```
 
@@ -127,7 +128,7 @@ Resolve only the reported issue, one action at a time. The diagnostic distinguis
 
 First choose whether to use a NijiUnit tutorial or start from scratch. A tutorial provides production guidance and public text only; NijiUnit's production character images, source videos, and audio are not published. When an official public story is available, the agent may save it—with your confirmation—as reference-only `input/sample_story.md`.
 
-For either route, describe the subject naturally. The AI agent uses `templates/story-input.md` as internal structure and writes `input/story.md` for you. You do not need to author Markdown manually. The story includes:
+When a tutorial public story is saved as `sample_story.md`, use it as reference and write the desired production in ordinary prose in `input/story.md`. Name every reference image, video, or audio file and state what to use from it. For the from-scratch route or when you want writing help, describe the subject naturally and the agent organizes it into `story.md`. No Markdown syntax or long form is required. The story includes:
 
 - the characters and their goal
 - the events and ending
@@ -137,6 +138,8 @@ For either route, describe the subject naturally. The AI agent uses `templates/s
 - exact text that must appear on screen
 
 Create `input/story.md` from the user's own idea and rights-cleared materials. Even when `sample_story.md` exists, the production always uses `story.md`.
+
+After you say the input is ready, the agent reads the actual directory and reports the story meaning, exact filenames, and role of every asset. It does not stop at a generic "input checked" message. If nothing is missing, it continues to the next required decision. After rights, named-character status, and aspect ratio are ready, it asks whether to generate the paid starting images and create the Excel storyboard; approval authorizes both actions.
 
 When reference images, videos, or audio exist, provide their local location and usage permission. If you already supplied a location, the agent safely imports it with `import-input`; you do not need to copy the same files manually. The agent opens the actual `input` folder only when no location was supplied. Describe the intended use naturally, such as: "Use the face and clothing in `character_mina.png` for Mina. Use only the walking motion from `walk.mp4`, not its background or audio." The agent records the filename, reference scope, fixed details, prohibited uses, source, and usage rights in `story.md`.
 
@@ -164,23 +167,20 @@ If the user has created a local character registry, pass its path explicitly:
   --character-registry-dir characters
 ```
 
-## 6. Review starting images and build the Excel storyboard
+## 6. Inspect starting images and build the Excel storyboard
 
-Do not generate every image immediately. Review the first one:
-
-```powershell
-.\.venv\Scripts\python.exe run_storyboard.py render-images `
-  --run-dir output\storyboard\v001 --limit 1
-```
-
-Check identity, character count, left-right placement, background, unintended text or logos, the user-selected aspect ratio, and subtitle space. Remove `--limit` only after approval.
+The agent generates every shot's starting image:
 
 ```powershell
 .\.venv\Scripts\python.exe run_storyboard.py render-images `
   --run-dir output\storyboard\v001
 ```
 
-When every shot's starting image exists, the application automatically creates `output/storyboard/v001/review/storyboard_v001.xlsx` plus Japanese and English local HTML review pages. The workbook is the official storyboard. JSON and Markdown are machine input and supplementary documentation; they do not replace the workbook. A corrected build keeps the old workbook and creates `_r002`, `_r003`, and later revisions.
+The agent internally checks identity, character count, left-right placement, background, unintended text or logos, the user-selected aspect ratio, and subtitle space, then corrects obvious problems. Normal production does not pause for the user's approval of one starting image. Only a new or changed character's identity reference receives a separate pre-workbook review when the character-registry gate requires it.
+
+When every shot's starting image exists, the application automatically creates `output/storyboard/v001/review/storyboard_v001.xlsx` plus Japanese and English local HTML review pages. The workbook is the official storyboard. JSON and Markdown are machine input and supplementary documentation; they do not replace the workbook.
+
+Write a correction naturally in chat, or use the yellow Excel correction field and save. The reviewed `v001` stays unchanged. A storyboard correction creates a whole `v002` run with `storyboard_v002.xlsx`; unchanged approved material carries forward with provenance, and replaced material is retained under `v002/rejected/`. Video and audio corrections also create later whole-run versions by using `revise-run`.
 
 ## 7. Review and approve the Excel storyboard
 
@@ -193,9 +193,11 @@ First, the AI agent runs:
 
 On macOS or Linux, start the same command with `./.venv/bin/python run_storyboard.py`. Finder selects the target file. If the Linux file manager cannot select it, use the exact filename printed for the already-open folder.
 
-This reveals the workbook when Excel, LibreOffice Calc, or Numbers is available; otherwise it reveals the English local HTML page by exact filename. The agent verifies the File Explorer/Finder window and exact filename itself, then gives one action, for example: “Double-click `Review_storyboard.xlsx`.” It does not ask for an intermediate “Opened” reply or rely on highlight color. A still review image uses a short descriptive filename. A successful process launch or chat attachment alone is not treated as proof that the intended folder is visible.
+This reveals the workbook when Excel, LibreOffice Calc, or Numbers is available; otherwise it reveals the English local HTML page by exact filename. The agent verifies the File Explorer/Finder window and exact filename itself, then gives the complete review task in one message: open `Review_storyboard.xlsx`, review every sheet's main image, description, dialogue, sound, action, and nine-frame plan; for a correction, set `レビュー状態` to `修正必要`, write the exact request in the yellow correction field, and save; if there is no problem, report approval. It does not ask for an intermediate “Opened” reply or rely on highlight color. A still review image uses a short descriptive filename. A successful process launch or chat attachment alone is not treated as proof that the intended folder is visible.
 
-After the workbook opens, review every sheet's main image, description, dialogue, sound, action, and nine-frame plan. For a correction, set `レビュー状態` to `修正必要`, write the exact request in the yellow correction field, and save. In HTML, review each card and paste the generated summary into chat. The AI agent applies corrections and creates a new workbook revision for another review.
+In HTML, review every card and paste the generated summary into chat. The AI agent applies corrections and creates a new workbook revision for another review.
+
+One message may combine the correction and what to do afterward, such as: `Fix S001, then continue to video generation.` This is conditional authorization. The agent verifies the correction and continues without asking for the same approval again unless a new choice, cost, rights issue, or ambiguity appears.
 
 Only after the user explicitly approves the workbook may the agent run:
 
@@ -216,6 +218,8 @@ If the workbook is locked because it is still open, the agent asks for one actio
 ```
 
 Review the first clip before generating the rest. Each clip is extracted into nine frames; inspect faces, colors, part counts, necks, hands, feet, backgrounds, framing, and continuity.
+
+Do not overwrite a reviewed version when correcting a clip or its audio. Use `revise-run --scope video` for visual motion changes and `revise-run --scope audio` for speech, sound, or music changes. Keep the new `storyboard_vNNN.xlsx`, `story_video_vNNN.mp4`, and `storyboard_vNNN_video.xlsx` names aligned.
 
 ## 9. Assemble and finish
 

@@ -5,6 +5,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from .artifacts import (
@@ -49,6 +50,8 @@ from .knowledge import (
 )
 from .motion_assets import prepare_motion_keyframes
 from .review_html import create_review_html
+from .revisions import create_run_revision
+from .run_versions import allocate_run_dir, run_version_name
 from .schema import Storyboard
 from .settings import CHARACTER_REGISTRY_DIR
 from .video import (
@@ -70,19 +73,6 @@ from .workbook import (
     extract_corrections,
     workbook_review_issues,
 )
-
-
-def _next_run_dir(output_root: Path) -> Path:
-    output_root.mkdir(parents=True, exist_ok=True)
-    versions: list[int] = []
-    for path in output_root.iterdir():
-        match = re.fullmatch(r"v(\d{3})", path.name)
-        if path.is_dir() and match:
-            versions.append(int(match.group(1)))
-    version = max(versions, default=0) + 1
-    run_dir = output_root / f"v{version:03d}"
-    run_dir.mkdir()
-    return run_dir
 
 
 def _current_production_guidance():
@@ -198,7 +188,7 @@ def create_command(
             "--aspect-ratioで明示してください。"
         )
     guidance = _current_production_guidance().for_aspect_ratio(aspect_ratio)
-    run_dir = _next_run_dir(output_root.resolve())
+    run_dir = allocate_run_dir(output_root.resolve())
     snapshot_guidance(guidance, run_dir)
     reference_dir = run_dir / "references"
     reference_dir.mkdir()
@@ -505,7 +495,9 @@ def finalize_video_command(run_dir: Path) -> str:
     run_dir = run_dir.resolve()
     storyboard = _load_storyboard(run_dir)
     guidance = _load_pinned_guidance(run_dir, storyboard)
-    destination = run_dir / "final" / f"story_video_{run_dir.name}.mp4"
+    destination = (
+        run_dir / "final" / f"story_video_{run_version_name(run_dir)}.mp4"
+    )
     concatenate_clips(storyboard, run_dir, destination, guidance.profile.media)
     metadata = inspect_video(destination)
     (destination.parent / "video_metadata.json").write_text(
@@ -744,54 +736,184 @@ def import_input_assets_command(source: Path, input_dir: Path) -> str:
     return "\n".join(lines)
 
 
-def _next_storyboard_json_revision(run_dir: Path) -> tuple[int, Path]:
-    revisions = []
-    for path in run_dir.glob("storyboard_r*.json"):
-        match = re.fullmatch(r"storyboard_r(\d{3})\.json", path.name)
-        if match:
-            revisions.append(int(match.group(1)))
-    revision = max(revisions, default=1) + 1
-    return revision, run_dir / f"storyboard_r{revision:03d}.json"
-
-
 def _shot_number_from_sheet(sheet: str) -> int | None:
     match = re.match(r"S(\d{3})", sheet)
     return int(match.group(1)) if match else None
 
 
-def apply_corrections_command(
-    run_dir: Path,
-    workbook_path: Path | None = None,
-    story_model: str | None = None,
-    character_registry_dir: Path | None = CHARACTER_REGISTRY_DIR,
-) -> str:
-    """Apply Excel corrections and invalidate only affected review images."""
-    run_dir = run_dir.resolve()
-    storyboard_path = run_dir / "storyboard.json"
-    storyboard = _load_storyboard(run_dir)
-    guidance = _load_pinned_guidance(run_dir, storyboard)
-    workbook_path = (
-        workbook_path.resolve() if workbook_path else _workbook_path(run_dir)
-    )
-    corrections_path = run_dir / f"corrections_{workbook_path.stem}.json"
-    extract_corrections(workbook_path, corrections_path)
-    correction_data = json.loads(corrections_path.read_text(encoding="utf-8"))
-    requested = []
-    missing_instruction = []
-    for item in correction_data["corrections"]:
+def _validate_correction_data(
+    correction_data: object,
+    storyboard: Storyboard,
+) -> tuple[dict, list[dict]]:
+    if not isinstance(correction_data, dict):
+        raise RuntimeError("訂正JSONはオブジェクトである必要があります。")
+    corrections = correction_data.get("corrections")
+    if not isinstance(corrections, list):
+        raise RuntimeError("訂正JSONにcorrections配列がありません。")
+    requested: list[dict] = []
+    missing_instruction: list[str] = []
+    invalid_sheets: list[str] = []
+    invalid_scopes: list[str] = []
+    valid_shots = {shot.shot_number for shot in storyboard.shots}
+    for raw_item in corrections:
+        if not isinstance(raw_item, dict):
+            raise RuntimeError("correctionsの各項目はオブジェクトである必要があります。")
+        item = dict(raw_item)
         instruction = str(item.get("instruction") or "").strip()
         status = str(item.get("review_status") or "").strip()
         if status == "修正必要" and not instruction:
             missing_instruction.append(str(item.get("sheet") or ""))
         if instruction:
+            sheet = str(item.get("sheet") or "").strip()
+            number = _shot_number_from_sheet(sheet)
+            if number is None or number not in valid_shots:
+                invalid_sheets.append(sheet or "（シート名なし）")
+            scope = str(item.get("revision_scope") or "").strip()
+            if scope not in {"小規模", "大規模"}:
+                invalid_scopes.append(f"{sheet or '（シート名なし）'}: {scope or '未指定'}")
             requested.append(item)
     if missing_instruction:
         raise RuntimeError(
-            "修正内容が空欄です。黄色い訂正指示欄へ、直したい内容を書いてください: "
+            "修正内容が空欄です。直したい内容を書いてください: "
             + ", ".join(missing_instruction)
+        )
+    if invalid_sheets:
+        raise RuntimeError(
+            "訂正先が現在の絵コンテに存在しません: " + ", ".join(invalid_sheets)
+        )
+    if invalid_scopes:
+        raise RuntimeError(
+            "訂正規模は「小規模」または「大規模」を指定してください: "
+            + ", ".join(invalid_scopes)
         )
     if not requested:
         raise RuntimeError("反映する訂正指示がありません。")
+    return correction_data, requested
+
+
+def _read_corrections(
+    workbook_path: Path,
+    corrections_file: Path | None,
+    storyboard: Storyboard,
+) -> tuple[dict, list[dict], str]:
+    if corrections_file is not None:
+        source = corrections_file.resolve()
+        if not source.is_file():
+            raise FileNotFoundError(source)
+        data = json.loads(source.read_text(encoding="utf-8"))
+        correction_data, requested = _validate_correction_data(data, storyboard)
+        return correction_data, requested, source.name
+
+    with tempfile.TemporaryDirectory(prefix="nijiunit-corrections-") as directory:
+        temporary = Path(directory) / "corrections.json"
+        extract_corrections(workbook_path, temporary)
+        data = json.loads(temporary.read_text(encoding="utf-8"))
+    correction_data, requested = _validate_correction_data(data, storyboard)
+    return correction_data, requested, workbook_path.name
+
+
+def _validate_revised_storyboard_scope(
+    original: Storyboard,
+    revised: Storyboard,
+    requested: list[dict],
+) -> set[int]:
+    large_revision = any(
+        str(item.get("revision_scope") or "").strip() == "大規模"
+        for item in requested
+    )
+    if large_revision:
+        return {shot.shot_number for shot in revised.shots}
+
+    affected = {
+        number
+        for item in requested
+        if (number := _shot_number_from_sheet(str(item.get("sheet") or "")))
+    }
+    if len(original.shots) != len(revised.shots):
+        raise RuntimeError(
+            "小規模訂正でショット数が変わりました。大規模訂正として確認し直してください。"
+        )
+    original_header = original.model_dump(exclude={"shots"})
+    revised_header = revised.model_dump(exclude={"shots"})
+    if original_header != revised_header:
+        raise RuntimeError(
+            "小規模訂正で作品全体の設定が変わりました。大規模訂正として確認し直してください。"
+        )
+    revised_by_number = {shot.shot_number: shot for shot in revised.shots}
+    changed_outside_scope = [
+        shot.shot_number
+        for shot in original.shots
+        if shot.shot_number not in affected
+        and revised_by_number[shot.shot_number].model_dump() != shot.model_dump()
+    ]
+    if changed_outside_scope:
+        raise RuntimeError(
+            "小規模訂正の対象外ショットが変更されました: "
+            + ", ".join(f"S{number:03d}" for number in changed_outside_scope)
+        )
+    return affected
+
+
+def _expand_video_continuity_dependents(
+    storyboard: Storyboard,
+    affected_shots: tuple[int, ...],
+) -> tuple[int, ...]:
+    expanded = set(affected_shots)
+    if not expanded:
+        return affected_shots
+    for shot in storyboard.shots:
+        if (
+            shot.production_mode == "generated_video"
+            and shot.continuity_start_mode == "previous_final_frame"
+            and shot.shot_number - 1 in expanded
+        ):
+            expanded.add(shot.shot_number)
+    return tuple(sorted(expanded))
+
+
+def _update_revision_record(run_dir: Path, **values: object) -> None:
+    record_path = run_dir / "revision_origin.json"
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    record.update(values)
+    record_path.write_text(
+        json.dumps(record, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    history_path = run_dir / "revision_history.json"
+    history = json.loads(history_path.read_text(encoding="utf-8"))
+    if isinstance(history, list) and history:
+        history[-1] = record
+        history_path.write_text(
+            json.dumps(history, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+
+def apply_corrections_command(
+    run_dir: Path,
+    workbook_path: Path | None = None,
+    corrections_file: Path | None = None,
+    story_model: str | None = None,
+    character_registry_dir: Path | None = CHARACTER_REGISTRY_DIR,
+) -> str:
+    """Apply corrections in the next whole vNNN run without changing the source."""
+    run_dir = run_dir.resolve()
+    storyboard = _load_storyboard(run_dir)
+    guidance = _load_pinned_guidance(run_dir, storyboard)
+    official_workbook = _workbook_path(run_dir).resolve()
+    workbook_path = workbook_path.resolve() if workbook_path else official_workbook
+    if not workbook_path.is_file():
+        raise FileNotFoundError(workbook_path)
+    if workbook_path != official_workbook:
+        raise ValueError(
+            "訂正にはこの制作版の正式Excelだけを使用できます: "
+            f"{official_workbook}"
+        )
+    correction_data, requested, corrections_source = _read_corrections(
+        workbook_path,
+        corrections_file,
+        storyboard,
+    )
 
     assets = load_manifest(run_dir / "manifest.json")
     registry = CharacterRegistry.load_optional(character_registry_dir)
@@ -803,53 +925,101 @@ def apply_corrections_command(
         registry,
     )
     _require_storyboard_matches_guidance(revised, guidance)
-
-    revision, revision_path = _next_storyboard_json_revision(run_dir)
-    first_revision = run_dir / "storyboard_r001.json"
-    if not first_revision.exists():
-        shutil.copy2(storyboard_path, first_revision)
-    serialized = revised.model_dump_json(indent=2)
-    revision_path.write_text(serialized, encoding="utf-8")
-    storyboard_path.write_text(serialized, encoding="utf-8")
-
-    affected = {
-        number
-        for item in requested
-        if (number := _shot_number_from_sheet(str(item.get("sheet") or "")))
-    }
-    if any(str(item.get("revision_scope")) == "大規模" for item in requested):
-        affected = {shot.shot_number for shot in revised.shots}
-    rejected_dir = run_dir / "rejected" / f"before_storyboard_r{revision:03d}"
-    invalidated: list[str] = []
-    for number in sorted(affected):
-        image = run_dir / "images" / f"shot_{number:03d}.png"
-        if not image.is_file():
-            continue
-        rejected_dir.mkdir(parents=True, exist_ok=True)
-        backup = rejected_dir / image.name
-        shutil.copy2(image, backup)
-        image.unlink()
-        invalidated.append(image.name)
-
-    log_path = run_dir / "revision_log.jsonl"
-    with log_path.open("a", encoding="utf-8") as stream:
-        stream.write(
-            json.dumps(
-                {
-                    "revision": revision,
-                    "source_workbook": workbook_path.name,
-                    "corrections_file": corrections_path.name,
-                    "affected_shots": sorted(affected),
-                    "invalidated_images": invalidated,
-                },
-                ensure_ascii=False,
-            )
-            + "\n"
+    affected = _validate_revised_storyboard_scope(storyboard, revised, requested)
+    revision = create_run_revision(
+        run_dir,
+        scope="storyboard",
+        reason="Excelまたはチャットで受けた絵コンテ訂正を反映",
+        affected_shots=tuple(sorted(affected)),
+    )
+    target_run = revision.target_run
+    try:
+        rejected_dir = (
+            target_run / "rejected" / f"from_{revision.source_version}"
         )
+        rejected_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(
+            target_run / "storyboard.json",
+            rejected_dir / "storyboard.json",
+        )
+        (target_run / "storyboard.json").write_text(
+            revised.model_dump_json(indent=2),
+            encoding="utf-8",
+        )
+        (target_run / "corrections.json").write_text(
+            json.dumps(correction_data, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        invalidated: list[str] = []
+        for number in sorted(affected):
+            image = target_run / "images" / f"shot_{number:03d}.png"
+            if not image.is_file():
+                continue
+            image_rejected = rejected_dir / "images" / image.name
+            image_rejected.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(image), str(image_rejected))
+            invalidated.append(image.name)
+        _update_revision_record(
+            target_run,
+            source_workbook=workbook_path.name,
+            corrections_source=corrections_source,
+            affected_shots=sorted(affected),
+            invalidated_images=invalidated,
+        )
+    except Exception:
+        shutil.rmtree(target_run, ignore_errors=True)
+        raise
     return (
-        f"訂正をstoryboard_r{revision:03d}.jsonへ反映しました。\n"
+        f"訂正を次の制作版へ反映しました: {target_run}\n"
+        f"元の制作版は変更せず残しています: {run_dir}\n"
         f"再生成が必要な画像: {', '.join(invalidated) or 'なし'}\n"
-        "次は不足画像を生成してください。全画像が揃うと新版Excelを作成できます。"
+        f"次は{revision.target_version}の不足画像を生成してください。"
+        "全画像が揃うと同じ版名のExcelコンテを作成できます。"
+    )
+
+
+def revise_run_command(
+    run_dir: Path,
+    *,
+    scope: str,
+    reason: str,
+    affected_shots: tuple[int, ...] = (),
+) -> str:
+    """Create the next whole run for a video or audio correction."""
+    run_dir = run_dir.resolve()
+    if scope not in {"video", "audio"}:
+        raise ValueError("revise-runのscopeはvideoまたはaudioです。")
+    if scope == "audio" and affected_shots:
+        raise ValueError("audio訂正では--shotを指定しません。")
+    storyboard = _load_storyboard(run_dir)
+    _load_pinned_guidance(run_dir, storyboard)
+    _require_approved_workbook(storyboard, run_dir)
+    valid_shots = {shot.shot_number for shot in storyboard.shots}
+    unknown = sorted(set(affected_shots) - valid_shots)
+    if unknown:
+        raise ValueError(
+            "存在しないショット番号です: "
+            + ", ".join(f"S{number:03d}" for number in unknown)
+        )
+    if scope == "video":
+        affected_shots = _expand_video_continuity_dependents(
+            storyboard,
+            affected_shots,
+        )
+    revision = create_run_revision(
+        run_dir,
+        scope=scope,
+        reason=reason,
+        affected_shots=affected_shots,
+    )
+    invalidated = (
+        ", ".join(f"S{number:03d}" for number in revision.invalidated_shots)
+        or "なし"
+    )
+    return (
+        f"次の制作版を作成しました: {revision.target_run}\n"
+        f"元の制作版は変更せず残しています: {run_dir}\n"
+        f"作り直すショット: {invalidated}"
     )
 
 

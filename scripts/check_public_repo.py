@@ -114,6 +114,8 @@ def validate_local_secret_ignores(root: Path = ROOT) -> list[str]:
         ".env",
         ".env.*",
         "!.env.example",
+        "characters/*",
+        "!characters/README.md",
         "/temp*.md",
         "/会話履歴*.md",
     }
@@ -129,12 +131,23 @@ def validate_no_tracked_local_env(root: Path = ROOT) -> list[str]:
     ]
 
 
+def validate_no_tracked_private_characters(root: Path = ROOT) -> list[str]:
+    allowed = Path("characters/README.md")
+    return [
+        f"{path.relative_to(root).as_posix()}: private character data must not be tracked"
+        for path in tracked_files(root)
+        if path.relative_to(root).parts[:1] == ("characters",)
+        and path.relative_to(root) != allowed
+    ]
+
+
 def main() -> int:
     issues = (
         scan_publishable_files()
         + validate_publishable_profiles()
         + validate_local_secret_ignores()
         + validate_no_tracked_local_env()
+        + validate_no_tracked_private_characters()
     )
     if issues:
         print("Public-repository safety check failed:")

@@ -106,8 +106,10 @@ def test_video_generation_stops_before_excel_approval(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    run_dir = tmp_path / "v001"
+    run_dir.mkdir()
     storyboard = make_storyboard()
-    (tmp_path / "storyboard.json").write_text(
+    (run_dir / "storyboard.json").write_text(
         storyboard.model_dump_json(indent=2),
         encoding="utf-8",
     )
@@ -122,7 +124,7 @@ def test_video_generation_stops_before_excel_approval(
     monkeypatch.setattr(pipeline, "render_video_shots", fake_render_video_shots)
 
     with pytest.raises(RuntimeError, match="Excelコンテの確認と承認"):
-        pipeline.render_videos_command(tmp_path, character_registry_dir=None)
+        pipeline.render_videos_command(run_dir, character_registry_dir=None)
     assert called is False
 
 
@@ -130,18 +132,20 @@ def test_workbook_build_stops_when_main_images_are_missing(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    run_dir = tmp_path / "v001"
+    run_dir.mkdir()
     storyboard = make_storyboard()
-    (tmp_path / "storyboard.json").write_text(
+    (run_dir / "storyboard.json").write_text(
         storyboard.model_dump_json(indent=2),
         encoding="utf-8",
     )
     use_pinned_guidance(monkeypatch, storyboard)
 
     with pytest.raises(RuntimeError, match="全ショットのメイン画像"):
-        pipeline.build_workbook_command(tmp_path)
+        pipeline.build_workbook_command(run_dir)
 
 
-def test_pipeline_builds_review_folder_html_and_new_revision(
+def test_pipeline_builds_one_workbook_per_whole_run(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -174,10 +178,9 @@ def test_pipeline_builds_review_folder_html_and_new_revision(
     assert corrections.parent == run_dir
     assert corrections.name == "corrections_storyboard_v001.json"
 
-    pipeline.build_workbook_command(run_dir)
-    second = run_dir / "review" / "storyboard_v001_r002.xlsx"
+    with pytest.raises(FileExistsError, match="次のvNNN"):
+        pipeline.build_workbook_command(run_dir)
     assert first.is_file()
-    assert second.is_file()
 
 
 def test_open_excel_lock_gets_one_clear_recovery_action(
@@ -210,8 +213,10 @@ def test_pipeline_rejects_aspect_ratio_changed_after_pin(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    run_dir = tmp_path / "v001"
+    run_dir.mkdir()
     storyboard = make_storyboard()
-    (tmp_path / "storyboard.json").write_text(
+    (run_dir / "storyboard.json").write_text(
         storyboard.model_dump_json(indent=2),
         encoding="utf-8",
     )
@@ -223,4 +228,4 @@ def test_pipeline_rejects_aspect_ratio_changed_after_pin(
     monkeypatch.setattr(pipeline, "load_run_guidance", lambda _run_dir: guidance)
 
     with pytest.raises(RuntimeError, match="制作途中では映像比率を変更できません"):
-        pipeline.build_workbook_command(tmp_path)
+        pipeline.build_workbook_command(run_dir)

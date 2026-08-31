@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from run_storyboard import build_parser
@@ -47,6 +49,7 @@ def test_completion_status_accepts_language_for_consistent_agent_usage() -> None
     args = build_parser().parse_args(["completion-status", "--language", "ja"])
 
     assert args.language == "ja"
+    assert args.output_root.name == "output"
 
 
 def test_import_input_accepts_a_user_supplied_source_folder() -> None:
@@ -55,3 +58,38 @@ def test_import_input_accepts_a_user_supplied_source_folder() -> None:
     )
 
     assert str(args.source).replace("\\", "/") == "C:/materials"
+
+
+def test_revise_run_accepts_video_scope_and_repeatable_shots() -> None:
+    args = build_parser().parse_args(
+        [
+            "revise-run",
+            "--run-dir",
+            "output/example/v001",
+            "--scope",
+            "video",
+            "--reason",
+            "S001を修正",
+            "--shot",
+            "1",
+            "--shot",
+            "3",
+        ]
+    )
+
+    assert args.scope == "video"
+    assert args.shot == [1, 3]
+
+
+def test_apply_corrections_accepts_chat_corrections_file() -> None:
+    args = build_parser().parse_args(
+        [
+            "apply-corrections",
+            "--run-dir",
+            "output/example/v001",
+            "--corrections-file",
+            "corrections.json",
+        ]
+    )
+
+    assert args.corrections_file == Path("corrections.json")

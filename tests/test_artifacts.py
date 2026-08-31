@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from video_storyboard.artifacts import (
     artifact_display_name,
     artifact_for_reveal,
@@ -94,7 +96,7 @@ def test_handoff_requires_agent_screen_verification(tmp_path: Path) -> None:
     assert "青く" not in message
 
 
-def test_storyboard_workbook_revisions_are_never_overwritten(
+def test_storyboard_workbook_requires_next_whole_run_instead_of_r_suffix(
     tmp_path: Path,
 ) -> None:
     run_dir = tmp_path / "v001"
@@ -105,13 +107,12 @@ def test_storyboard_workbook_revisions_are_never_overwritten(
     first.parent.mkdir()
     first.touch()
 
-    second = next_storyboard_workbook(run_dir)
-    assert second.name == "storyboard_v001_r002.xlsx"
-    second.touch()
-    assert current_storyboard_workbook(run_dir) == second
+    with pytest.raises(FileExistsError, match="次のvNNN"):
+        next_storyboard_workbook(run_dir)
+    assert current_storyboard_workbook(run_dir) == first
 
 
-def test_legacy_storyboard_is_found_and_next_build_is_revision_two(
+def test_legacy_storyboard_is_readable_but_cannot_create_r_suffix(
     tmp_path: Path,
 ) -> None:
     run_dir = tmp_path / "v003"
@@ -120,7 +121,8 @@ def test_legacy_storyboard_is_found_and_next_build_is_revision_two(
     legacy.touch()
 
     assert current_storyboard_workbook(run_dir) == legacy
-    assert next_storyboard_workbook(run_dir).name == "storyboard_v003_r002.xlsx"
+    with pytest.raises(FileExistsError, match="次のvNNN"):
+        next_storyboard_workbook(run_dir)
 
 
 def test_windows_spreadsheet_detection_finds_local_calc(tmp_path: Path) -> None:
@@ -244,9 +246,8 @@ def test_final_artifacts_and_video_review_use_the_same_handoff(
 
     first_review = next_video_review_workbook(run_dir)
     first_review.touch()
-    second_review = next_video_review_workbook(run_dir)
-
-    assert second_review.name == "storyboard_v004_video_r002.xlsx"
+    with pytest.raises(FileExistsError, match="次のvNNN"):
+        next_video_review_workbook(run_dir)
     assert current_video_review_workbook(run_dir) == first_review
     assert artifact_for_reveal(run_dir, "final-video") == video
     assert artifact_for_reveal(run_dir, "ai-record", language="ja") == record

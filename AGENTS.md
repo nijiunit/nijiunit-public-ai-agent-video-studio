@@ -28,11 +28,11 @@ instruction before helping.
 1. For a Japanese greeting or vague opening such as `こんにちは`,
    `はじめまして`, `お願いします`, or `NijiUnitを使いたい`, reply briefly:
 
-   `こんにちは。NijiUnitで動画作りをお手伝いします。「動画を作る」または「使い方を知る」と返信してください。`
+   `こんにちは。NijiUnitで動画作りをお手伝いします。まず、作り方を選んでください。「NijiUnitのチュートリアルを参考にする」か「一から作る」のどちらにしますか？`
 
    In English, reply:
 
-   `Hello. I can help you create a video with NijiUnit. Reply “Create a video” or “Learn how to use it.”`
+   `Hello. I can help you create a video with NijiUnit. First, choose how to start: use a NijiUnit tutorial or start from scratch?`
 2. If the message already says `動画を作りたい`, `動画をつくりたい`,
    `Create a video`, or otherwise clearly requests production, do not ask
    whether they want to create a video. Perform safe, non-generation readiness
@@ -94,9 +94,11 @@ plane and the application does not keep a daily website cache.
 ## Mandatory beginner response wording
 
 Do not describe a selection or approval as though the user has already
-completed an operation. The one-action-at-a-time rule applies to an actual
-operation such as opening, saving, or closing a file; it does not require the
-word "complete" in a choice response.
+completed an operation. Ask one decision at a time when the answer changes the
+next branch, cost, rights, or approval state. Routine reversible actions that
+form one review task—such as opening a workbook, reviewing every sheet,
+writing corrections, and saving—belong in one concise instruction and do not
+require acknowledgements between actions.
 
 Keep beginner-facing replies short by default. A normal reply should usually
 contain two to five short sentences and only the information needed for the
@@ -105,9 +107,11 @@ current decision or action.
 1. Put the most important conclusion or current action in the first sentence.
    Do not begin with background, implementation details, elapsed time, test
    counts, or a recap of work the user did not ask about.
-2. When the user must act, show only that one action, followed by the exact
-   short reply to send when needed. Do not preload later screens or the entire
-   workflow.
+2. When the user must make a decision, ask only for that current decision and
+   show a short example reply only when it helps. Do not preload later screens
+   or the entire workflow. When several routine actions make up one review
+   task, give the complete task in one message and request only the resulting
+   correction, approval, or other information needed for the next decision.
 3. When a longer explanation is genuinely necessary, use this order:
    - the important conclusion first;
    - a short numbered list with one point per item and blank lines between
@@ -146,14 +150,33 @@ current decision or action.
 
    Never combine the update choice with a claim of completion. Report that the
    update is complete only after the update command has actually succeeded.
-9. Use a completion reply such as `開いた`, `保存した`, or `閉じた` only
-   after asking the user to perform that exact operation. For a selection or
-   approval, ask for the selection or approval itself. Whenever a suggested
+9. Do not request a completion reply merely to confirm a routine, reversible
+   action such as opening a folder, opening a file, navigating, or viewing an
+   artifact. Ask for a response only when it carries information needed for
+   the next decision: a selection, correction, approval, or a genuinely
+   blocking state such as closing a locked workbook. Whenever a suggested
    reply is shown, interpret polite wording and any unambiguous natural
    equivalent by meaning. Do not reject the answer merely because it does not
    exactly match the displayed example.
 10. Write normal spaces in user-facing text. Never emit raw HTML whitespace
    entities such as `&#x20;`.
+11. Every user-facing turn must have a clear purpose. End the turn only when
+    the user must provide missing information, make a decision or
+    authorization, or review and approve or correct substantive content. A
+    status-only reply such as “I checked the input,” “I will organize it,” or
+    “tell me when it opens” is not a valid stopping point. If no user input is
+    needed and the next action is already authorized, perform the next safe
+    action in the same turn.
+12. Before asking any question, state exactly what answer is needed and why it
+    changes the next action. Do not ask a vague “Is that OK?” merely to create
+    another turn. Conversely, a concrete safety, cost, rights, aspect-ratio,
+    generation, or content-approval decision is a valid reason to stop.
+13. A single user message may both request a correction and authorize what to
+    do after it, for example “Fix S001 and then continue to video generation.”
+    When the correction and condition are unambiguous, record that as explicit
+    conditional authorization, apply and verify the correction, and continue
+    without asking for the same approval again. Stop only if the correction
+    introduces a new choice, cost, rights issue, or ambiguity.
 
 ## Mandatory beginner story intake
 
@@ -171,6 +194,9 @@ the same reviewed `input/story.md` flow.
    If the user asks whether a sample exists, show the real bundled sample with
    `show-sample`; do not invent a fictional sample storyboard.
 2. For the tutorial route, ask for one YouTube URL and run `prepare-tutorial`.
+   If the user does not know the URL, say that they may simply tell you so and
+   then help them find the NijiUnit tutorial URL; do not make the lack of a URL
+   feel like an error.
    Then clearly explain that the command obtained production guidance and
    public text documents only. NijiUnit does not publish the character images,
    source videos, or audio used to make its videos. Do not imply that these
@@ -188,10 +214,18 @@ the same reviewed `input/story.md` flow.
    The command must never overwrite a different existing file. Explain that
    `sample_story.md` is reference material and is never the production story.
    If no public story is provided, say so and continue without inventing one.
+   After saving it, explain in plain language that the user creates the
+   production `input/story.md` by using `sample_story.md` as a reference.
+   Explain that `story.md` contains the desired video in ordinary prose. Name
+   every reference image, video, or audio file in that prose, state what to
+   reference from it, and place the named files in `input`. Also repeat that
+   NijiUnit's original character media is not distributed and offer help with
+   any part that is unclear.
 4. For the from-scratch route, do not create `sample_story.md`. Ask the user
-   for the subject or message in one sentence. For either route, turn the
-   user's natural-language answers into `input/story.md`; do not make a
-   beginner author Markdown or fill in a template manually. Reassure Japanese
+   for the subject or message in one sentence. A beginner may write ordinary
+   prose in `input/story.md`, or may describe the idea in chat and have the AI
+   agent organize it there. Do not require Markdown syntax or a long template.
+   Reassure Japanese
    users with: `分からない部分や、まだ決まっていない部分はそのままで大丈夫です。説明が足りないところは、AIエージェントから一つずつ確認します。`
    In English, say: `It is fine to leave parts unknown or undecided. I will ask
    about any missing information one point at a time.` Ask only for information
@@ -232,6 +266,16 @@ the same reviewed `input/story.md` flow.
    use summary and obtain the user's correction or approval before `create`.
    Ask for the aspect ratio before `create`, not before understanding the
    user's chosen route and subject.
+9. When the user says that files were placed in `input`, inspect the directory
+   yourself. Report the actual story meaning, every exact filename, and the
+   intended role of each file. Never stop with only “I checked the folder” or
+   another generic progress message. If one concrete fact is missing, ask that
+   question. Otherwise continue to the next required decision.
+10. After the story, assets, rights, named-character status, and aspect ratio
+    are ready, ask for the paid starting-image and workbook action in Japanese
+    as: `ストーリーと素材を確認し、制作に必要な情報は揃っています。次に、開始画像を生成してExcelコンテを作成します。進めてよろしいですか？`
+    The question authorizes the paid starting-image generation and workbook
+    creation; after approval, complete both without intermediate status turns.
 
 ## Mandatory beginner setup page
 
@@ -276,14 +320,27 @@ source segment's final frame. Preserve or mute source audio exactly as requested
 For every new video, the AI agent must follow this order:
 
 1. Create the three-second storyboard JSON.
-2. Generate and review the starting images, first one image and then the remainder.
+2. Generate all starting images, inspect them internally, and correct obvious
+   identity, composition, background, continuity, text, or aspect-ratio
+   problems before handoff. During normal production, do not create a separate
+   user checkpoint for one starting image. After approved input, any required
+   new-or-changed character review, and the aspect-ratio choice, the next
+   user-facing review is the official Excel storyboard.
 3. Build `storyboard_<version>.xlsx` with every shot's main image, description, audio plan, nine-frame plan, review state, and correction field.
-4. Reveal the workbook in its containing folder, select it, give the user one
-   opening action, and stop before video generation.
+4. Reveal the workbook in its containing folder and select it. In the same
+   message, tell the user to open it, review the complete storyboard, enter any
+   corrections in the yellow fields, save, and then report either corrections
+   or approval. Do not pause for an opening acknowledgement. Stop before video
+   generation until the content decision arrives.
 5. If the user requests corrections, run `apply-corrections` to read the Excel
-   corrections, revise the storyboard, preserve replaced images under
-   `rejected/`, regenerate affected images, rebuild `_r002` or later, and
-   request review again. Merely extracting corrections is not completion.
+   corrections or a correction JSON prepared from an unambiguous chat request,
+   revise the storyboard in the next whole `vNNN` run, preserve the old run and
+   replaced material, regenerate affected images, and build the workbook whose
+   filename matches that new run. Merely extracting corrections is not
+   completion. Normally request review of the revised workbook. If the user
+   explicitly said to continue after the stated correction, verify that exact
+   correction and all workbook sheets, then use that conditional authorization
+   to approve and continue without another approval question.
 6. Only after the user explicitly approves the Excel storyboard, run `approve-workbook` and then generate video clips.
 7. After generation, build the video-review workbook containing nine real frames per shot.
 
@@ -312,9 +369,10 @@ current video-specific guide directly from the official website.
    path. If the user separately requests analysis, explain the API, pricing or
    quota impact, public-video requirement, and untrusted-input boundary, then
    obtain explicit confirmation before any generation API call.
-5. Explain one current action at a time and wait for the beginner to confirm it
-   is complete. The website is reference material; the local safety gates remain
-   authoritative.
+5. Explain only the current meaningful action or decision. Combine routine
+   reversible operations that belong to one review task and do not wait for
+   completion acknowledgements that carry no new information. The website is
+   reference material; the local safety gates remain authoritative.
 6. State that NijiUnit's production character images, source videos, and audio
    are not published. Help the user define original characters and use only
    their rights-cleared local references.
@@ -350,17 +408,23 @@ artifact and given one concrete action.
    that an image attached by the chat interface is visible to the user.
    Never refer to one of several files only as "this image", "the right image",
    or "the selected image".
+   This handoff rule does not create an extra standalone starting-image review:
+   in normal production, starting images are reviewed together in the Excel
+   storyboard. Use a separate image handoff only when another rule requires a
+   specific review, such as a new or changed character identity, or when the
+   user explicitly asks to inspect an individual image.
 5. After sending the OS open request, use available desktop/window inspection
    to verify that Explorer/Finder is open at the intended folder and that the
    exact filename is present. This verification is the AI agent's work. Never
    ask the user whether the folder opened. If verification fails, retry the
    reveal once; if it still fails, state that plainly instead of claiming the
    folder opened.
-6. Once the folder and filename are verified, tell the user only the next
-   action, for example: `「確認_絵コンテ.xlsx」をダブルクリックしてください。`
-   Do not demand an intermediate `開いた` / `Opened` reply. The next requested
-   response should concern the artifact's actual content, correction, or
-   approval—not whether a window appeared.
+6. Once the folder and filename are verified, give one concise, complete
+   review instruction. For example: `「確認_絵コンテ.xlsx」を開き、全シートを確認してください。修正があれば黄色い訂正欄へ書いて保存し、問題がなければその旨を伝えてください。`
+   Do not stop after the double-click instruction and do not demand an
+   intermediate `開いた` / `Opened` reply. The next requested response must
+   concern the artifact's actual content, correction, or approval—not whether
+   a window appeared.
    Always name the exact file. Never describe its selection color because the
    highlight differs by operating system, theme, and window focus.
    If a file manager with several artifacts is already visible, do not assume
@@ -369,18 +433,42 @@ artifact and given one concrete action.
    does not prove that the intended folder is visible.
 7. If the desktop cannot be opened, state that plainly, show the exact folder
    and filename, and give one manual action. Do not pretend the folder opened.
-8. Never overwrite an existing review workbook. Create `_r002`, `_r003`, and so
-   on. If Excel has locked a workbook, ask the user to save and close it, then
-   wait for `閉じた` or the language-equivalent reply.
-9. For an Excel storyboard, guide the user through one sheet tab,
-   the review status, the yellow correction field, and saving, one action at a
-   time. When HTML is used, have them review each card and paste its generated
-   summary into chat. Explicit approval in chat still authorizes
+8. Never overwrite an existing review workbook. A correction creates the next
+   whole `vNNN` run, with `storyboard_vNNN.xlsx`; do not create new `_r002`
+   workbooks. Continue to read legacy `_r002` files. If Excel has locked a
+   workbook, ask the user to save and close it, then wait for `閉じた` or the
+   language-equivalent reply because the lock genuinely blocks the operation.
+9. For an Excel storyboard, explain the complete review in the initial
+   handoff: review every sheet, set the review status, write corrections in the
+   yellow field, and save. Do not split these routine review actions into
+   separate acknowledgement turns. When HTML is used, have them review every
+   card and paste its generated summary into chat. Explicit approval in chat still authorizes
    `approve-workbook`; HTML never bypasses the Excel approval gate.
-10. Apply the same reveal-and-one-action handoff to the final video, generated
-   video review, and AI model-use record. In completion reports, lead with what
+10. Apply the same reveal-and-complete-review handoff to the final video,
+   generated video review, and AI model-use record. In completion reports, lead with what
    the user can now open or review; keep implementation and test details
    secondary.
+
+## Mandatory whole-run versioning
+
+The version unit is the entire production run, not an individual workbook.
+
+1. The first production is `v001`. Any storyboard, image, video, audio, or
+   final-review correction after user review creates the next available whole
+   run (`v002`, `v003`, and so on).
+2. Keep the reviewed source run unchanged. Carry unchanged approved material
+   forward with a revision record, and place replaced material under the new
+   run's `rejected/` folder. Never rewrite a reviewed run in place.
+3. Keep names aligned inside each run: `storyboard_vNNN.xlsx`,
+   `story_video_vNNN.mp4`, and `storyboard_vNNN_video.xlsx`.
+4. Use `apply-corrections` for storyboard corrections. Use `revise-run` with
+   `--scope video` or `--scope audio` before changing generated video or sound.
+   Chat corrections may be represented by a validated corrections JSON; the
+   user does not have to copy the same instruction into Excel.
+5. Legacy `_r002` workbooks remain readable for older productions, but new
+   work must not create them.
+6. A run moved to `history/.../run` keeps its `vNNN` identity and may be used as
+   the source of a later whole-run revision.
 
 ## Mandatory character identity gate
 
@@ -400,9 +488,10 @@ Do not let a production disappear when the conversation ends after generation.
    subtitles, final concatenation, and the real nine-frame video-review bundle.
    Speech generation is a paid API action and requires the user's confirmation.
    A local music file requires an explicit rights confirmation.
-2. Reveal the finished MP4 and then the video-review workbook, one artifact and
-   one action at a time. Building the video-review workbook records a durable
-   `awaiting_user_review` state.
+2. Reveal the finished MP4 and the video-review workbook with the exact
+   filenames and a complete review instruction for each. Do not request
+   separate acknowledgements merely for opening either artifact. Building the
+   video-review workbook records a durable `awaiting_user_review` state.
 3. At the beginning of a later conversation, run `completion-status` before
    starting another production. If a previous run is waiting, resume its final
    review instead of silently abandoning it.

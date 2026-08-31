@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+from .run_versions import run_version_name
+
 
 @dataclass(frozen=True)
 class SpreadsheetViewer:
@@ -48,7 +50,7 @@ def _revision_candidates(directory: Path, base_stem: str) -> list[Path]:
 def current_storyboard_workbook(run_dir: Path) -> Path:
     """Return the newest storyboard workbook, including legacy run layouts."""
     run_dir = run_dir.resolve()
-    base_stem = f"storyboard_{run_dir.name}"
+    base_stem = f"storyboard_{run_version_name(run_dir)}"
     modern = _revision_candidates(run_dir / "review", base_stem)
     if modern:
         return modern[-1]
@@ -59,22 +61,20 @@ def current_storyboard_workbook(run_dir: Path) -> Path:
 
 
 def next_storyboard_workbook(run_dir: Path) -> Path:
-    """Choose a new workbook filename without overwriting a reviewed version."""
+    """Return the one standard workbook path for a whole-run revision."""
     run_dir = run_dir.resolve()
-    base_stem = f"storyboard_{run_dir.name}"
+    base_stem = f"storyboard_{run_version_name(run_dir)}"
     review_dir = run_dir / "review"
     modern = _revision_candidates(review_dir, base_stem)
     legacy = run_dir / f"{base_stem}.xlsx"
-    revisions = [
-        revision
-        for path in modern
-        if (revision := _revision_number(path, base_stem)) is not None
-    ]
-    if legacy.is_file():
-        revisions.append(1)
-    if not revisions:
-        return review_dir / f"{base_stem}.xlsx"
-    return review_dir / f"{base_stem}_r{max(revisions) + 1:03d}.xlsx"
+    if modern or legacy.is_file():
+        existing = modern[-1] if modern else legacy
+        raise FileExistsError(
+            "確認済みExcelは同じ制作版で作り直せません。"
+            "revise-runまたはapply-correctionsで次のvNNNを作成してください: "
+            f"{existing}"
+        )
+    return review_dir / f"{base_stem}.xlsx"
 
 
 def review_html_path(workbook_path: Path, language: str) -> Path:
@@ -97,7 +97,7 @@ def spreadsheet_review_artifact(
 
 
 def _video_review_stem(run_dir: Path) -> str:
-    return f"storyboard_{run_dir.name}_video"
+    return f"storyboard_{run_version_name(run_dir)}_video"
 
 
 def current_video_review_workbook(run_dir: Path) -> Path:
@@ -114,10 +114,13 @@ def next_video_review_workbook(run_dir: Path) -> Path:
     base_stem = _video_review_stem(run_dir)
     directory = run_dir / "final"
     candidates = _revision_candidates(directory, base_stem)
-    if not candidates:
-        return directory / f"{base_stem}.xlsx"
-    revision = _revision_number(candidates[-1], base_stem) or 1
-    return directory / f"{base_stem}_r{revision + 1:03d}.xlsx"
+    if candidates:
+        raise FileExistsError(
+            "動画確認Excelは同じ制作版で作り直せません。"
+            "revise-runで次のvNNNを作成してください: "
+            f"{candidates[-1]}"
+        )
+    return directory / f"{base_stem}.xlsx"
 
 
 def current_final_video(run_dir: Path) -> Path:
@@ -126,7 +129,7 @@ def current_final_video(run_dir: Path) -> Path:
     if not candidates and final_dir.is_dir():
         candidates = list(final_dir.glob("*.mp4"))
     if not candidates:
-        return final_dir / f"story_video_{run_dir.name}.mp4"
+        return final_dir / f"story_video_{run_version_name(run_dir)}.mp4"
     return max(candidates, key=lambda path: (path.stat().st_mtime_ns, path.name))
 
 
