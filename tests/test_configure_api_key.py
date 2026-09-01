@@ -38,3 +38,9 @@ def test_validate_api_key_rejects_empty_short_or_whitespace() -> None:
     assert validate_api_key("too-short") is not None
     assert validate_api_key("example key with spaces 123456789") is not None
     assert validate_api_key("example_key_12345678901234567890") is None
+
+
+def test_validate_api_key_accepts_google_authorization_key_characters() -> None:
+    authorization_key = "AQ.synthetic.authorization_key_0123456789-test$"
+
+    assert validate_api_key(authorization_key) is None

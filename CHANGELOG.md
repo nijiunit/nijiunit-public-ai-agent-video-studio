@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.8.0 - 2026-09-01
+
+- Disabled the first-setup save-and-connect button until the API key field and
+  project/billing confirmation are both complete, while continuing to require
+  the separate replacement confirmation for an existing key.
+- Accepted Google's current authorization-key characters, including `AQ.`
+  keys, without weakening local secret handling. The non-generation online
+  authentication check remains the final validity test.
+
 - Restored the end-to-end-tested eight-stage beginner handoff for ChatGPT,
   Claude, and Gemini in Japanese and English. Each route now keeps its progress,
   announces the agent handoff, displays the exact handoff text, and guides copy,

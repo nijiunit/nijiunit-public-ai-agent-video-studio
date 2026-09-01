@@ -12,7 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ENV_PATH = ROOT / ".env"
 EXAMPLE_ENV_PATH = ROOT / ".env.example"
 KEY_NAME = "GEMINI_API_KEY"
-SAFE_KEY_PATTERN = re.compile(r"[A-Za-z0-9_-]{20,512}")
+# Google issues more than one kind of Gemini API key. Keep this validation
+# limited to characters that are safe in our unquoted .env value instead of
+# assuming the legacy key prefix/alphabet. Google's online authentication
+# check remains the authority on whether the key is valid.
+SAFE_KEY_PATTERN = re.compile(r"[A-Za-z0-9._~+/$=-]{20,512}")
 
 
 def read_configured_key(env_path: Path, environ: dict[str, str] | None = None) -> bool:

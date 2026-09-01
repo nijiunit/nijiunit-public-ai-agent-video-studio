@@ -51,7 +51,8 @@
       outline: 4px solid rgba(69, 82, 210, .22);
       outline-offset: 3px;
     }
-    button:disabled { opacity: .48; cursor: wait; transform: none; }
+    button:disabled { opacity: .48; cursor: not-allowed; transform: none; }
+    button[aria-busy="true"] { cursor: wait; }
     .primary {
       color: #fff;
       background: linear-gradient(112deg, var(--violet), var(--teal));
@@ -495,7 +496,7 @@
             </div>
             <p class="message" id="saveMessage" role="status" aria-live="polite"></p>
             <div class="actions">
-              <button class="primary" id="saveConnect" type="button"><span data-ja="このPCに保存して、接続を確認する" data-en="Save on this PC and check connection">このPCに保存して、接続を確認する</span> <span aria-hidden="true">→</span></button>
+              <button class="primary" id="saveConnect" type="button" disabled><span data-ja="このPCに保存して、接続を確認する" data-en="Save on this PC and check connection">このPCに保存して、接続を確認する</span> <span aria-hidden="true">→</span></button>
             </div>
             <p class="small-note" data-ja="接続確認では、認証と必要なモデルの有無だけを確認します。画像や動画は生成せず、生成料金は発生させません。" data-en="The connection check only tests authentication and model availability. It does not generate media or incur generation charges.">接続確認では、認証と必要なモデルの有無だけを確認します。画像や動画は生成せず、生成料金は発生させません。</p>
           </div>
@@ -581,7 +582,7 @@
         replaceNeeded: "保存済みのキーを交換する確認にチェックを付けてください。",
         saving: "このPCへ安全に保存しています…",
         verifying: "Googleとの接続を確認しています。画像や動画は生成しません…",
-        invalidKey: "貼り付けた文字をAPIキーとして確認できません。余分な空白がないか確認してください。",
+        invalidKey: "APIキーを保存できませんでした。コピーした文字を省略せず、そのまま貼り付けてください。",
         managed: "このキーはNijiUnitの外側で管理されているため、この画面では交換できません。",
         saveError: "保存できませんでした。APIキーは画面に残していません。AIエージェントへ相談してください。",
         verifyFailed: "Googleとの接続を確認できませんでした。キー、プロジェクト、利用条件のいずれかを確認します。",
@@ -598,7 +599,7 @@
         replaceNeeded: "Confirm that you intend to replace the saved key.",
         saving: "Saving safely on this computer…",
         verifying: "Checking the Google connection. No media is being generated…",
-        invalidKey: "The pasted value does not look like an API key. Check for extra spaces.",
+        invalidKey: "The API key could not be saved. Paste the complete value exactly as copied.",
         managed: "This key is managed outside NijiUnit and cannot be replaced on this page.",
         saveError: "The key could not be saved. It is no longer left in the field. Ask your AI agent for help.",
         verifyFailed: "The Google connection could not be verified. Check the key, project, or service conditions.",
@@ -696,11 +697,28 @@
         button.dataset.labelJa = translatedLabel ? translatedLabel.getAttribute("data-ja") : (button.getAttribute("data-ja") || button.textContent);
         button.dataset.labelEn = translatedLabel ? translatedLabel.getAttribute("data-en") : (button.getAttribute("data-en") || button.textContent);
       }
-      button.disabled = busy;
       if (busy) {
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
         button.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>' + (language === "ja" ? "確認中…" : "Checking…") + "</span>";
       } else {
+        button.removeAttribute("aria-busy");
         button.textContent = button.dataset["label" + (language === "ja" ? "Ja" : "En")];
+        if (button.id === "saveConnect") {
+          updateSaveConnectState();
+        } else {
+          button.disabled = false;
+        }
+      }
+    }
+
+    function updateSaveConnectState() {
+      const hasKey = Boolean(document.getElementById("apiKey").value.trim());
+      const projectConfirmed = document.getElementById("projectConfirmed").checked;
+      const replacementConfirmed = !setupStatus.configured || document.getElementById("replaceConfirmed").checked;
+      const button = document.getElementById("saveConnect");
+      if (button.getAttribute("aria-busy") !== "true") {
+        button.disabled = !(hasKey && projectConfirmed && replacementConfirmed);
       }
     }
 
@@ -725,6 +743,7 @@
       document.getElementById("loadingStatus").hidden = true;
       document.getElementById("managedText").hidden = setupStatus.source !== "environment";
       document.getElementById("replaceExisting").hidden = setupStatus.source === "environment";
+      updateSaveConnectState();
     }
 
     async function verifyConnection(button, messageElement, listId) {
@@ -793,11 +812,15 @@
     document.getElementById("openStudio").addEventListener("click", openGoogleStudio);
     document.getElementById("replaceExisting").addEventListener("click", function () {
       document.getElementById("replaceRow").hidden = false;
+      updateSaveConnectState();
       showStage("Open");
     });
     document.getElementById("verifyExisting").addEventListener("click", function () {
       verifyConnection(document.getElementById("verifyExisting"), document.getElementById("existingMessage"), "existingChecks");
     });
+    document.getElementById("apiKey").addEventListener("input", updateSaveConnectState);
+    document.getElementById("projectConfirmed").addEventListener("change", updateSaveConnectState);
+    document.getElementById("replaceConfirmed").addEventListener("change", updateSaveConnectState);
     document.getElementById("saveConnect").addEventListener("click", async function () {
       const button = document.getElementById("saveConnect");
       const apiKey = document.getElementById("apiKey");
@@ -845,6 +868,7 @@
     });
     document.getElementById("replaceAfterFailure").addEventListener("click", function () {
       document.getElementById("replaceRow").hidden = false;
+      updateSaveConnectState();
       showStage("Open");
     });
     document.getElementById("finishSetup").addEventListener("click", function () { finish("ready"); });

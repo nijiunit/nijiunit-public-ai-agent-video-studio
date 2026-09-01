@@ -12,6 +12,7 @@ from scripts.open_setup import create_server
 
 TEST_KEY = "test_GeminiKey_1234567890abcdef"
 REPLACEMENT_KEY = "test_GeminiKey_fedcba0987654321"
+AUTHORIZATION_KEY = "AQ.synthetic.authorization_key_0123456789-test$"
 
 
 @pytest.fixture
@@ -137,6 +138,10 @@ def test_page_is_loopback_only_and_has_security_headers(setup_server):
     assert "__TOKEN__" not in html
     assert "localStorage" not in html
     assert "sessionStorage" not in html
+    assert 'id="saveConnect" type="button" disabled' in html
+    assert 'addEventListener("input", updateSaveConnectState)' in html
+    assert html.count('addEventListener("change", updateSaveConnectState)') == 2
+    assert "hasKey && projectConfirmed && replacementConfirmed" in html
 
     for asset_path in (
         "/assets/niji-background.png",
@@ -169,6 +174,32 @@ def test_key_is_stored_but_never_returned(setup_server):
     assert status == 200
     assert TEST_KEY.encode() not in status_body
     assert json.loads(status_body)["configured"] is True
+
+
+def test_google_authorization_key_is_stored_without_being_returned(setup_server):
+    server, env_path, token, verified_keys = setup_server
+    status, _headers, body = request(
+        server,
+        "POST",
+        "/api/key",
+        token=token,
+        payload={"api_key": AUTHORIZATION_KEY, "replace": False},
+    )
+
+    assert status == 200
+    assert AUTHORIZATION_KEY in env_path.read_text(encoding="utf-8")
+    assert AUTHORIZATION_KEY.encode() not in body
+
+    verify_status, _headers, verify_body = request(
+        server,
+        "POST",
+        "/api/verify",
+        token=token,
+        payload={},
+    )
+    assert verify_status == 200
+    assert verified_keys == [AUTHORIZATION_KEY]
+    assert AUTHORIZATION_KEY.encode() not in verify_body
 
 
 def test_existing_key_requires_explicit_replacement(setup_server):
