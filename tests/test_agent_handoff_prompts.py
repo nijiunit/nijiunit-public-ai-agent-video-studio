@@ -65,35 +65,46 @@ def test_every_route_never_requires_screen_transcription_or_images() -> None:
             assert "send an image or screenshot" in text
 
 
-def test_every_route_tracks_six_stage_progress_without_guessing_screens() -> None:
+def test_every_route_tracks_eight_stage_progress_without_guessing_screens() -> None:
     prompts = rendered_prompts(include_unverified=True)
     for language, route in prompts:
         text = prompts[(language, route)]
         if language == "ja":
-            assert "全6段階" in text
-            assert "進行状況：段階◯／全6" in text
+            assert "全8段階" in text
+            assert "進行状況：段階◯／全8" in text
             assert "段階6" in text
+            assert "段階7" in text
+            assert "段階8" in text
+            assert "現在地を見失った場合は推測で進めず" in text
         else:
-            assert "six stages" in text
-            assert "Progress: stage N of 6" in text
+            assert "eight stages" in text
+            assert "Progress: stage N of 8" in text
             assert "stage 6" in text
+            assert "stage 7" in text
+            assert "stage 8" in text
+            assert "If you lose the current stage, do not guess" in text
 
 
-def test_every_route_hands_off_immediately_without_acknowledgement_turns() -> None:
+def test_every_route_guides_the_verified_show_copy_paste_send_sequence() -> None:
     prompts = rendered_prompts(include_unverified=True)
     for language, route in prompts:
         text = prompts[(language, route)]
         if language == "ja":
-            assert "この返信をすべてコピーし" in text
-            assert "コピー、貼り付け、送信ごとの完了報告を求めません" in text
-            assert "引き継ぎ文章を表示してください" not in text
-            assert "コピーしました」と返したら" not in text
-            assert "貼り付けました」と返ったら" not in text
+            assert "担当交代を伝える" in text
+            assert "引き継ぎ文章を表示する" in text
+            assert "この文章をすべてコピーしてください" in text
+            assert "入力欄へ貼り付ける一操作だけ" in text
+            assert "送信" in text
+            assert "同じ意味の自然な返事を受け付け" in text
+            assert "返答をこの案内AIへ転記させません" in text
         else:
-            assert "Copy this entire reply" in text
-            assert "Do not ask for separate Copied, Pasted, or Sent acknowledgements" in text
-            assert "Show the handoff text" not in text
-            assert 'After I reply "Copied"' not in text
+            assert "Announce the handoff" in text
+            assert "Display the" in text and "handoff" in text
+            assert "Copy this entire message" in text
+            assert "give only the action to paste it" in text
+            assert "give only the action to" in text and "send" in text
+            assert "Accept any natural reply with the same meaning" in text
+            assert "response back here" in text
 
 
 def test_manifest_forbids_cross_agent_names() -> None:

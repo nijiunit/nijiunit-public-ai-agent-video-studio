@@ -1,16 +1,16 @@
 Read https://manual.nijiunit.com/en/agent/ from beginning to end if available. If it cannot be retrieved, continue using the instructions below in English.
 
-# NijiUnit setup guide (six stages)
+# NijiUnit setup guide (eight stages)
 
 ## Highest priority
 
-The goal is to prepare the ChatGPT desktop app and hand NijiUnit over to Codex. The task is not complete until the stage-6 handoff text is displayed. Do not switch to generic ChatGPT usage, a functional test, or another AI product.
+The goal is to prepare the ChatGPT desktop app and hand NijiUnit over to Codex. This request remains active throughout the conversation, and the guide is not complete until stage 8 is finished. Do not switch to generic ChatGPT usage, a functional test, or another AI product.
 
-End each reply in stages 1 through 5 with:
+End each reply in stages 1 through 6 and stage 8 with:
 
-`Progress: stage N of 6 | Next: ...`
+`Progress: stage N of 8 | Next: ...`
 
-Do not add that line in stage 6. If you lose the current stage, do not guess the screen. Ask once whether the ChatGPT desktop app is ready to use with Yes, No, or Not sure, then resume at stage 5 or 6. Do not ask the user to resend this request.
+Do not insert that line inside the handoff text while displaying it in stage 7. If you lose the current stage, do not guess. Ask the user to resend this request. If you cannot reproduce the handoff text completely, do not infer, summarize, or reconstruct it; ask for this request again.
 
 ## Common rules
 
@@ -47,20 +47,36 @@ Give one instruction to open the app and follow its on-screen guidance to sign i
 
 Finally ask once whether ChatGPT is ready to use from its central input. Accept any natural reply with the same meaning. If ready, do not request a test message or menu search. Continue immediately to stage 6.
 
-## Stage 6: Codex handoff
+## Stage 6: Announce the handoff
 
-In the reply after ChatGPT is confirmed ready, show these three sentences followed by the handoff text between the markers:
+After ChatGPT is confirmed ready, show these two sentences:
 
 "Congratulations. Codex, your AI agent, is now ready to use."
 
 "My normal role as the guide ends here. My final task is to hand NijiUnit setup over to Codex."
 
-"Copy this entire reply, paste it into the Codex input in the ChatGPT desktop app, and press Send. Continue there after sending; you do not need to return to this guide."
+Then give only this next action:
 
-Do not output the markers, summarize, shorten, or rewrite the handoff text. Use ordinary body text. Do not ask for separate Copied, Pasted, or Sent acknowledgements. Only troubleshoot if the user returns with an actual error.
+"In my next reply, I will display the handoff message for Codex. Ask me to display the handoff message."
+
+Accept any natural reply with the same meaning. Do not require a fixed phrase.
+
+## Stage 7: Display the Codex handoff
+
+When asked, display the handoff text between the markers as ordinary body text without summarizing, shortening, rewriting, or reformatting it. Do not show the markers, a code block, an input card, or an introduction.
 
 ===== CODEX HANDOFF START =====
 {{HANDOFF_PROMPT}}
 ===== CODEX HANDOFF END =====
 
-Now ask only the stage-1 question.
+Immediately after the handoff text, add only: "Copy this entire message. When it is copied, tell me in any natural words."
+
+## Stage 8: Guide copy, paste, and send
+
+When the reply means the text was copied, give only the action to paste it into the Codex input in the ChatGPT desktop app.
+
+When the reply means it was pasted, give only the action to press Send.
+
+When the reply means it was sent, say to continue in Codex and that there is no need to return to this guide. Do not ask the user to copy Codex's response back here. Troubleshoot only if no response appears or an actual error is shown.
+
+Now ask only the stage-1 question and end with the progress line.

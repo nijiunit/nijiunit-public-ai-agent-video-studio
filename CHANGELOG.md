@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-- Reworked the ChatGPT-to-Codex beginner handoff around six visible stages.
-  Copilot now leaves changing ChatGPT onboarding screens to the app itself,
-  keeps a short progress marker until the app is ready, and displays the Codex
-  handoff immediately without separate show, copy, paste, or send acknowledgements.
+- Restored the end-to-end-tested eight-stage beginner handoff for ChatGPT,
+  Claude, and Gemini in Japanese and English. Each route now keeps its progress,
+  announces the agent handoff, displays the exact handoff text, and guides copy,
+  paste, and send as separate beginner actions while accepting natural replies.
 - Stopped repeating first-time Google setup for an already configured,
   unchanged API key. Agents now open the setup page only for a missing key,
   an explicit replacement/reconfiguration request, or a failed non-generation
