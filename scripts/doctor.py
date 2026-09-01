@@ -5,6 +5,7 @@ import importlib.metadata
 import importlib.util
 import json
 import os
+import ssl
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
@@ -24,6 +25,7 @@ MINIMUM_PYTHON = (3, 11)
 PROJECT_DISTRIBUTION = "nijiunit-ai-agent-video-studio"
 DEPENDENCIES = {
     "google.genai": "google-genai",
+    "pip_system_certs": "pip-system-certs",
     "openpyxl": "openpyxl",
     "PIL": "Pillow",
     "pydantic": "pydantic",
@@ -31,6 +33,10 @@ DEPENDENCIES = {
     "imageio_ffmpeg": "imageio-ffmpeg",
 }
 MODEL_ROLES = ("story", "image", "video", "tts", "asr", "tutorial")
+CERTIFICATE_FAILURE_DETAIL = (
+    "HTTPS certificate verification failed; the API key was saved and was not "
+    "displayed"
+)
 
 
 @dataclass(frozen=True)
@@ -110,6 +116,27 @@ def _model_identifier(model: object) -> str:
     return str(name).removeprefix("models/")
 
 
+def _is_certificate_verification_error(error: BaseException) -> bool:
+    current: BaseException | None = error
+    visited: set[int] = set()
+    while current is not None and id(current) not in visited:
+        visited.add(id(current))
+        if isinstance(current, ssl.SSLCertVerificationError):
+            return True
+        description = f"{type(current).__name__}: {current}".lower()
+        if any(
+            marker in description
+            for marker in (
+                "certificate_verify_failed",
+                "certificate verify failed",
+                "sslcertverificationerror",
+            )
+        ):
+            return True
+        current = current.__cause__ or current.__context__
+    return False
+
+
 def api_key_online_checks(
     api_key: str,
     required_models: dict[str, str],
@@ -160,6 +187,14 @@ def api_key_online_checks(
             )
         return checks
     except Exception as error:  # noqa: BLE001
+        if _is_certificate_verification_error(error):
+            return [
+                Check(
+                    "Gemini authentication",
+                    "FAIL",
+                    CERTIFICATE_FAILURE_DETAIL,
+                )
+            ]
         return [
             Check(
                 "Gemini authentication",

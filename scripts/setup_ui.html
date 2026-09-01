@@ -545,7 +545,7 @@
         <div class="form-wrap">
           <div class="stage-head">
             <p class="eyebrow" data-ja="接続を確認できませんでした" data-en="CONNECTION NOT VERIFIED">接続を確認できませんでした</p>
-            <h2 data-ja="設定は保存しました。表示された内容を基に確認します" data-en="The setting was saved. Review the actual result before continuing">設定は保存しました。表示された内容を基に確認します</h2>
+            <h2 data-ja="APIキーは保存しました。接続できない原因を確認します" data-en="The API key was saved. Now check why the connection failed">APIキーは保存しました。接続できない原因を確認します</h2>
             <p class="lead" data-ja="何度もキーを作り直す必要はありません。まず同じキーでもう一度確認できます。解決しない場合は、設定画面を終えてAIエージェントへ相談します。" data-en="Do not create keys repeatedly. Try the same saved key once more. If it still fails, finish this page and ask your AI agent.">何度もキーを作り直す必要はありません。まず同じキーでもう一度確認できます。解決しない場合は、設定画面を終えてAIエージェントへ相談します。</p>
           </div>
           <div class="info-card">
@@ -586,6 +586,7 @@
         managed: "このキーはNijiUnitの外側で管理されているため、この画面では交換できません。",
         saveError: "保存できませんでした。APIキーは画面に残していません。AIエージェントへ相談してください。",
         verifyFailed: "Googleとの接続を確認できませんでした。キー、プロジェクト、利用条件のいずれかを確認します。",
+        certificateFailed: "APIキーは保存されています。貼り間違いではなく、このPCの安全な接続に使う証明書を確認できませんでした。「同じ設定でもう一度確認する」を一度押し、直らない場合は「設定を終えてAIエージェントへ相談する」を押してください。APIキーを作り直す必要はありません。",
         ready: "3項目を確認できました。NijiUnitの初回設定は完了です。",
         copied: "コピーしました。AIエージェントの入力欄へ貼り付けて送信してください。",
         copyFailed: "コピーできませんでした。文章を選択してコピーしてください。",
@@ -603,6 +604,7 @@
         managed: "This key is managed outside NijiUnit and cannot be replaced on this page.",
         saveError: "The key could not be saved. It is no longer left in the field. Ask your AI agent for help.",
         verifyFailed: "The Google connection could not be verified. Check the key, project, or service conditions.",
+        certificateFailed: "The API key is saved. This is not a paste error: this computer could not verify the certificate used for the secure connection. Press ‘Check the same setup again’ once. If it still fails, press ‘Finish and ask the AI agent’. You do not need to create another API key.",
         ready: "All three checks passed. NijiUnit first setup is complete.",
         copied: "Copied. Paste it into your AI agent's input box and send it.",
         copyFailed: "The message could not be copied. Select the text and copy it manually.",
@@ -760,14 +762,23 @@
           showStage("Success");
           return;
         }
-        setMessage(document.getElementById("failureMessage"), messages[language].verifyFailed, "bad");
-        showStage("Failure");
+        showVerificationFailure(result.data);
       } catch (_error) {
-        setMessage(document.getElementById("failureMessage"), messages[language].verifyFailed, "bad");
-        showStage("Failure");
+        showVerificationFailure({});
       } finally {
         setBusy(button, false);
       }
+    }
+
+    function showVerificationFailure(result) {
+      const certificateFailure = result && result.code === "certificate_verification_failed";
+      setMessage(
+        document.getElementById("failureMessage"),
+        certificateFailure ? messages[language].certificateFailed : messages[language].verifyFailed,
+        "bad"
+      );
+      document.getElementById("replaceAfterFailure").hidden = certificateFailure;
+      showStage("Failure");
     }
 
     async function finish(reason) {
@@ -853,8 +864,7 @@
           await new Promise(function (resolve) { window.setTimeout(resolve, 450); });
           showStage("Success");
         } else {
-          setMessage(document.getElementById("failureMessage"), messages[language].verifyFailed, "bad");
-          showStage("Failure");
+          showVerificationFailure(verification.data);
         }
       } catch (_error) {
         apiKey.value = "";

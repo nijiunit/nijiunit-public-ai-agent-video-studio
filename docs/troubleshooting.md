@@ -45,6 +45,15 @@ create paid media. Before the first image or video request, tell the user that
 charges may occur and wait for an explicit generation request. A successful
 first generation is the final proof of billing, quota, region, and model access.
 
+## Setup reports a secure-connection certificate failure
+
+The API key has already been saved and does not need to be recreated. Rerun the
+repository setup script so the NijiUnit virtual environment installs
+`pip-system-certs`, then retry the same saved-key connection check. This lets
+Python use certificates trusted by the operating system, including certificates
+installed by a company network or security product. Do not disable certificate
+verification and do not copy the API key into chat or a terminal.
+
 ## `doctor.py` reports an FFmpeg failure
 
 Rerun the setup script while connected to the internet so `imageio-ffmpeg` can

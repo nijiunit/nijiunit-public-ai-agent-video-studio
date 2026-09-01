@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ssl
 from pathlib import Path
 
 from scripts.doctor import (
@@ -147,6 +148,29 @@ def test_online_api_key_failure_never_displays_secret() -> None:
     )
 
     assert results[0].status == "FAIL"
+    assert secret not in results[0].detail
+
+
+def test_online_api_key_checks_identify_certificate_failure_without_secret() -> None:
+    secret = "example_key_12345678901234567890"
+
+    def factory(*, api_key: str):
+        try:
+            raise ssl.SSLCertVerificationError(
+                1,
+                f"certificate verify failed while using {api_key}",
+            )
+        except ssl.SSLCertVerificationError as error:
+            raise RuntimeError("wrapped transport failure") from error
+
+    results = api_key_online_checks(
+        secret,
+        {"video": "paid-video-model"},
+        client_factory=factory,
+    )
+
+    assert results[0].status == "FAIL"
+    assert results[0].detail.startswith("HTTPS certificate verification failed")
     assert secret not in results[0].detail
 
 

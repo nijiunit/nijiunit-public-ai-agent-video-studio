@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added operating-system certificate trust to the standard Python environment
+  so Google connection checks work on Windows PCs with company or security
+  certificates. The first-setup page now identifies this connection problem,
+  confirms that the saved API key is not the cause, and hides the misleading
+  key-replacement action for this failure.
+
 ## 0.8.0 - 2026-09-01
 
 - Disabled the first-setup save-and-connect button until the API key field and

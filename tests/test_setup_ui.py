@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.doctor import Check
-from scripts.open_setup import create_server
+from scripts.doctor import CERTIFICATE_FAILURE_DETAIL, Check
+from scripts.open_setup import SetupState, create_server
 
 TEST_KEY = "test_GeminiKey_1234567890abcdef"
 REPLACEMENT_KEY = "test_GeminiKey_fedcba0987654321"
@@ -121,6 +121,10 @@ def test_page_is_loopback_only_and_has_security_headers(setup_server):
     assert "同じ行のコピーの印を押す" in html
     assert html.count('class="copy-icon"') == 1
     assert "このPCに保存して、接続を確認する" in html
+    assert "APIキーは保存しました。接続できない原因を確認します" in html
+    assert "APIキーを作り直す必要はありません" in html
+    assert 'result.code === "certificate_verification_failed"' in html
+    assert 'replaceAfterFailure").hidden = certificateFailure' in html
     assert "APIキーをこのPCに保存" in html
     assert ".env" not in html
     assert "Google Gemini APIへ接続" in html
@@ -285,3 +289,29 @@ def test_verification_uses_saved_key_without_returning_it(setup_server):
         {"name": "Gemini authentication", "status": "PASS"},
         {"name": "configured Gemini models", "status": "PASS"},
     ]
+    assert response["code"] == "ready"
+
+
+def test_certificate_failure_is_reported_without_exposing_the_key(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    env_path = tmp_path / ".env"
+    env_path.write_text(f"GEMINI_API_KEY={TEST_KEY}\n", encoding="utf-8")
+    state = SetupState(
+        env_path=env_path,
+        token="test-token",
+        language="ja",
+        verifier=lambda _api_key: [
+            Check("Gemini authentication", "FAIL", CERTIFICATE_FAILURE_DETAIL)
+        ],
+    )
+
+    status, response = state.verify()
+
+    assert status == 200
+    assert response["ok"] is False
+    assert response["code"] == "certificate_verification_failed"
+    assert response["verification"] == "failed"
+    assert TEST_KEY not in json.dumps(response)

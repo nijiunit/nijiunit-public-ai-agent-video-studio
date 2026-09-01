@@ -27,6 +27,7 @@ from scripts.configure_api_key import (  # noqa: E402
     write_api_key,
 )
 from scripts.doctor import (  # noqa: E402
+    CERTIFICATE_FAILURE_DETAIL,
     Check,
     api_key_online_checks,
     configured_models,
@@ -121,8 +122,17 @@ class SetupState:
         }
         ready = passed == required
         self.verification_state = "ready" if ready else "failed"
+        failure_code = "verification_failed"
+        if any(
+            item.name == "Gemini authentication"
+            and item.status == "FAIL"
+            and item.detail == CERTIFICATE_FAILURE_DETAIL
+            for item in checks
+        ):
+            failure_code = "certificate_verification_failed"
         return HTTPStatus.OK, {
             "ok": ready,
+            "code": "ready" if ready else failure_code,
             "verification": self.verification_state,
             "checks": [
                 {"name": item.name, "status": item.status}
