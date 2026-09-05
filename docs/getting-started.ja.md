@@ -20,7 +20,7 @@
 このアプリを使えるようにしてください。
 ```
 
-AIエージェントは自分用のルート入口（Codexは`AGENTS.md`、Claude Codeは`CLAUDE.md`、Gemini CLIは`GEMINI.md`）から共通の日本語ガイドを読み、Python、仮想環境、依存パッケージ、`.env`の雛形、FFmpeg、同梱された制作既定値を準備・診断します。その後、Google生成AI APIの料金・課金・APIキー・接続確認を案内します。インストール中に生成APIは呼びません。
+AIエージェントは専用の入口（Codexは`AGENTS.md`、Claude Codeは`CLAUDE.md`、Google Antigravityは自動読込される`.agents/rules/nijiunit.md`から`GEMINI.md`）を経て共通の日本語ガイドを読み、Python、仮想環境、依存パッケージ、`.env`の雛形、FFmpeg、同梱された制作既定値を準備・診断します。その後、Google生成AI APIの料金・課金・APIキー・接続確認を案内します。インストール中に生成APIは呼びません。
 
 使い方の説明だけが必要なら、次のように依頼します。
 

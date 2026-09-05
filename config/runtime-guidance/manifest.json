@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "knowledge_version": "0.6.0-local.7",
-  "published_at": "2026-08-31T13:40:17+09:00",
+  "knowledge_version": "0.6.0-local.8",
+  "published_at": "2026-09-05T00:00:00+09:00",
   "compatibility": {
     "minimum_studio_version": "0.6.0",
     "maximum_studio_version_exclusive": "1.0.0"
@@ -9,27 +9,27 @@
   "resources": {
     "agent_guide_ja": {
       "url": "agent_guide_ja.md",
-      "sha256": "a47f8ce37c114b099e1c6e23fdf6eb483f5417ecdfa6276f8e1debff16dc164f",
+      "sha256": "c3159833940a64fe352dbd204a4273208dce06dfa60564e1f370ef7aef0931bc",
       "media_type": "text/markdown"
     },
     "agent_guide_en": {
       "url": "agent_guide_en.md",
-      "sha256": "b39993c142d30d1478170d972ad643278df12dead98daf75124ff26e38320e95",
+      "sha256": "b487e8c69236731d4bc86d0d1878e48ecffd3de665db2321cac6b4b875e15bd5",
       "media_type": "text/markdown"
     },
     "production_profile": {
       "url": "production_profile.json",
-      "sha256": "c66a4d7dee1c29174036988116ced3605217ab2d04fe4bd8b064665ac9e3344d",
+      "sha256": "40d15c5a12723e3c025ddbbfc31752585ed7f75476533f52671840976d94cf88",
       "media_type": "application/json"
     },
     "notices_ja": {
       "url": "notices_ja.json",
-      "sha256": "051f5607d680b132361a929ebe0dd23742c4a178a45ddb965eca2e75d11a2272",
+      "sha256": "5a3905f48c0c8b8bb449f4dbfb41029bc30973cb9ac42e81b78720a856f93ae9",
       "media_type": "application/json"
     },
     "notices_en": {
       "url": "notices_en.json",
-      "sha256": "051f5607d680b132361a929ebe0dd23742c4a178a45ddb965eca2e75d11a2272",
+      "sha256": "5a3905f48c0c8b8bb449f4dbfb41029bc30973cb9ac42e81b78720a856f93ae9",
       "media_type": "application/json"
     }
   }

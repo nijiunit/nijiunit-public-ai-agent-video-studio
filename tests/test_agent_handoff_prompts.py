@@ -11,10 +11,10 @@ def test_all_six_verified_routes_are_publishable() -> None:
     assert set(rendered_prompts()) == {
         ("ja", "chatgpt-codex"),
         ("ja", "claude-code"),
-        ("ja", "gemini-cli"),
+        ("ja", "google-antigravity"),
         ("en", "chatgpt-codex"),
         ("en", "claude-code"),
-        ("en", "gemini-cli"),
+        ("en", "google-antigravity"),
     }
 
 
@@ -23,10 +23,10 @@ def test_six_agent_language_routes_are_independent() -> None:
     assert set(prompts) == {
         ("ja", "chatgpt-codex"),
         ("ja", "claude-code"),
-        ("ja", "gemini-cli"),
+        ("ja", "google-antigravity"),
         ("en", "chatgpt-codex"),
         ("en", "claude-code"),
-        ("en", "gemini-cli"),
+        ("en", "google-antigravity"),
     }
     assert ROOT.joinpath("config/agent-handoff/ja/codex-handoff.md").read_text(
         encoding="utf-8"
@@ -125,13 +125,22 @@ def test_every_handoff_uses_a_fixed_documents_root_and_scoped_env() -> None:
         ("en", "chatgpt-codex"): "Documents\\Codex\\NijiUnit",
         ("ja", "claude-code"): "Documents\\ClaudeCode\\NijiUnit",
         ("en", "claude-code"): "Documents\\ClaudeCode\\NijiUnit",
-        ("ja", "gemini-cli"): "Documents\\GeminiCLI\\NijiUnit",
-        ("en", "gemini-cli"): "Documents\\GeminiCLI\\NijiUnit",
+        ("ja", "google-antigravity"): "Documents\\Antigravity\\NijiUnit",
+        ("en", "google-antigravity"): "Documents\\Antigravity\\NijiUnit",
     }
     for route, text in prompts.items():
         assert expected_roots[route] in text
         assert ".env" in text
         assert "workspace" in text
+
+
+def test_antigravity_handoff_uses_the_workspace_rule() -> None:
+    prompts = rendered_prompts(include_unverified=True)
+    for language in ("ja", "en"):
+        text = prompts[(language, "google-antigravity")]
+        assert ".agents/rules/nijiunit.md" in text
+        assert "GEMINI.md" in text
+        assert "Gemini CLI" not in text
 
 
 def test_every_handoff_skips_unchanged_setup_and_uses_the_local_page_when_needed() -> None:

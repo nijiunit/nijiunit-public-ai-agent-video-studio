@@ -4,9 +4,10 @@ English | [日本語](agent-guide.ja.md)
 
 This repository implements the public "NIJIUNIT Video Generation Tool." It takes over after an upstream guide has installed the AI agent and Git, cloned the repository, and opened this folder. Its responsibilities are preparing Python, FFmpeg, and the Google Generative AI API, then operating the three-second video-production workflow.
 
-This detailed guide is shared by Codex, Claude Code, and Gemini CLI. Each agent
-reaches it through its own equal root entry file: `AGENTS.md`, `CLAUDE.md`, or
-`GEMINI.md`. None of those entry files is the parent of another.
+This detailed guide is shared by Codex, Claude Code, and Google Antigravity.
+Codex starts from `AGENTS.md`, Claude Code from `CLAUDE.md`, and Google
+Antigravity automatically loads `.agents/rules/nijiunit.md`, which points to
+`GEMINI.md` and then this guide.
 
 Assume that this application's user may be a complete PC beginner. Use plain
 language and short replies, do safe work the agent can do itself, and make the

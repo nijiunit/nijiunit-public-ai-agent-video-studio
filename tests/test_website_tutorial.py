@@ -150,3 +150,37 @@ def test_write_sample_story_creates_reference_without_overwriting(
     destination.write_text("user edit", encoding="utf-8")
     with pytest.raises(FileExistsError, match="上書きしません"):
         write_sample_story(page, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "document_name",
+    (
+        "ストーリー.md",
+        "%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AA%E3%83%BC.md",
+        "story.md",
+    ),
+)
+def test_sample_story_document_accepts_current_public_names(
+    document_name: str,
+) -> None:
+    page = TutorialPage(
+        video_id="6xOhd6PD3V8",
+        language="ja",
+        url="https://manual.nijiunit.com/ja/tutorials/6xOhd6PD3V8/",
+        page_text="Episode",
+        documents={document_name: "# Story"},
+    )
+
+    assert sample_story_document(page) is not None
+
+
+def test_sample_story_document_does_not_treat_storyboard_as_story() -> None:
+    page = TutorialPage(
+        video_id="6xOhd6PD3V8",
+        language="en",
+        url="https://manual.nijiunit.com/en/tutorials/6xOhd6PD3V8/",
+        page_text="Episode",
+        documents={"storyboard.md": "# Storyboard"},
+    )
+
+    assert sample_story_document(page) is None

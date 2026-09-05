@@ -1,10 +1,10 @@
-# Handoff to Gemini CLI
+# Handoff to Google Antigravity
 
 I am a PC beginner. Make the public repository `https://github.com/nijiunit/nijiunit-public-ai-agent-video-studio` ready to use on this computer. Guide and explain in English.
 
-Perform safe read-only checks, document review, and ordinary non-destructive repository setup yourself. Only when my action or judgment is required, briefly explain the purpose in plain language, give exactly one question or action, and wait for my reply. Do not make me enter commands that Gemini CLI can run.
+Perform safe read-only checks, document review, and ordinary non-destructive repository setup yourself. Only when my action or judgment is required, briefly explain the purpose in plain language, give exactly one question or action, and wait for my reply. Do not make me enter commands that Google Antigravity can run.
 
-First identify the OS and whether Git is installed using read-only checks. On Windows, the only allowed destination is `C:\Users\[user]\Documents\GeminiCLI\NijiUnit\nijiunit-public-ai-agent-video-studio`. Replace `[user]` with the actual folder name of the signed-in Windows user. On macOS, use only the signed-in user's `Documents/GeminiCLI/NijiUnit/nijiunit-public-ai-agent-video-studio` folder.
+First identify the OS and whether Git is installed using read-only checks. On Windows, the only allowed destination is `C:\Users\[user]\Documents\Antigravity\NijiUnit\nijiunit-public-ai-agent-video-studio`. Replace `[user]` with the actual folder name of the signed-in Windows user. On macOS, use only the signed-in user's `Documents/Antigravity/NijiUnit/nijiunit-public-ai-agent-video-studio` folder.
 
 Never use a generated conversation, session, date, task, run, temporary, or `workspace` folder. Never use an attached folder, a repository opened for another task, or a copy outside the exact destination. Do not search outside that destination for another copy.
 
@@ -12,7 +12,7 @@ If the exact target does not exist, obtain the public repository there. It does 
 
 If the exact target already exists, do not overwrite, delete, rename, or create an alternate clone. Inspect it read-only and reuse it only if it is the correct healthy repository. Ask me only when there is a confirmed problem such as damage, a wrong source, or a conflict with my changes.
 
-After confirming the target repository, read the Gemini CLI root entry `GEMINI.md` and the complete shared English guide named there, then follow those repository instructions. Do not use `AGENTS.md` as Gemini CLI's entry. Do not read any `.env` before the exact target is confirmed. After confirmation, use only the `.env` directly inside that exact repository. Never inspect or reuse an `.env` from another folder or repository.
+After confirming the target repository, read the automatically loaded Google Antigravity workspace rule `.agents/rules/nijiunit.md`, the `GEMINI.md` file it names, and the complete shared English guide from beginning to end, then follow those repository instructions. Do not use `AGENTS.md` as Google Antigravity's entry. Do not read any `.env` before the exact target is confirmed. After confirmation, use only the `.env` directly inside that exact repository. Never inspect or reuse an `.env` from another folder or repository.
 
 Preserve existing settings and user changes. Do not call a generation API merely for setup or diagnosis. If the API key is already configured and unchanged, do not open first-time setup and do not ask whether to repeat it. Use the page only when the key is missing, I request replacement or reconfiguration, or the unchanged saved setup fails a connection check. Do not launch it while another blocking state such as update `diverged` remains unresolved. Never ask me to enter an API key in chat, a terminal, a command argument, a URL, or a log; when needed, I enter it only in the repository's local masked first-time setup page.
 

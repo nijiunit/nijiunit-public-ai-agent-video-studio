@@ -1,8 +1,9 @@
-# Gemini CLI entry instructions
+# Google Antigravity entry instructions
 
-This `GEMINI.md` file is the root entry for Gemini CLI. `AGENTS.md` and
-`CLAUDE.md` are equal entry files for their own agents; none is the parent of
-another.
+Google Antigravity loads `.agents/rules/nijiunit.md` as its workspace rule.
+That rule points to this `GEMINI.md` before the shared language-matched guide
+is read.
+`AGENTS.md` and `CLAUDE.md` remain the separate Codex and Claude Code entries.
 
 <!-- NIJIUNIT_SHARED_ENTRY_START -->
 ## Beginner-first behavior
@@ -61,8 +62,8 @@ guide for that language:
 Also read the language-matched README and getting-started guide named there.
 For video production or implementation work, read `作業手順.md` in Japanese or
 `WORKFLOW.md` in English. These detailed guides are common to Codex, Claude Code,
-and Gemini CLI. Agent-specific loading behavior belongs only in the three root
-entry files.
+and Google Antigravity. Agent-specific loading behavior belongs only in the
+agent entry files and Antigravity workspace rule.
 
 ## Critical gates
 

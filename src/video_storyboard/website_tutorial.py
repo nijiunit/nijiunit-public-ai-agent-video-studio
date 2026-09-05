@@ -30,6 +30,7 @@ SAMPLE_STORY_NAME_MARKERS = (
     "public-story",
     "public_story",
 )
+SAMPLE_STORY_EXACT_STEMS = {"ストーリー", "story"}
 
 
 class _TutorialHTMLParser(HTMLParser):
@@ -244,7 +245,10 @@ def sample_story_document(page: TutorialPage) -> tuple[str, str] | None:
     """Return the official public story document, when the tutorial provides one."""
     for encoded_name, content in page.documents.items():
         decoded_name = unquote(encoded_name).casefold()
-        if any(marker.casefold() in decoded_name for marker in SAMPLE_STORY_NAME_MARKERS):
+        decoded_stem = Path(decoded_name).stem
+        if decoded_stem in SAMPLE_STORY_EXACT_STEMS or any(
+            marker.casefold() in decoded_stem for marker in SAMPLE_STORY_NAME_MARKERS
+        ):
             return decoded_name, content
     return None
 

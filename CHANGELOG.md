@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Replaced the Gemini CLI route with Google Antigravity in Japanese and English
+  handoff guidance, pinned its clone to `Documents/Antigravity/NijiUnit`, and
+  added the official `.agents/rules/` workspace entry so Antigravity reliably
+  loads NijiUnit's shared beginner and safety guidance.
+- Recognized the current public tutorial document names `ストーリー.md` and
+  `story.md` when creating the optional reference-only `input/sample_story.md`.
 - Added operating-system certificate trust to the standard Python environment
   so Google connection checks work on Windows PCs with company or security
   certificates. The first-setup page now identifies this connection problem,

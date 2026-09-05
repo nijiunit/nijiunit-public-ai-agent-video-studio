@@ -40,7 +40,7 @@ def test_required_language_pairs_exist_and_link_to_each_other() -> None:
         assert english.name in japanese_text
 
 
-def test_three_agents_have_equal_short_entries_and_one_shared_guide() -> None:
+def test_three_agents_share_short_beginner_instructions_and_one_guide() -> None:
     entries = {relative: _text(relative) for relative in ENTRY_FILES}
     shared = [_shared_entry(text) for text in entries.values()]
 
@@ -57,7 +57,6 @@ def test_three_agents_have_equal_short_entries_and_one_shared_guide() -> None:
         assert "CLAUDE.md" in instructions
         assert "GEMINI.md" in instructions
         assert "AGENTS.md" in instructions
-        assert "parent of" in instructions
         assert "@AGENTS.md" not in instructions, relative
 
     japanese_guide = _text("docs/agent-guide.ja.md")
@@ -65,8 +64,23 @@ def test_three_agents_have_equal_short_entries_and_one_shared_guide() -> None:
     for filename in ENTRY_FILES:
         assert filename in japanese_guide
         assert filename in english_guide
-    assert "3つの入口は対等" in japanese_guide
-    assert "None of those entry files is the parent" in english_guide
+    assert "Google Antigravity" in japanese_guide
+    assert ".agents/rules/nijiunit.md" in japanese_guide
+    assert "Google Antigravity" in english_guide
+    assert ".agents/rules/nijiunit.md" in english_guide
+
+
+def test_antigravity_workspace_rule_bootstraps_the_shared_entry() -> None:
+    rule = _text(".agents/rules/nijiunit.md")
+
+    assert "Google Antigravity" in rule
+    assert "always-active workspace entry" in rule
+    assert "@../../GEMINI.md" in rule
+    assert "GEMINI.md" in rule
+    assert "docs/agent-guide.ja.md" in rule
+    assert "docs/agent-guide.md" in rule
+    assert "complete PC beginners" in rule
+    assert len(rule) <= 12_000
 
 
 def test_agent_handoffs_use_the_matching_root_entry() -> None:
@@ -75,8 +89,8 @@ def test_agent_handoffs_use_the_matching_root_entry() -> None:
         "config/agent-handoff/en/codex-handoff.md": "AGENTS.md",
         "config/agent-handoff/ja/claude-code-handoff.md": "CLAUDE.md",
         "config/agent-handoff/en/claude-code-handoff.md": "CLAUDE.md",
-        "config/agent-handoff/ja/gemini-cli-handoff.md": "GEMINI.md",
-        "config/agent-handoff/en/gemini-cli-handoff.md": "GEMINI.md",
+        "config/agent-handoff/ja/google-antigravity-handoff.md": "GEMINI.md",
+        "config/agent-handoff/en/google-antigravity-handoff.md": "GEMINI.md",
     }
     for relative, entry in expected.items():
         assert entry in _text(relative)
@@ -84,8 +98,8 @@ def test_agent_handoffs_use_the_matching_root_entry() -> None:
     assert "`AGENTS.md`をClaude Codeの入口として使いません" in _text(
         "config/agent-handoff/ja/claude-code-handoff.md"
     )
-    assert "`AGENTS.md`をGemini CLIの入口として使いません" in _text(
-        "config/agent-handoff/ja/gemini-cli-handoff.md"
+    assert "`AGENTS.md`をGoogle Antigravityの入口として使いません" in _text(
+        "config/agent-handoff/ja/google-antigravity-handoff.md"
     )
 
 

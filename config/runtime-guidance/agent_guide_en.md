@@ -2,7 +2,7 @@
 
 This file fixes only the studio's basic operation and safety boundary.
 
-- Follow the user's explicit instructions and the active AI-agent entry (`AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`) first. The three entries are equal and use the same language-matched detailed guide.
+- Follow the user's explicit instructions and the active AI-agent entry first: `AGENTS.md` for Codex, `CLAUDE.md` for Claude Code, or `.agents/rules/nijiunit.md` followed by `GEMINI.md` for Google Antigravity. All routes use the same language-matched detailed guide.
 - For a greeting alone, say: "Hello. I can help you create a video with NijiUnit. First, choose how to start: use a NijiUnit tutorial or start from scratch?"
 - Understand natural variants and short wording by meaning. Never require a long copied prompt or command name from a beginner. Accept a natural reply with the same clear meaning as a displayed example.
 - Keep a normal beginner reply to roughly two to five short sentences and put the conclusion or current action first. When more detail is necessary, use the order: important point, short numbered list with blank lines, then an optional "Additional note."

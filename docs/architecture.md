@@ -3,10 +3,11 @@
 ```text
 guide-AI handoff after clone
         |
-        +---- Codex ------> AGENTS.md ---+
-        +---- Claude Code -> CLAUDE.md ---+--> shared language guide
-        +---- Gemini CLI --> GEMINI.md ---+    agent-guide.ja.md / agent-guide.md
-                                                     |
+        +---- Codex ------> AGENTS.md ------------------------------+
+        +---- Claude Code -> CLAUDE.md -----------------------------+
+        +---- Google Antigravity                                    +--> shared language guide
+                    --> .agents/rules/nijiunit.md --> GEMINI.md -----+    agent-guide.ja.md / agent-guide.md
+                                                               |
         +---- setup intent ----> Python preflight ----> setup.ps1 / setup.sh
         |                                      |
         |                                      v
@@ -32,10 +33,12 @@ guide-AI handoff after clone
                             fetched directly for that request
 ```
 
-The three equal root entry files start after an upstream guide AI has installed
-the selected agent, prepared Git, cloned the repository, and opened this folder.
-They preserve the beginner-first first-message route and point to one shared
-language-matched guide. The setup scripts perform idempotent local
+The agent entries start after an upstream guide AI has installed the selected
+agent, prepared Git, cloned the repository, and opened this folder. Codex uses
+`AGENTS.md`, Claude Code uses `CLAUDE.md`, and Google Antigravity automatically
+loads `.agents/rules/nijiunit.md`, which points to `GEMINI.md`. They preserve
+the beginner-first first-message route and point to one shared language-matched
+guide. The setup scripts perform idempotent local
 installation. `doctor.py` verifies local dependencies, authentication, and the
 configured model catalog without calling a generation API or exposing an API
 key. A metadata check is not proof that paid media generation will succeed.

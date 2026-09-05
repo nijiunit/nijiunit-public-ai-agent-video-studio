@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "knowledge_version": "0.6.0-local.7",
+  "knowledge_version": "0.6.0-local.8",
   "profile_id": "standard-social-video",
   "models": {
     "story": "gemini-3.6-flash",

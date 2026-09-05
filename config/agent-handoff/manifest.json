@@ -7,21 +7,21 @@
         "status": "verified",
         "guide": "config/agent-handoff/ja/chatgpt-codex.md",
         "handoff": "config/agent-handoff/ja/codex-handoff.md",
-        "forbidden": ["Claude Code", "Gemini CLI"]
+        "forbidden": ["Claude Code", "Google Antigravity"]
       },
       "claude-code": {
         "label": "Claude → Claude Code",
         "status": "verified",
         "guide": "config/agent-handoff/ja/claude-code.md",
         "handoff": "config/agent-handoff/ja/claude-code-handoff.md",
-        "forbidden": ["Codex", "Gemini CLI"]
+        "forbidden": ["Codex", "Google Antigravity"]
       },
-      "gemini-cli": {
-        "label": "Gemini → Gemini CLI",
+      "google-antigravity": {
+        "label": "Gemini → Google Antigravity",
         "status": "verified",
-        "guide": "config/agent-handoff/ja/gemini-cli.md",
-        "handoff": "config/agent-handoff/ja/gemini-cli-handoff.md",
-        "forbidden": ["Codex", "Claude Code"]
+        "guide": "config/agent-handoff/ja/google-antigravity.md",
+        "handoff": "config/agent-handoff/ja/google-antigravity-handoff.md",
+        "forbidden": ["Codex", "Claude Code", "Gemini CLI"]
       }
     },
     "en": {
@@ -30,21 +30,21 @@
         "status": "verified",
         "guide": "config/agent-handoff/en/chatgpt-codex.md",
         "handoff": "config/agent-handoff/en/codex-handoff.md",
-        "forbidden": ["Claude Code", "Gemini CLI"]
+        "forbidden": ["Claude Code", "Google Antigravity"]
       },
       "claude-code": {
         "label": "Claude → Claude Code",
         "status": "verified",
         "guide": "config/agent-handoff/en/claude-code.md",
         "handoff": "config/agent-handoff/en/claude-code-handoff.md",
-        "forbidden": ["Codex", "Gemini CLI"]
+        "forbidden": ["Codex", "Google Antigravity"]
       },
-      "gemini-cli": {
-        "label": "Gemini → Gemini CLI",
+      "google-antigravity": {
+        "label": "Gemini → Google Antigravity",
         "status": "verified",
-        "guide": "config/agent-handoff/en/gemini-cli.md",
-        "handoff": "config/agent-handoff/en/gemini-cli-handoff.md",
-        "forbidden": ["Codex", "Claude Code"]
+        "guide": "config/agent-handoff/en/google-antigravity.md",
+        "handoff": "config/agent-handoff/en/google-antigravity-handoff.md",
+        "forbidden": ["Codex", "Claude Code", "Gemini CLI"]
       }
     }
   }

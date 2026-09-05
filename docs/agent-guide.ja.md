@@ -4,7 +4,7 @@
 
 このリポジトリは、公開名称「NIJIUNIT動画生成ツール」の実装です。案内AIによってAIエージェントの導入、Gitの準備、リポジトリのクローンまで完了した利用者を引き継ぎ、Google生成AI APIとローカル環境を準備し、3秒単位の映像制作を運用します。このファイルの指示はリポジトリ全体に適用します。
 
-この詳細ガイドはCodex、Claude Code、Gemini CLIで共通です。各エージェントはルートにある自分専用の入口ファイル（`AGENTS.md`、`CLAUDE.md`、`GEMINI.md`）からこのガイドを読みます。3つの入口は対等であり、どれか一つを他の入口の親にはしません。
+この詳細ガイドはCodex、Claude Code、Google Antigravityで共通です。Codexは`AGENTS.md`、Claude Codeは`CLAUDE.md`、Google Antigravityは自動読込される`.agents/rules/nijiunit.md`から`GEMINI.md`へ進み、このガイドを読みます。
 
 このアプリの利用者はパソコン初心者である可能性を最大限に考慮します。普段の言葉で短く伝え、AIエージェント自身が安全にできる作業を利用者へ頼まず、利用者の次の操作または判断が明確になる回答にします。
 

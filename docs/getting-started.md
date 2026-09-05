@@ -14,7 +14,7 @@ After cloning the repository and opening it in an AI agent, ask:
 Please make this application ready to use.
 ```
 
-The agent starts from its own root entry (`AGENTS.md` for Codex, `CLAUDE.md` for Claude Code, or `GEMINI.md` for Gemini CLI), then reads the shared English guide and prepares and diagnoses Python, the virtual environment, dependencies, the `.env` template, FFmpeg, and bundled production defaults. It then guides you through Google Generative AI API prices, billing, API-key storage, and connection verification. Installation does not call a generation API.
+The agent starts from its own entry (`AGENTS.md` for Codex, `CLAUDE.md` for Claude Code, or the automatically loaded `.agents/rules/nijiunit.md` followed by `GEMINI.md` for Google Antigravity), then reads the shared English guide and prepares and diagnoses Python, the virtual environment, dependencies, the `.env` template, FFmpeg, and bundled production defaults. It then guides you through Google Generative AI API prices, billing, API-key storage, and connection verification. Installation does not call a generation API.
 
 For an explanation only, ask:
 

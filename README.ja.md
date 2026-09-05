@@ -32,7 +32,7 @@ AIエージェントと生成AIを使い、3秒単位の短い動画を、キャ
 このアプリを使えるようにしてください。
 ```
 
-AIエージェントは、Codexなら[AGENTS.md](AGENTS.md)、Claude Codeなら[CLAUDE.md](CLAUDE.md)、Gemini CLIなら[GEMINI.md](GEMINI.md)から同じ日本語の詳細ガイドを読みます。専用セットアップスクリプトで、仮想環境、依存関係、`.env`、FFmpeg、同梱された制作基本設定を診断します。APIキーが未設定なら、画像付きのローカル設定画面を開き、Google AI Studioでの取得、秘密入力、接続確認まで案内します。初心者が通常の手順でターミナルへAPIキーを貼る必要はありません。セットアップ中に生成APIは呼ばず、既存の`.env`も無断で上書きしません。
+AIエージェントは、Codexなら[AGENTS.md](AGENTS.md)、Claude Codeなら[CLAUDE.md](CLAUDE.md)、Google Antigravityなら自動読込される[.agents/rules/nijiunit.md](.agents/rules/nijiunit.md)から[GEMINI.md](GEMINI.md)へ進み、同じ日本語の詳細ガイドを読みます。専用セットアップスクリプトで、仮想環境、依存関係、`.env`、FFmpeg、同梱された制作基本設定を診断します。APIキーが未設定なら、画像付きのローカル設定画面を開き、Google AI Studioでの取得、秘密入力、接続確認まで案内します。初心者が通常の手順でターミナルへAPIキーを貼る必要はありません。セットアップ中に生成APIは呼ばず、既存の`.env`も無断で上書きしません。
 
 この依頼は、案内AIによってAIエージェントの導入、Gitの準備、リポジトリのクローン、このフォルダを開くところまで終わった後に行います。以降はこのリポジトリ側が、Python、FFmpeg、Google生成AI APIの料金・課金・APIキー・接続確認を担当します。初心者本人の判断が必要な場面では、現在必要な判断だけを明確に案内します。一つの確認作業に属する通常操作は細切れにしません。
 
@@ -159,7 +159,7 @@ tests/       APIを使わない自動テスト
 
 作品ごとに使った基本設定一式は、その制作ランの`guidance/`へ固定します。旧方式で固定済みの制作記録も、過去作品の監査用として引き続き読み取れます。
 
-ルートの`AGENTS.md`、`CLAUDE.md`、`GEMINI.md`は、それぞれCodex、Claude Code、Gemini CLIの対等な入口です。セットアップ、使い方、実制作の詳しい共通ルールは`docs/agent-guide.ja.md`に集約しています。
+Codexはルートの`AGENTS.md`、Claude Codeは`CLAUDE.md`、Google Antigravityは`.agents/rules/nijiunit.md`から`GEMINI.md`を読みます。セットアップ、使い方、実制作の詳しい共通ルールは`docs/agent-guide.ja.md`に集約しています。
 
 `temp`は正式フォルダにしません。一時データが必要ならGit管理外の`tmp/`を使います。`input`と`output`は公開時には説明ファイルとプレースホルダーだけで、利用者自身の内容は空です。
 
